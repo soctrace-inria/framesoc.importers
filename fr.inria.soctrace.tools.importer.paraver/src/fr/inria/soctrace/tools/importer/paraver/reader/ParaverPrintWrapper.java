@@ -11,8 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
 import org.osgi.framework.Bundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,6 +81,50 @@ public class ParaverPrintWrapper extends ExternalProgramWrapper {
 			}
 			return executablePath;
 
+	}
+	
+	/**
+	 * Execute the external program.
+	 * 
+	 * @param monitor
+	 *            progress monitor
+	 * @param processor
+	 *            line processor
+	 * @return the execution status
+	 */
+	public IStatus executeSync(final IProgressMonitor monitor) {
+		logger.debug("Executing: {}", fCommand);
+			ProcessBuilder pb = new ProcessBuilder(fCommand);
+			int exitValue = 1;
+			try {
+			final Process p = pb.start();
+			
+			boolean exited = false;
+			while (!exited) {
+				try {
+					if (monitor.isCanceled()){
+						p.destroy();
+						return Status.CANCEL_STATUS;
+					}
+					exitValue=p.exitValue();
+					exited = true;
+				} catch (IllegalThreadStateException e) {
+					try {
+						Thread.sleep(500);
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					}
+				}
+			}
+			if (exitValue==0){
+				return Status.OK_STATUS;
+			}else{
+				return Status.CANCEL_STATUS;
+			}
+			} catch (IOException e) {
+				System.err.println(e.getMessage());
+				return null;
+			}
 	}
 
 }
