@@ -49,7 +49,8 @@ public class PajePrintWrapper extends ExternalProgramWrapper {
 	 */
 	private final static String CONF_FILE = CONF_DIR + "pj_dump.path";
 	
-	private static final String CMD = "exe" + File.separator + "pj_dump";
+	private static final String CMD_EXT = "pj_dump";
+	private static final String CMD_INT = "exe" + File.separator + "pj_dump";
 
 	/**
 	 * Constructor
@@ -58,7 +59,7 @@ public class PajePrintWrapper extends ExternalProgramWrapper {
 	 *            program arguments
 	 */
 	public PajePrintWrapper(List<String> arguments) {
-		super(readPath(), arguments);
+		super(CMD_EXT, arguments);
 	}
 
 	/**
@@ -66,6 +67,9 @@ public class PajePrintWrapper extends ExternalProgramWrapper {
 	 * 
 	 * @return the executable path
 	 */
+	
+	//Not used for the moment
+	@SuppressWarnings("unused")
 	private static String readPath() {
 
 		String eclipseDir = Platform.getInstallLocation().getURL().getPath();
@@ -82,7 +86,7 @@ public class PajePrintWrapper extends ExternalProgramWrapper {
 		try {
 			// executable path
 			Bundle bundle = Platform.getBundle(Activator.PLUGIN_ID);
-			Path path = new Path(CMD);
+			Path path = new Path(CMD_INT);
 			URL fileURL = FileLocator.find(bundle, path, null);
 			String executablePath = FileLocator.resolve(fileURL).getPath().toString();
 
