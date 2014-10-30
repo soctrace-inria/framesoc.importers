@@ -6,30 +6,16 @@
  * http://www.eclipse.org/legal/epl-v10.html
  * 
  * Contributors:
- *     Generoso Pagano - initial API and implementation
+ * 		Damien Dosimont, Generoso Pagano
  ******************************************************************************/
 package fr.inria.soctrace.tools.importer.paraver.core;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.SimpleTimeZone;
-
-import fr.inria.soctrace.framesoc.core.tools.importers.AbstractTraceMetadataManager;
 import fr.inria.soctrace.lib.model.Trace;
 import fr.inria.soctrace.lib.model.utils.SoCTraceException;
 import fr.inria.soctrace.lib.model.utils.ModelConstants.TimeUnit;
 import fr.inria.soctrace.lib.storage.SystemDBObject;
-import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpConstants;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpTraceMetadata;
 
-/**
- * Class to manage Otf2 Trace metadata.
- * 
- * TODO: expose a setter for each trace metadata you want to explicitly set in
- * the parser.
- * 
- * @author "Generoso Pagano <generoso.pagano@inria.fr>"
- */
 public class ParaverTraceMetadata extends PJDumpTraceMetadata {
 	
 	@Override

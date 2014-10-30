@@ -1,10 +1,17 @@
+/*******************************************************************************
+ * Copyright (c) 2012-2014 INRIA.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors:
+ * 		Damien Dosimont, Generoso Pagano
+ ******************************************************************************/
+
 package fr.inria.soctrace.tools.importer.paraver.reader;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -23,17 +30,7 @@ import org.slf4j.LoggerFactory;
 import fr.inria.soctrace.framesoc.core.tools.management.ExternalProgramWrapper;
 import fr.inria.soctrace.tools.importer.paraver.Activator;
 
-/**
- * Wrapper for otf2-print program.
- * 
- * It looks for the otf2-print executable path in the configuration file
- * ./<eclipse.dir>/configuration/<plugin.name>/otf2-print.path.
- * 
- * If this file is not found, one is created with a default value, pointing to
- * the precompiled executable (./<plugin.name>/exe/otf2-print).
- * 
- * @author "Generoso Pagano <generoso.pagano@inria.fr>"
- */
+
 public class ParaverPrintWrapper extends ExternalProgramWrapper {
 
 	private final static Logger logger = LoggerFactory.getLogger(ParaverPrintWrapper.class);

@@ -6,7 +6,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  * 
  * Contributors:
- *     Generoso Pagano - initial API and implementation
+ * 		Damien Dosimont, Generoso Pagano
  ******************************************************************************/
 package fr.inria.soctrace.tools.importer.paje;
 
@@ -37,16 +37,11 @@ import fr.inria.soctrace.tools.importer.paje.core.PajeTraceMetadata;
 import fr.inria.soctrace.tools.importer.paje.reader.PajePrintWrapper;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpConstants;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpParser;
-import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpTraceMetadata;
 
-/**
- * Otf2 importer tool.
- * 
- * @author "Generoso Pagano <generoso.pagano@inria.fr>"
- */
 public class PajeImporter extends FramesocTool {
 
-	private final static Logger logger = LoggerFactory.getLogger(PajeImporter.class);
+	private final static Logger logger = LoggerFactory
+			.getLogger(PajeImporter.class);
 
 	/**
 	 * Plugin Tool Job body: we use a Job since we have to perform a long
@@ -55,20 +50,23 @@ public class PajeImporter extends FramesocTool {
 	public class PajeImporterPluginJobBody implements IPluginToolJobBody {
 
 		private String args[];
-		
-		class PajeParser extends PJDumpParser{
+
+		class PajeParser extends PJDumpParser {
 			String alias;
-			
+
 			public PajeParser(SystemDBObject sysDB, TraceDBObject traceDB,
 					String traceFile, String alias) {
 				super(sysDB, traceDB, traceFile);
-				this.alias=alias;
+				this.alias = alias;
 			}
 
-			protected void saveTraceMetadata(boolean partialImport) throws SoCTraceException {
+			@Override
+			protected void saveTraceMetadata(boolean partialImport)
+					throws SoCTraceException {
 
-				PajeTraceMetadata metadata = new PajeTraceMetadata(sysDB, traceDB.getDBName(),
-						alias, numberOfEvents, minTimestamp, maxTimestamp);
+				PajeTraceMetadata metadata = new PajeTraceMetadata(sysDB,
+						traceDB.getDBName(), alias, numberOfEvents,
+						minTimestamp, maxTimestamp);
 				metadata.createMetadata();
 				metadata.saveMetadata();
 			}
@@ -77,7 +75,7 @@ public class PajeImporter extends FramesocTool {
 		public PajeImporterPluginJobBody(String[] args) {
 			this.args = args;
 		}
-		
+
 		@Override
 		public void run(IProgressMonitor monitor) {
 			DeltaManager delta = new DeltaManager();
@@ -95,10 +93,10 @@ public class PajeImporter extends FramesocTool {
 			Assert.isTrue(argsm.getTokens().size() >= 1);
 			String traceFile = argsm.getTokens().get(0);
 			ArrayList<String> arguments = new ArrayList<String>();
-			for (int i=1; i<argsm.getTokens().size(); i++){
+			for (int i = 1; i < argsm.getTokens().size(); i++) {
 				arguments.add(argsm.getTokens().get(i));
 			}
-				
+
 			if (monitor.isCanceled())
 				return;
 
@@ -114,31 +112,35 @@ public class PajeImporter extends FramesocTool {
 				traceDB = new TraceDBObject(traceDbName, DBMode.DB_CREATE);
 
 				// parsing
-				String output=ResourcesPlugin.getWorkspace().getRoot().getLocation().toString()+File.separator+"tmp";
+				String output = ResourcesPlugin.getWorkspace().getRoot()
+						.getLocation().toString()
+						+ File.separator + "tmp";
 				arguments.add(traceFile);
 				PajePrintWrapper printer = new PajePrintWrapper(arguments);
-				String trueOutput=output+PJDumpConstants.TRACE_EXT;
+				String trueOutput = output + PJDumpConstants.TRACE_EXT;
 				File outputFile = new File(trueOutput);
-				IStatus status=printer.executeSync(monitor, outputFile);
-				if (status.equals(IStatus.CANCEL)||monitor.isCanceled()){
+				IStatus status = printer.executeSync(monitor, outputFile);
+				if (status.equals(IStatus.CANCEL) || monitor.isCanceled()) {
 					throw new SoCTraceException();
 				}
 
-//				while(!outputFile.exists())
-//				{
-//					outputFile = new File(output);
-//					if (monitor.isCanceled()){
-//						throw new SoCTraceException();
-//					}
-//				}
-				PajeParser parser = new PajeParser(sysDB, traceDB, trueOutput, FilenameUtils.getBaseName(traceFile));
+				// while(!outputFile.exists())
+				// {
+				// outputFile = new File(output);
+				// if (monitor.isCanceled()){
+				// throw new SoCTraceException();
+				// }
+				// }
+				PajeParser parser = new PajeParser(sysDB, traceDB, trueOutput,
+						FilenameUtils.getBaseName(traceFile));
 				parser.parseTrace(monitor, 1, 1);
 				outputFile.delete();
 
 			} catch (SoCTraceException ex) {
 				System.err.println(ex.getMessage());
 				ex.printStackTrace();
-				System.err.println("Import failure. Trying to rollback modifications in DB.");
+				System.err
+						.println("Import failure. Trying to rollback modifications in DB.");
 				if (sysDB != null)
 					try {
 						sysDB.rollback();

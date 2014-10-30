@@ -6,7 +6,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  * 
  * Contributors:
- *     Generoso Pagano - initial API and implementation
+ * 		Damien Dosimont, Generoso Pagano
  ******************************************************************************/
 package fr.inria.soctrace.tools.importer.paraver;
 
@@ -34,16 +34,10 @@ import fr.inria.soctrace.lib.storage.TraceDBObject;
 import fr.inria.soctrace.lib.utils.DeltaManager;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpConstants;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpParser;
-import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpTraceMetadata;
 import fr.inria.soctrace.tools.importer.paraver.core.ParaverConstants;
 import fr.inria.soctrace.tools.importer.paraver.core.ParaverTraceMetadata;
 import fr.inria.soctrace.tools.importer.paraver.reader.ParaverPrintWrapper;
 
-/**
- * Otf2 importer tool.
- * 
- * @author "Generoso Pagano <generoso.pagano@inria.fr>"
- */
 public class ParaverImporter extends FramesocTool {
 
 	private final static Logger logger = LoggerFactory.getLogger(ParaverImporter.class);
@@ -65,6 +59,7 @@ public class ParaverImporter extends FramesocTool {
 				this.alias=alias;
 			}
 
+			@Override
 			protected void saveTraceMetadata(boolean partialImport) throws SoCTraceException {
 
 				ParaverTraceMetadata metadata = new ParaverTraceMetadata(sysDB, traceDB.getDBName(),

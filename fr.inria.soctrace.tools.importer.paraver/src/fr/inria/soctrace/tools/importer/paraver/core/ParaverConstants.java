@@ -6,17 +6,10 @@
  * http://www.eclipse.org/legal/epl-v10.html
  * 
  * Contributors:
- *     Generoso Pagano - initial API and implementation
+ * 		Damien Dosimont, Generoso Pagano
  ******************************************************************************/
 package fr.inria.soctrace.tools.importer.paraver.core;
 
-/**
- * Constants for Paraver parser
- * 
- * TODO: add more
- * 
- * @author "Generoso Pagano <generoso.pagano@inria.fr>"
- */
 public class ParaverConstants {
 
 	/**
