@@ -94,7 +94,8 @@
       "send" => "50100001",
       "recv" => "50100002",
       "root" => "50100003",
-      "communicator" => "50100003"
+      "communicator" => "50100003",
+      "compute" => "my_reduce_compute_amount",
   );
 
   my(%tit_translate) = (
@@ -112,7 +113,7 @@
       "MPI_Alltoallv" => "allToAllV",
       "MPI_Alltoall" => "allToAll",
       "MPI_Reduce" => "reduce",
-      "MPI_Allgatherv" => "allGatherV",
+      "MPI_Allgatherv" => "", # allGatherV Uggly hack :)
       "MPI_Gather" => "gather",
       "MPI_Gatherv" => "gatherV",
       "MPI_Reduce_scatter" => "reduceScatter",
@@ -124,9 +125,55 @@
       my($prv,$state_name,$event_name,$resource_name,$output,$format) = @_;
       my $line;
       my (%event);
-      my $nb_proc = 1;
       my(@fh)=();
 
+      open(INPUT,$prv) or die "Failed to open $prv:$!\n";
+
+
+      # Start parsing the header to get the trace hierarchy. 
+      # We should get something like
+      # #Paraver (dd/mm/yy at hh:m):ftime:0:nAppl:applicationList[:applicationList]
+
+      $line=<INPUT>; chomp $line;
+      $line=~/^\#Paraver / or die "Invalid header '$line'\n";
+      my $header=$line;
+      $header =~ s/^[^:\(]*\([^\)]*\):// or die "Invalid header '$line'\n";
+      $header =~ s/(\d+):(\d+)([^\(])/$1\_$2$3/g;
+      $header =~ s/,\d+$//g;
+      my ($max_duration,$resource,$nb_app,@appl) = split(/:/,$header);
+      $max_duration =~ s/_.*$//g;
+      $resource =~ /^(.*)\((.*)\)$/ or die "Invalid resource description '$resource'\n";
+      my($nb_nodes,$cpu_list)= ($1,$2);
+
+      $nb_app==1 or die "I can handle only one application type at the moment\n";
+
+      my @cpu_list=split(/,/,$cpu_list);
+
+      print("$max_duration --> '$nb_nodes' '@cpu_list'    $nb_app  @appl \n");
+      my(%Appl);
+      my($nb_task);
+      foreach my $app (1..$nb_app) {
+          my($task_list);
+          $appl[$app-1] =~ /^(.*)\((.*)\)$/ or die "Invalid resource description '$resource'\n";
+          ($nb_task,$task_list) = ($1,$2);
+          print $appl[$app-1]."\n";
+          print "\t '$nb_task' '$task_list'\n";
+
+          my(@task_list) = split(/,/,$task_list);
+
+
+          my(%mapping);
+          my($task);
+          foreach $task (1..$nb_task) {
+              my($nb_thread,$node_id) = split(/_/,$task_list[$task-1]);
+              if(!defined($mapping{$node_id})) { $mapping{$node_id}=[]; }
+              push @{$mapping{$node_id}},[$task,$nb_thread];
+          }
+          $Appl{$app}{nb_task}=$nb_task;
+          $Appl{$app}{mapping}=\%mapping;
+      }
+
+      print(Dumper(%Appl));
       for ($format) {
           if (/^csv$/) { 
               $output .= ".csv";
@@ -137,19 +184,27 @@
               $output .= ".pjdump";
               open(OUTPUT,"> $output"); 
               my @tab = split(/:/,`tail -n 1 $prv`);
-              my $max_duration = $tab[5];
               print OUTPUT "Container, 0, 0, 0.0, $max_duration, $max_duration, 0\n";
-              $nb_proc = 1;
-              my $node;
-              foreach $node (@{$$resource_name{CPU}}) { 
-                 # print OUTPUT "Container, 0, N, 0.0, $max_duration, $max_duration, $node\n";
-                  print OUTPUT "Container, 0, T, 0.0, $max_duration, $max_duration, MPI Rank $nb_proc\n";
-                  $nb_proc++;
+              foreach my $node (1..$nb_nodes) {
+                  print OUTPUT "Container, 0, N, 0.0, $max_duration, $max_duration, node_$node\n";
+              }
+              foreach my $app (values(%Appl)) {
+                  print Dumper($app);
+                  
+                  foreach my $node (keys%{$$app{mapping}}) {
+                      print "$node\n";
+                      foreach my $t (@{$$app{mapping}{$node}}) {
+                          print OUTPUT "Container, node_$node, P, 0.0, $max_duration, $max_duration, MPI_Rank_$$t[0]\n";
+                          foreach my $thread (1..$$t[1]) {
+                              print OUTPUT "Container, MPI_Rank_$$t[0], T, 0.0, $max_duration, $max_duration, Thread_$$t[0]_$thread\n";
+                          }
+                      }
+                  }
               }
               last;
           }
           if(/^tit$/) {
-              $nb_proc = 0;
+              my $nb_proc = 0;
               foreach my $node (@{$$resource_name{NODE}}) { 
                   my $filename = $output."_$nb_proc.tit";
                   open($fh[$nb_proc], "> $filename") or die "Cannot open > $filename: $!";
@@ -160,11 +215,8 @@
           die "Invalid format '$format'\n";
       }
       
-      open(INPUT,$prv) or die "Failed to open $prv:$!\n";
 
-      # We should read something like:
-      # #Paraver (dd/mm/yy at hh:m):ftime:0:nAppl:applicationList[:applicationList]
-      # but we ignore this information for the moment
+      # Now, let's process the records 
 
       while(defined($line=<INPUT>)) {
           chomp($line);
@@ -187,9 +239,32 @@
                   if($$state_name{$state} =~ /Group/) {
                       $sname = $$event_name{50000002}{value}{$event_list{50000002}};
                       my $t;
-                      foreach $t ("send","recv","root") {
+                      if($tit_translate{$sname} =~ /V$/) { # Really Uggly hack because of "poor" tracing of V operations
+                          print "WTF!!!! $line \n";
+                          $event_list{$pcf_coll_arg{"send"}} = 100000;
+                          $event_list{$pcf_coll_arg{"recv"}} = 100000;
+                          $tit_translate{$sname} =~ s/V$//;
+                      }
+
+                      if($tit_translate{$sname} eq "reduce") { # Uggly hack because the amount of computation is not given
+                          $event_list{$pcf_coll_arg{"compute"}} = 1;
+                      }
+                      if($tit_translate{$sname} eq "gather") { # Uggly hack because the amount of receive does not make sense here
+                          $event_list{$pcf_coll_arg{"recv"}} = $event_list{$pcf_coll_arg{"send"}};
+                          $event_list{$pcf_coll_arg{"root"}} = 1; # Uggly hack. AAAAARGH
+                      }
+                      if($tit_translate{$sname} eq "reduceScatter") { # Uggly hack because of "poor" tracing
+                          $event_list{$pcf_coll_arg{"recv"}} = $event_list{$pcf_coll_arg{"send"}}; 
+                          my $foo=$event_list{$pcf_coll_arg{"recv"}};
+                          $event_list{$pcf_coll_arg{"recv"}}="";
+                          for (1..$nb_task) { $event_list{$pcf_coll_arg{"recv"}} .= $foo." "; }
+                          $event_list{$pcf_coll_arg{"compute"}} = 1;
+                      }
+
+                      foreach $t ("send","recv", "compute", "root") {
                           if(defined($event_list{$pcf_coll_arg{$t}}) &&
                              $event_list{$pcf_coll_arg{$t}} ne "0") {
+                              if($t eq "root") { $event_list{$pcf_coll_arg{$t}}--; }
                               $sname_param.= "$event_list{$pcf_coll_arg{$t}} ";
                           }
                       }
@@ -208,7 +283,7 @@
                       $sname."\n";
               } 
               if($format eq "pjdump") {
-                  print OUTPUT "State, MPI Rank $task, STATE, $begin_time, $end_time, ".
+                  print OUTPUT "State, Thread_${task}_$thread, STATE, $begin_time, $end_time, ".
                       ($end_time-$begin_time).", 0, ".
                       $sname."\n";
               }
@@ -232,6 +307,7 @@
                 foreach $t ("send","recv","root") {
                     if(defined($event_list{$pcf_coll_arg{$t}}) &&
                        $event_list{$pcf_coll_arg{$t}} ne "0") {
+                        if($t eq "root") { $event_list{$pcf_coll_arg{$t}}--; }
                         $sname_param.= "$event_list{$pcf_coll_arg{$t}} ";
                     }
                 }
@@ -277,8 +353,8 @@
               last; 
           }
           if(/^tit$/) {
-              foreach my $r (0..$nb_proc-1) {
-                  close($fh[$r]) or die "Failed closing fh[$r]. $!\n";
+              foreach my $f (@fh) {
+                  close($f) or die "Failed closing file descriptor. $!\n";
               }
               print "Generated [[file:${output}_0.tit]] among other ones\n";
               last;
