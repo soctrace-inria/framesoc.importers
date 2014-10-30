@@ -141,9 +141,9 @@
               print OUTPUT "Container, 0, 0, 0.0, $max_duration, $max_duration, 0\n";
               $nb_proc = 1;
               my $node;
-              foreach $node (@{$$resource_name{NODE}}) { 
-                  print OUTPUT "Container, 0, N, 0.0, $max_duration, $max_duration, $node\n";
-                  print OUTPUT "Container, $node, T, 0.0, $max_duration, $max_duration, MPI Rank $nb_proc\n";
+              foreach $node (@{$$resource_name{CPU}}) { 
+                 # print OUTPUT "Container, 0, N, 0.0, $max_duration, $max_duration, $node\n";
+                  print OUTPUT "Container, 0, T, 0.0, $max_duration, $max_duration, MPI Rank $nb_proc\n";
                   $nb_proc++;
               }
               last;
