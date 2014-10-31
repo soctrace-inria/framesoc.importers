@@ -55,8 +55,8 @@ public class PajeImporter extends FramesocTool {
 			String alias;
 
 			public PajeParser(SystemDBObject sysDB, TraceDBObject traceDB,
-					String traceFile, String alias) {
-				super(sysDB, traceDB, traceFile, true);
+					String traceFile, String alias, boolean doublePrecision) {
+				super(sysDB, traceDB, traceFile, doublePrecision);
 				this.alias = alias;
 			}
 
@@ -93,8 +93,15 @@ public class PajeImporter extends FramesocTool {
 			Assert.isTrue(argsm.getTokens().size() >= 1);
 			String traceFile = argsm.getTokens().get(0);
 			ArrayList<String> arguments = new ArrayList<String>();
-			for (String flags : argsm.getFlags()) {
-				arguments.add("-"+flags);
+			for (String flag : argsm.getFlags()) {
+				arguments.add("-"+flag);
+			}
+			
+			boolean doublePrecision=true;
+			if (arguments.contains("-l")){
+				System.out.println("Long option selected");
+				doublePrecision=false;
+				arguments.remove("-l");
 			}
 
 			if (monitor.isCanceled())
@@ -132,7 +139,7 @@ public class PajeImporter extends FramesocTool {
 				// }
 				// }
 				PajeParser parser = new PajeParser(sysDB, traceDB, trueOutput,
-						FilenameUtils.getBaseName(traceFile));
+						FilenameUtils.getBaseName(traceFile), doublePrecision);
 				parser.parseTrace(monitor, 1, 1);
 				outputFile.delete();
 
