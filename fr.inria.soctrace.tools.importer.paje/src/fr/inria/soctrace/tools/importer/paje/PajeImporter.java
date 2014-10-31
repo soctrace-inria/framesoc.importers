@@ -91,10 +91,10 @@ public class PajeImporter extends FramesocTool {
 			argsm.printArgs();
 
 			Assert.isTrue(argsm.getTokens().size() >= 1);
-			String traceFile = argsm.getTokens().get(argsm.getTokens().size()-1);
+			String traceFile = argsm.getTokens().get(0);
 			ArrayList<String> arguments = new ArrayList<String>();
-			for (int i = 0; i < argsm.getTokens().size()-2; i++) {
-				arguments.add("-"+argsm.getTokens().get(i));
+			for (String flags : argsm.getFlags()) {
+				arguments.add("-"+flags);
 			}
 
 			if (monitor.isCanceled())
