@@ -138,9 +138,11 @@
       $line=~/^\#Paraver / or die "Invalid header '$line'\n";
       my $header=$line;
       $header =~ s/^[^:\(]*\([^\)]*\):// or die "Invalid header '$line'\n";
-      $header =~ s/(\d+):(\d+)([^\(])/$1\_$2$3/g;
+      print "-> $header\n";
+      $header =~ s/(\d+):(\d+)([^\(\d])/$1\_$2$3/g;
       $header =~ s/,\d+$//g;
       my ($max_duration,$resource,$nb_app,@appl) = split(/:/,$header);
+      print "-> $header\n";
       $max_duration =~ s/_.*$//g;
       $resource =~ /^(.*)\((.*)\)$/ or die "Invalid resource description '$resource'\n";
       my($nb_nodes,$cpu_list)= ($1,$2);
@@ -152,9 +154,10 @@
       print("$max_duration --> '$nb_nodes' '@cpu_list'    $nb_app  @appl \n");
       my(%Appl);
       my($nb_task);
+      print "-> @appl \n";
       foreach my $app (1..$nb_app) {
           my($task_list);
-          $appl[$app-1] =~ /^(.*)\((.*)\)$/ or die "Invalid resource description '$resource'\n";
+          $appl[$app-1] =~ /^(.*)\((.*)\)$/ or die "Invalid resource description '".$appl[$app-1]."'\n";
           ($nb_task,$task_list) = ($1,$2);
           print $appl[$app-1]."\n";
           print "\t '$nb_task' '$task_list'\n";
@@ -322,7 +325,7 @@
                      45000000) {
                   if(defined($event_list{$_})) {$warn=0; last;}
                 }
-                if($warn) { print "Skipping event $line\n"; }
+               # if($warn) { print "Skipping event $line\n"; }
                 next;
             }
 
