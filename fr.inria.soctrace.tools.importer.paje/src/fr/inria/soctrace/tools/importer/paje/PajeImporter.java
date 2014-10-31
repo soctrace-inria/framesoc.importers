@@ -56,7 +56,7 @@ public class PajeImporter extends FramesocTool {
 
 			public PajeParser(SystemDBObject sysDB, TraceDBObject traceDB,
 					String traceFile, String alias) {
-				super(sysDB, traceDB, traceFile);
+				super(sysDB, traceDB, traceFile, true);
 				this.alias = alias;
 			}
 

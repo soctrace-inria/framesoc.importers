@@ -55,7 +55,7 @@ public class ParaverImporter extends FramesocTool {
 			
 			public ParaverParser(SystemDBObject sysDB, TraceDBObject traceDB,
 					String traceFile, String alias) {
-				super(sysDB, traceDB, traceFile);
+				super(sysDB, traceDB, traceFile, false);
 				this.alias=alias;
 			}
 
