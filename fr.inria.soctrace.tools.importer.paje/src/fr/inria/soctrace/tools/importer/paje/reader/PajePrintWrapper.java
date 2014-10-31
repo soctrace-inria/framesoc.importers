@@ -11,11 +11,7 @@
 
 package fr.inria.soctrace.tools.importer.paje.reader;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -47,7 +43,6 @@ public class PajePrintWrapper extends ExternalProgramWrapper {
 	/**
 	 * Configuration file
 	 */
-	private final static String CONF_FILE = CONF_DIR + "pj_dump.path";
 	
 	private static final String CMD_EXT = "pj_dump";
 	private static final String CMD_INT = "exe" + File.separator + "pj_dump";
@@ -59,7 +54,7 @@ public class PajePrintWrapper extends ExternalProgramWrapper {
 	 *            program arguments
 	 */
 	public PajePrintWrapper(List<String> arguments) {
-		super(CMD_EXT, arguments);
+		super(readPath(), arguments);
 	}
 
 	/**
@@ -71,47 +66,12 @@ public class PajePrintWrapper extends ExternalProgramWrapper {
 	//Not used for the moment
 	@SuppressWarnings("unused")
 	private static String readPath() {
-
-		String eclipseDir = Platform.getInstallLocation().getURL().getPath();
-
-		// configuration directory
-		File dir = new File(eclipseDir + CONF_DIR);
-		if (!dir.exists())
-			dir.mkdir();
-
-		// configuration file
-		String absolutePath = eclipseDir + CONF_FILE;
-		File file = new File(absolutePath);
-
 		try {
 			// executable path
 			Bundle bundle = Platform.getBundle(Activator.PLUGIN_ID);
 			Path path = new Path(CMD_INT);
 			URL fileURL = FileLocator.find(bundle, path, null);
 			String executablePath = FileLocator.resolve(fileURL).getPath().toString();
-
-			if (!file.exists()) {
-				logger.debug("Configuration file not found. Create it: {}", absolutePath);
-				System.err.println("Configuration file '" + absolutePath
-						+ "' not found. Create it with default value (" + executablePath + ")");
-				file.createNewFile();
-				BufferedWriter bw = new BufferedWriter(new FileWriter(file));
-				bw.write(executablePath);
-				bw.close();
-			} else {
-				logger.debug("Configuration file found: {}", absolutePath);
-				BufferedReader br = new BufferedReader(new FileReader(file));
-				String line = "";
-				while ((line = br.readLine()) != null) {
-					if (line.equals(""))
-						continue;
-					if (line.startsWith("#"))
-						continue;
-					break;
-				}
-				br.close();
-				executablePath = line;
-			}
 			return executablePath;
 		} catch (IOException e) {
 			logger.error(e.getMessage());
