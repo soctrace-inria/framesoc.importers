@@ -6,7 +6,8 @@
  * http://www.eclipse.org/legal/epl-v10.html
  * 
  * Contributors:
- * 		Damien Dosimont, Generoso Pagano
+ * 		Damien Dosimont - initial API and implementation
+ *      Generoso Pagano - refactoring
  ******************************************************************************/
 package fr.inria.soctrace.tools.importer.paje;
 
@@ -41,7 +42,10 @@ import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpParser;
 /**
  * Paje importer tool
  * 
+ * TODO add support to multi file
+ * 
  * @author "Damien Dosimont <damien.dosimont@imag.fr>"
+ * @author "Generoso Pagano <generoso.pagano@inria.fr>"
  */
 public class PajeImporter extends FramesocTool {
 
@@ -102,6 +106,8 @@ public class PajeImporter extends FramesocTool {
 			if (arguments.contains("-l")) {
 				System.out.println("Long option selected");
 				doublePrecision = false;
+				// remove -l because is not managed by pj_dump: 
+				// we manage it internally in the parser
 				arguments.remove("-l");
 			}
 
@@ -191,14 +197,29 @@ public class PajeImporter extends FramesocTool {
 
 	@Override
 	public boolean canLaunch(String[] args) {
-		// TODO multi file
-		if (args.length < 1) {
+
+		ArgumentsManager argsm = new ArgumentsManager();
+		try {
+			// do this in a try block, since the method is called also for
+			// invalid input (it is called each time input changes)
+			argsm.parseArgs(args);
+		} catch (IllegalArgumentException e) {
 			return false;
 		}
-		File f = new File(args[args.length - 1]);
-		if (!f.isFile()) {
+
+		// check if at least one trace file is specified
+		if (argsm.getTokens().size() < 1) {
 			return false;
 		}
+
+		// check trace files
+		for (String file : argsm.getTokens()) {
+			File f = new File(file);
+			if (!f.isFile()) {
+				return false;
+			}
+		}
+
 		return true;
 	}
 
