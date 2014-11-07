@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Paje
+Bundle-Name: Pajé
 Bundle-SymbolicName: fr.inria.soctrace.tools.importer.paje;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: fr.inria.soctrace.tools.importer.paje.Activator
@@ -15,6 +15,5 @@ Require-Bundle: org.eclipse.ui,
  fr.inria.soctrace.tools.importer.pajedump
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
-Import-Package: fr.inria.soctrace.tools.ocelotl.core.events,
- org.apache.commons.io,
+Import-Package: org.apache.commons.io,
  org.eclipse.core.resources

@@ -5,7 +5,7 @@
          point="fr.inria.soctrace.framesoc.core.tool">
       <tool
             class="fr.inria.soctrace.tools.importer.paje.PajeImporter"
-            doc="Select the Pajé .paje file."
+            doc="Select the Pajé file. Options: -l (long precision)."
             name="Pajé Importer"
             type="IMPORT">
       </tool>

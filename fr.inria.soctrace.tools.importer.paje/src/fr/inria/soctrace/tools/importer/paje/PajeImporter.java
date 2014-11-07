@@ -34,39 +34,35 @@ import fr.inria.soctrace.lib.storage.TraceDBObject;
 import fr.inria.soctrace.lib.utils.DeltaManager;
 import fr.inria.soctrace.tools.importer.paje.core.PajeConstants;
 import fr.inria.soctrace.tools.importer.paje.core.PajeTraceMetadata;
-import fr.inria.soctrace.tools.importer.paje.reader.PajePrintWrapper;
+import fr.inria.soctrace.tools.importer.paje.reader.PajeDumpWrapper;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpConstants;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpParser;
 
 public class PajeImporter extends FramesocTool {
 
-	private final static Logger logger = LoggerFactory
-			.getLogger(PajeImporter.class);
+	private final static Logger logger = LoggerFactory.getLogger(PajeImporter.class);
 
 	/**
-	 * Plugin Tool Job body: we use a Job since we have to perform a long
-	 * operation and we don't want to freeze the UI.
+	 * Plugin Tool Job body: we use a Job since we have to perform a long operation and we don't
+	 * want to freeze the UI.
 	 */
 	public class PajeImporterPluginJobBody implements IPluginToolJobBody {
 
 		private String args[];
 
 		class PajeParser extends PJDumpParser {
-			String alias;
+			private String alias;
 
-			public PajeParser(SystemDBObject sysDB, TraceDBObject traceDB,
-					String traceFile, String alias, boolean doublePrecision) {
+			public PajeParser(SystemDBObject sysDB, TraceDBObject traceDB, String traceFile,
+					String alias, boolean doublePrecision) {
 				super(sysDB, traceDB, traceFile, doublePrecision);
 				this.alias = alias;
 			}
 
 			@Override
-			protected void saveTraceMetadata(boolean partialImport)
-					throws SoCTraceException {
-
-				PajeTraceMetadata metadata = new PajeTraceMetadata(sysDB,
-						traceDB.getDBName(), alias, numberOfEvents,
-						minTimestamp, maxTimestamp);
+			protected void saveTraceMetadata(boolean partialImport) throws SoCTraceException {
+				PajeTraceMetadata metadata = new PajeTraceMetadata(sysDB, traceDB.getDBName(),
+						alias, numberOfEvents, minTimestamp, maxTimestamp);
 				metadata.createMetadata();
 				metadata.saveMetadata();
 			}
@@ -94,13 +90,13 @@ public class PajeImporter extends FramesocTool {
 			String traceFile = argsm.getTokens().get(0);
 			ArrayList<String> arguments = new ArrayList<String>();
 			for (String flag : argsm.getFlags()) {
-				arguments.add("-"+flag);
+				arguments.add("-" + flag);
 			}
-			
-			boolean doublePrecision=true;
-			if (arguments.contains("-l")){
+
+			boolean doublePrecision = true;
+			if (arguments.contains("-l")) {
 				System.out.println("Long option selected");
-				doublePrecision=false;
+				doublePrecision = false;
 				arguments.remove("-l");
 			}
 
@@ -119,11 +115,10 @@ public class PajeImporter extends FramesocTool {
 				traceDB = new TraceDBObject(traceDbName, DBMode.DB_CREATE);
 
 				// parsing
-				String output = ResourcesPlugin.getWorkspace().getRoot()
-						.getLocation().toString()
+				String output = ResourcesPlugin.getWorkspace().getRoot().getLocation().toString()
 						+ File.separator + "tmp";
 				arguments.add(traceFile);
-				PajePrintWrapper printer = new PajePrintWrapper(arguments);
+				PajeDumpWrapper printer = new PajeDumpWrapper(arguments);
 				String trueOutput = output + PJDumpConstants.TRACE_EXT;
 				File outputFile = new File(trueOutput);
 				IStatus status = printer.executeSync(monitor, outputFile);
@@ -146,20 +141,21 @@ public class PajeImporter extends FramesocTool {
 			} catch (SoCTraceException ex) {
 				System.err.println(ex.getMessage());
 				ex.printStackTrace();
-				System.err
-						.println("Import failure. Trying to rollback modifications in DB.");
-				if (sysDB != null)
+				System.err.println("Import failure. Trying to rollback modifications in DB.");
+				if (sysDB != null) {
 					try {
 						sysDB.rollback();
 					} catch (SoCTraceException e) {
 						e.printStackTrace();
 					}
-				if (traceDB != null)
+				}
+				if (traceDB != null) {
 					try {
 						traceDB.dropDatabase();
 					} catch (SoCTraceException e) {
 						e.printStackTrace();
 					}
+				}
 			} finally {
 				// close the trace DB and the system DB (commit)
 				DBObject.finalClose(traceDB);
@@ -180,13 +176,6 @@ public class PajeImporter extends FramesocTool {
 		return FramesocManager.getInstance().getTraceDBName(basename);
 	}
 
-	@SuppressWarnings("unused")
-	private boolean checkArgs(ArgumentsManager argsm) {
-		if (argsm.getTokens().size() != 1)
-			return false;
-		return true;
-	}
-
 	@Override
 	public void launch(String[] args) {
 		PluginImporterJob job = new PluginImporterJob("Pajé Importer",
@@ -197,13 +186,13 @@ public class PajeImporter extends FramesocTool {
 
 	@Override
 	public boolean canLaunch(String[] args) {
-		if (args.length < 1){
+		if (args.length < 1) {
 			return false;
 		}
-			File f = new File(args[args.length-1]);
-			if (!f.isFile()){
-				return false;
-			}
+		File f = new File(args[args.length - 1]);
+		if (!f.isFile()) {
+			return false;
+		}
 		return true;
 	}
 

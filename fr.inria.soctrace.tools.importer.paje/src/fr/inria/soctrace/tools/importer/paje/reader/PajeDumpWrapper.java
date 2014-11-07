@@ -11,7 +11,11 @@
 
 package fr.inria.soctrace.tools.importer.paje.reader;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -29,11 +33,21 @@ import org.slf4j.LoggerFactory;
 import fr.inria.soctrace.framesoc.core.tools.management.ExternalProgramWrapper;
 import fr.inria.soctrace.tools.importer.paje.Activator;
 
-public class PajePrintWrapper extends ExternalProgramWrapper {
+/**
+ * Paje Dump wrapper.
+ * 
+ * It looks for the pj_dump executable path in the configuration file
+ * ./<eclipse.dir>/configuration/<plugin.name>/pj_dump.path.
+ * 
+ * If this file is not found, one is created with a default value, pointing to the precompiled
+ * executable (./<plugin.name>/exe/pj_dump).
+ * 
+ * @author "Generoso Pagano <generoso.pagano@inria.fr>"
+ */
+public class PajeDumpWrapper extends ExternalProgramWrapper {
 
-	private final static Logger logger = LoggerFactory
-			.getLogger(PajePrintWrapper.class);
-	
+	private final static Logger logger = LoggerFactory.getLogger(PajeDumpWrapper.class);
+
 	/**
 	 * Configuration directory
 	 */
@@ -43,9 +57,12 @@ public class PajePrintWrapper extends ExternalProgramWrapper {
 	/**
 	 * Configuration file
 	 */
-	
-	private static final String CMD_EXT = "pj_dump";
-	private static final String CMD_INT = "exe" + File.separator + "pj_dump";
+	private final static String CONF_FILE = CONF_DIR + "pj_dump.path";
+
+	/**
+	 * Default oft2-print executable location
+	 */
+	private static final String DEFAULT_PATH = "exe" + File.separator + "pj_dump";
 
 	/**
 	 * Constructor
@@ -53,7 +70,7 @@ public class PajePrintWrapper extends ExternalProgramWrapper {
 	 * @param arguments
 	 *            program arguments
 	 */
-	public PajePrintWrapper(List<String> arguments) {
+	public PajeDumpWrapper(List<String> arguments) {
 		super(readPath(), arguments);
 	}
 
@@ -62,16 +79,48 @@ public class PajePrintWrapper extends ExternalProgramWrapper {
 	 * 
 	 * @return the executable path
 	 */
-	
-	//Not used for the moment
-	@SuppressWarnings("unused")
 	private static String readPath() {
+
+		String eclipseDir = Platform.getInstallLocation().getURL().getPath();
+
+		// configuration directory
+		File dir = new File(eclipseDir + CONF_DIR);
+		if (!dir.exists())
+			dir.mkdir();
+
+		// configuration file
+		String absolutePath = eclipseDir + CONF_FILE;
+		File file = new File(absolutePath);
+
 		try {
 			// executable path
 			Bundle bundle = Platform.getBundle(Activator.PLUGIN_ID);
-			Path path = new Path(CMD_INT);
+			Path path = new Path(DEFAULT_PATH);
 			URL fileURL = FileLocator.find(bundle, path, null);
 			String executablePath = FileLocator.resolve(fileURL).getPath().toString();
+
+			if (!file.exists()) {
+				logger.debug("Configuration file not found. Create it: {}", absolutePath);
+				System.err.println("Configuration file '" + absolutePath
+						+ "' not found. Create it with default value (" + executablePath + ")");
+				file.createNewFile();
+				BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+				bw.write(executablePath);
+				bw.close();
+			} else {
+				logger.debug("Configuration file found: {}", absolutePath);
+				BufferedReader br = new BufferedReader(new FileReader(file));
+				String line = "";
+				while ((line = br.readLine()) != null) {
+					if (line.equals(""))
+						continue;
+					if (line.startsWith("#"))
+						continue;
+					break;
+				}
+				br.close();
+				executablePath = line;
+			}
 			return executablePath;
 		} catch (IOException e) {
 			logger.error(e.getMessage());
@@ -81,7 +130,6 @@ public class PajePrintWrapper extends ExternalProgramWrapper {
 
 	}
 
-	
 	/**
 	 * Execute the external program.
 	 * 
@@ -122,7 +170,7 @@ public class PajePrintWrapper extends ExternalProgramWrapper {
 				return Status.CANCEL_STATUS;
 			}
 		} catch (IOException e) {
-			System.err.println(e.getMessage());
+			e.printStackTrace();
 			return null;
 		}
 	}
