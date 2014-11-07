@@ -38,6 +38,11 @@ import fr.inria.soctrace.tools.importer.paje.reader.PajeDumpWrapper;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpConstants;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpParser;
 
+/**
+ * Paje importer tool
+ * 
+ * @author "Damien Dosimont <damien.dosimont@imag.fr>"
+ */
 public class PajeImporter extends FramesocTool {
 
 	private final static Logger logger = LoggerFactory.getLogger(PajeImporter.class);
@@ -186,6 +191,7 @@ public class PajeImporter extends FramesocTool {
 
 	@Override
 	public boolean canLaunch(String[] args) {
+		// TODO multi file
 		if (args.length < 1) {
 			return false;
 		}
