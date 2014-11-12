@@ -49,7 +49,7 @@ public class CtfTmfEvent extends TmfEvent
     // ------------------------------------------------------------------------
 
     /**
-     * @return
+     * @return the event name
      */
     public String getEventName() {
         return fEventName;
