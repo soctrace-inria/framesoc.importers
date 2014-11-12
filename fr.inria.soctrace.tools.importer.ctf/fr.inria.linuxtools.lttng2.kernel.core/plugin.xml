@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="fr.inria.linuxtools.tmf.core.tracetype">
+      <type
+            category="fr.inria.linuxtools.tmf.ctf.core.category.ctf"
+            event_type="fr.inria.linuxtools.tmf.ctf.core.CtfTmfEvent"
+            id="fr.inria.linuxtools.lttng2.kernel.tracetype"
+            isDirectory="true"
+            name="%tracetype.type.kernel"
+            trace_type="fr.inria.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace">
+      </type>
+   </extension>
+   <extension
+         point="fr.inria.linuxtools.tmf.core.analysis">
+      <module
+            analysis_module="fr.inria.linuxtools.lttng2.kernel.core.analysis.LttngKernelAnalysisModule"
+            automatic="true"
+            id="fr.inria.linuxtools.lttng2.kernel.analysis"
+            name="%analysis.lttngkernel">
+         <tracetype
+               class="fr.inria.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace">
+         </tracetype>
+      </module>
+      <module
+            analysis_module="fr.inria.linuxtools.lttng2.kernel.core.cpuusage.LttngKernelCpuUsageAnalysis"
+            id="fr.inria.linuxtools.lttng2.kernel.core.cpuusage"
+            name="%cpuusage.lttng.kernel">
+         <tracetype
+               applies="true"
+               class="fr.inria.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace">
+         </tracetype>
+      </module>
+   </extension>
+</plugin>

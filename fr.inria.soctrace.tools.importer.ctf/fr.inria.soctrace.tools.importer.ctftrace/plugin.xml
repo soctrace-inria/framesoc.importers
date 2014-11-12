@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="fr.inria.soctrace.framesoc.core.tool">
+      <tool
+            class="fr.inria.soctrace.tools.importer.ctftrace.CtfTraceImporterTool"
+            doc="The argument must be one (or several) file from the directory where the trace files are."
+            name="CTFTrace Importer"
+            type="IMPORT">
+      </tool>
+   </extension>
+
+
+</plugin>

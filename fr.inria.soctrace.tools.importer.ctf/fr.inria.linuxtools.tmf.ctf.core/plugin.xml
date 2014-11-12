@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="fr.inria.linuxtools.tmf.core.tracetype">
+      <category
+            id="fr.inria.linuxtools.tmf.ctf.core.category.ctf"
+            name="%tracetype.category.ctf">
+      </category>
+      <type
+            category="fr.inria.linuxtools.tmf.ctf.core.category.ctf"
+            event_type="fr.inria.linuxtools.tmf.ctf.core.CtfTmfEvent"
+            id="fr.inria.linuxtools.tmf.ui.type.ctf"
+            isDirectory="true"
+            name="%tracetype.type.ctf"
+            trace_type="fr.inria.linuxtools.tmf.ctf.core.CtfTmfTrace">
+      </type>
+   </extension>
+
+</plugin>
