@@ -5,13 +5,12 @@
       version="1.0.0.qualifier"
       provider-name="INRIA">
 
-   <description>
+   <description url="http://soctrace-inria.github.io/">
       Framesoc Importers
    </description>
 
-   <copyright>
+   <copyright url="http://soctrace-inria.github.io/">
       Copyright (c) 2012-2014 Inria
-
 All rights reserved. This program and the accompanying materials
 are made available under the terms of the Eclipse Public License
 v1.0 which accompanies this distribution, and is available at
@@ -76,13 +75,25 @@ Java and all Java-based trademarks are trademarks of Oracle Corporation in the U
       <import plugin="org.eclipse.ui"/>
       <import plugin="org.eclipse.core.runtime"/>
       <import plugin="fr.inria.soctrace.framesoc.core" version="1.0.0" match="greaterOrEqual"/>
+      <import plugin="fr.inria.soctrace.lib.utils" version="1.0.0" match="greaterOrEqual"/>
+      <import plugin="fr.inria.soctrace.lib.storage" version="1.0.0" match="greaterOrEqual"/>
+      <import plugin="fr.inria.soctrace.lib.search" version="1.0.0" match="greaterOrEqual"/>
       <import plugin="fr.inria.soctrace.lib.model" version="1.0.0" match="greaterOrEqual"/>
       <import plugin="fr.inria.soctrace.lib.query" version="1.0.0" match="greaterOrEqual"/>
-      <import plugin="fr.inria.soctrace.lib.search" version="1.0.0" match="greaterOrEqual"/>
-      <import plugin="fr.inria.soctrace.lib.storage" version="1.0.0" match="greaterOrEqual"/>
-      <import plugin="fr.inria.soctrace.lib.utils" version="1.0.0" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.wb.core.lib"/>
       <import plugin="fr.inria.soctrace.lib.slf4j" version="1.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.wb.core.lib"/>
+      <import plugin="org.apache.commons.io"/>
+      <import plugin="org.eclipse.core.resources"/>
+      <import plugin="fr.inria.linuxtools.ctf.core" version="2.2.1" match="greaterOrEqual"/>
+      <import plugin="fr.inria.linuxtools.ctf.parser" version="1.2.1" match="greaterOrEqual"/>
+      <import plugin="fr.inria.linuxtools.tmf.core" version="2.2.1" match="greaterOrEqual"/>
+      <import plugin="fr.inria.linuxtools.lttng2.kernel.core" version="2.2.1" match="greaterOrEqual"/>
+      <import plugin="fr.inria.linuxtools.statesystem.core"/>
+      <import plugin="org.slf4j.api"/>
+      <import plugin="com.google.guava"/>
+      <import plugin="fr.inria.linuxtools.ctf.core" version="3.0.0" match="greaterOrEqual"/>
+      <import plugin="fr.inria.linuxtools.tmf.core" version="3.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.emf.common"/>
    </requires>
 
    <plugin
@@ -122,6 +133,41 @@ Java and all Java-based trademarks are trademarks of Oracle Corporation in the U
 
    <plugin
          id="fr.inria.soctrace.tools.importer.paraver"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="fr.inria.soctrace.tools.importer.ctftrace"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="fr.inria.linuxtools.ctf.core"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="fr.inria.linuxtools.ctf.parser"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="fr.inria.linuxtools.lttng2.kernel.core"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="fr.inria.linuxtools.tmf.ctf.core"
          download-size="0"
          install-size="0"
          version="0.0.0"
