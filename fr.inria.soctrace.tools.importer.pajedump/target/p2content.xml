@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<units size='2'>
+  <unit id='fr.inria.soctrace.tools.importer.pajedump' version='1.0.0.201410151224'>
+    <update id='fr.inria.soctrace.tools.importer.pajedump' range='[0.0.0,1.0.0.201410151224)' severity='0'/>
+    <properties size='5'>
+      <property name='org.eclipse.equinox.p2.name' value='Paje Dump Importer'/>
+      <property name='org.eclipse.equinox.p2.provider' value='INRIA'/>
+      <property name='maven-groupId' value='fr.inria.soctrace.maven'/>
+      <property name='maven-artifactId' value='fr.inria.soctrace.tools.importer.pajedump'/>
+      <property name='maven-version' value='1.0.0-SNAPSHOT'/>
+    </properties>
+    <provides size='3'>
+      <provided namespace='org.eclipse.equinox.p2.iu' name='fr.inria.soctrace.tools.importer.pajedump' version='1.0.0.201410151224'/>
+      <provided namespace='osgi.bundle' name='fr.inria.soctrace.tools.importer.pajedump' version='1.0.0.201410151224'/>
+      <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' version='1.0.0'/>
+    </provides>
+    <requires size='9'>
+      <required namespace='osgi.bundle' name='org.eclipse.ui' range='0.0.0'/>
+      <required namespace='osgi.bundle' name='org.eclipse.core.runtime' range='0.0.0'/>
+      <required namespace='osgi.bundle' name='fr.inria.soctrace.framesoc.core' range='1.0.0'/>
+      <required namespace='osgi.bundle' name='fr.inria.soctrace.lib.model' range='1.0.0'/>
+      <required namespace='osgi.bundle' name='fr.inria.soctrace.lib.slf4j' range='1.0.0'/>
+      <required namespace='osgi.bundle' name='fr.inria.soctrace.lib.storage' range='1.0.0'/>
+      <required namespace='osgi.bundle' name='fr.inria.soctrace.lib.utils' range='1.0.0'/>
+      <required namespace='osgi.bundle' name='fr.inria.soctrace.lib.query' range='0.0.0'/>
+      <required namespace='osgi.bundle' name='org.eclipse.wb.core.lib' range='0.0.0'/>
+    </requires>
+    <artifacts size='1'>
+      <artifact classifier='osgi.bundle' id='fr.inria.soctrace.tools.importer.pajedump' version='1.0.0.201410151224'/>
+    </artifacts>
+    <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
+    <touchpointData size='1'>
+      <instructions size='1'>
+        <instruction key='manifest'>
+          Bundle-SymbolicName: fr.inria.soctrace.tools.importer.pajedump;singleton:=true&#xA;Bundle-Version: 1.0.0.201410151224&#xA;
+        </instruction>
+      </instructions>
+    </touchpointData>
+  </unit>
+  <unit id='fr.inria.soctrace.tools.importer.pajedump.source' version='1.0.0.201410151224' singleton='false'>
+    <update id='fr.inria.soctrace.tools.importer.pajedump.source' range='[0.0.0,1.0.0.201410151224)' severity='0'/>
+    <properties size='9'>
+      <property name='df_LT.bundleVendor' value='INRIA'/>
+      <property name='df_LT.bundleName' value='Paje Dump Importer Source'/>
+      <property name='org.eclipse.equinox.p2.name' value='%bundleName'/>
+      <property name='org.eclipse.equinox.p2.provider' value='%bundleVendor'/>
+      <property name='org.eclipse.equinox.p2.bundle.localization' value='OSGI-INF/l10n/bundle-src'/>
+      <property name='maven-groupId' value='fr.inria.soctrace.maven'/>
+      <property name='maven-artifactId' value='fr.inria.soctrace.tools.importer.pajedump'/>
+      <property name='maven-version' value='1.0.0-SNAPSHOT'/>
+      <property name='maven-classifier' value='sources'/>
+    </properties>
+    <provides size='4'>
+      <provided namespace='org.eclipse.equinox.p2.iu' name='fr.inria.soctrace.tools.importer.pajedump.source' version='1.0.0.201410151224'/>
+      <provided namespace='osgi.bundle' name='fr.inria.soctrace.tools.importer.pajedump.source' version='1.0.0.201410151224'/>
+      <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='source' version='1.0.0'/>
+      <provided namespace='org.eclipse.equinox.p2.localization' name='df_LT' version='1.0.0'/>
+    </provides>
+    <artifacts size='1'>
+      <artifact classifier='osgi.bundle' id='fr.inria.soctrace.tools.importer.pajedump.source' version='1.0.0.201410151224'/>
+    </artifacts>
+    <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
+    <touchpointData size='1'>
+      <instructions size='1'>
+        <instruction key='manifest'>
+          Bundle-SymbolicName: fr.inria.soctrace.tools.importer.pajedump.source&#xA;Bundle-Version: 1.0.0.201410151224&#xA;
+        </instruction>
+      </instructions>
+    </touchpointData>
+  </unit>
+</units>
