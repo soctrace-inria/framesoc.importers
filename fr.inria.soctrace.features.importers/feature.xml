@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="fr.inria.soctrace.feature.importers"
+      id="fr.inria.soctrace.features.importers"
       label="Framesoc Importers"
       version="1.0.0.qualifier">
 
