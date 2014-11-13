@@ -137,5 +137,17 @@ public class Otf2Constants {
 	final static String MPI_RECEIVE_REQUEST = "MPI_RECEIVE_REQUEST";
 	final static String MPI_SEND_COMPLETE = "MPI_SEND_COMPLETE";
 	final static String MPI_METRIC = "MPI_METRIC";
+	
+	/**
+	 * Constant for grid5000 type of event producer
+	 */
+	final static String[] G5KPRODTYPE = new String[] {
+			  "cluster", 
+			  "site", 
+			  "g5k", 
+			  "country"  
+			};
+	final static String PH_SEPARATOR = "\\.";
+	final static String PH_SEPARATOR2 = "-";
 
 }

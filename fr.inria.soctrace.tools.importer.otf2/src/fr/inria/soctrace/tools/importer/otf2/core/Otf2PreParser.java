@@ -222,6 +222,7 @@ class Otf2PreParser {
 	private void parseTreeNode(String aLine) {
 		int id;
 		String name = "";
+		String fullName = "";
 		String type = "";
 		String parentName = "";
 		int parentId = EventProducer.NO_PARENT_ID;
@@ -244,6 +245,7 @@ class Otf2PreParser {
 				name = nodeProperty[1].trim();
 				int indexOfFirstQuote = name.indexOf("\"") + 1;
 				name = name.substring(indexOfFirstQuote, name.indexOf("\"", indexOfFirstQuote));
+				fullName = name;
 			}
 			// Get the type
 			if (nodeProperty[0].trim().equals(Otf2Constants.NODE_TYPE)) {
@@ -264,11 +266,58 @@ class Otf2PreParser {
 				}
 			}
 		}
+		
+		if (theParser.isParseHierarchy()) {
+			String[] ret = parseHierarchy(name, parentId, id);
+			
+			// If the name was valid
+			if (ret.length == 2) {
+				name = ret[0] + "-" + ret[1]; 
+				parentId = theParser.getProducersMap().get(ret[0]).getId();
+			}
+		}
 
-		theParser.getProducersMap().put(name, createProducer(name, id, type, parentId));
+		theParser.getProducersMap().put(fullName, createProducer(name, id, type, parentId));
 		theParser.getIdProducersMap().put(id, theParser.getProducersMap().get(name));
 	}
 
+	/**
+	 * Parse the name of hierarchy node in order to build the full hierarchy
+	 * NOTE: For now it is only compliant with the grid5000 format
+	 * (i.e. "cluster-machine.site.grid5k.country")
+	 */
+	String[] parseHierarchy(String aName, int pid, int id) {
+		String[] epNames = aName.split(Otf2Constants.PH_SEPARATOR);
+		int parentId = pid;
+		int i;
+
+		// If the header is not valid
+		if(epNames.length != 4)
+			return new String[0];
+		
+		String[] moreEpNames = epNames[0].split(Otf2Constants.PH_SEPARATOR2);
+		
+		if(moreEpNames.length != 2)
+			return new String[0];
+
+		// Create the event producer from the more general to the more specific
+		for (i = 3; i > 0; i--) {
+			if (!theParser.getProducersMap().containsKey(epNames[i])) {
+				theParser.getProducersMap().put(epNames[i],
+						createProducer(epNames[i], id, Otf2Constants.G5KPRODTYPE[i], parentId));
+			}
+			
+			// Set parentId for the next event producer
+			parentId = theParser.getProducersMap().get(epNames[i]).getId();
+		}
+		
+		if (!theParser.getProducersMap().containsKey(moreEpNames[0]))
+			theParser.getProducersMap().put(moreEpNames[0],
+					createProducer(moreEpNames[0], id, Otf2Constants.G5KPRODTYPE[0], parentId));
+		
+		return moreEpNames;
+	}
+	
 	/**
 	 * Create an event type
 	 * 
@@ -349,7 +398,7 @@ class Otf2PreParser {
 			return theParser.getProducersMap().get(aParent).getId();
 		return EventProducer.NO_PARENT_ID;
 	}
-
+	
 	/**
 	 * Create an event producer based on the given parameters
 	 * 

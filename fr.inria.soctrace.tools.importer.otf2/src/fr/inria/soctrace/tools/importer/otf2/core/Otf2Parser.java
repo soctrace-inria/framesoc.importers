@@ -356,6 +356,14 @@ public class Otf2Parser {
 		this.totNumberOfLines = numberOfLines;
 	}
 
+	public boolean isParseHierarchy() {
+		return parseHierarchy;
+	}
+
+	public void setParseHierarchy(boolean parseHierarchy) {
+		this.parseHierarchy = parseHierarchy;
+	}
+
 	public boolean ignoreVariables() {
 		return this.ignoreVariables;
 	}
