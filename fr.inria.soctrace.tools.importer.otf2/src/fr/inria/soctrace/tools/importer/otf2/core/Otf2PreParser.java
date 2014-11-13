@@ -272,7 +272,7 @@ class Otf2PreParser {
 			
 			// If the name was valid
 			if (ret.length == 2) {
-				name = ret[1];
+				name = ret[0] + "-" + ret[1]; 
 				parentId = theParser.getProducersMap().get(ret[0]).getId();
 			}
 		}
