@@ -70,6 +70,10 @@ Content may contain encryption software. The country in which you are currently 
 Java and all Java-based trademarks are trademarks of Oracle Corporation in the United States, other countries, or both.
    </license>
 
+   <requires>
+      <import feature="fr.inria.soctrace.features.framesoc" version="1.0.0.qualifier"/>
+   </requires>
+
    <plugin
          id="fr.inria.soctrace.tools.importer.gstreamer"
          download-size="0"
