@@ -62,6 +62,7 @@ public class Otf2Parser {
 	private long maxTimestamp = -1;
 	private int page = 0;
 	private boolean ignoreVariables = false;
+	private boolean parseHierarchy = false;
 
 	/** Total number of event lines in the output of otf2-print */
 	private int totNumberOfLines = 0;
@@ -104,12 +105,14 @@ public class Otf2Parser {
 	 *            trace file name
 	 * @param novar
 	 *            flag stating that variable must be ignored
+	 * @param parseHierarchy 
 	 */
-	public Otf2Parser(SystemDBObject sysDB, TraceDBObject traceDB, String traceFile, boolean novar) {
+	public Otf2Parser(SystemDBObject sysDB, TraceDBObject traceDB, String traceFile, boolean novar, boolean parseHierarchy) {
 		this.sysDB = sysDB;
 		this.traceDB = traceDB;
 		this.traceFile = traceFile;
 		this.ignoreVariables = novar;
+		this.parseHierarchy = parseHierarchy;
 
 		parserMap.put(Otf2Constants.EVENT, new EventParser());
 		parserMap.put(Otf2Constants.LINK, new LinkParser());

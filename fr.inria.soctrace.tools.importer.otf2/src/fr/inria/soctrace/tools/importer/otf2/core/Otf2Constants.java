@@ -65,6 +65,7 @@ public class Otf2Constants {
 	 * Parser options
 	 */
 	public static final String OPT_NO_VAR = "novar";
+	public static final String OPT_PARSE_HIERARCHY = "ph";
 
 	/**
 	 * Category labels

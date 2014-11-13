@@ -68,6 +68,7 @@ public class Otf2Importer extends FramesocTool {
 			argsm.printArgs();
 
 			boolean novar = argsm.getFlags().contains(Otf2Constants.OPT_NO_VAR);
+			boolean parseHierarchy = argsm.getFlags().contains(Otf2Constants.OPT_PARSE_HIERARCHY);
 
 			Assert.isTrue(argsm.getTokens().size() == 1);
 			String traceFile = argsm.getTokens().get(0);
@@ -86,7 +87,7 @@ public class Otf2Importer extends FramesocTool {
 				traceDB = new TraceDBObject(traceDbName, DBMode.DB_CREATE);
 
 				// parsing
-				Otf2Parser parser = new Otf2Parser(sysDB, traceDB, traceFile, novar);
+				Otf2Parser parser = new Otf2Parser(sysDB, traceDB, traceFile, novar, parseHierarchy);
 				parser.parseTrace(monitor);
 
 			} catch (SoCTraceException ex) {
