@@ -20,6 +20,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,7 +124,6 @@ public class PajeImporter extends FramesocTool {
 				TraceDBObject traceDB = null;
 
 				try {
-
 					// open system DB
 					sysDB = SystemDBObject.openNewIstance();
 					// create new trace DB
@@ -139,7 +139,8 @@ public class PajeImporter extends FramesocTool {
 					File outputFile = new File(trueOutput);
 					PajeDumpWrapper printer = new PajeDumpWrapper(arguments);
 					IStatus status = printer.executeSync(monitor, outputFile);
-					if (status.equals(IStatus.CANCEL) || monitor.isCanceled()) {
+					System.out.println(status);
+					if (status.equals(Status.CANCEL_STATUS) || monitor.isCanceled()) {
 						throw new SoCTraceException();
 					}
 					// parsing dumped file
