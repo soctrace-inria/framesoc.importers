@@ -27,5 +27,7 @@ public class ParaverConstants {
 	 */
 	public static final String TRACE_TYPE = "paraver";
 	public static final String TRACE_EXT = ".prv";
+	public static final String PCF_EXT = ".pcf";
+	
 
 }

@@ -111,7 +111,7 @@ public class PajeImporter extends FramesocTool {
 			DeltaManager traceDelta = new DeltaManager();
 			for (String traceFile : argsm.getTokens()) {
 
-				logger.debug("Importing " + traceFile);
+				logger.debug("Importing trace: {}", traceFile);
 
 				if (monitor.isCanceled())
 					break;

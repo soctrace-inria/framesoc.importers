@@ -12,12 +12,15 @@ package fr.inria.soctrace.tools.importer.paraver;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,32 +41,38 @@ import fr.inria.soctrace.tools.importer.paraver.core.ParaverConstants;
 import fr.inria.soctrace.tools.importer.paraver.core.ParaverTraceMetadata;
 import fr.inria.soctrace.tools.importer.paraver.reader.ParaverPrintWrapper;
 
+/**
+ * Paraver importer tool.
+ * 
+ * @author "Damien Dosimont <damien.dosimont@imag.fr>"
+ * @author "Generoso Pagano <generoso.pagano@inria.fr>"
+ */
 public class ParaverImporter extends FramesocTool {
 
 	private final static Logger logger = LoggerFactory.getLogger(ParaverImporter.class);
 
 	/**
-	 * Plugin Tool Job body: we use a Job since we have to perform a long
-	 * operation and we don't want to freeze the UI.
+	 * Plugin Tool Job body: we use a Job since we have to perform a long operation and we don't
+	 * want to freeze the UI.
 	 */
 	public class ParaverImporterPluginJobBody implements IPluginToolJobBody {
 
 		private String args[];
-		
-		class ParaverParser extends PJDumpParser{
+
+		class ParaverParser extends PJDumpParser {
 			String alias;
-			
-			public ParaverParser(SystemDBObject sysDB, TraceDBObject traceDB,
-					String traceFile, String alias) {
+
+			public ParaverParser(SystemDBObject sysDB, TraceDBObject traceDB, String traceFile,
+					String alias) {
 				super(sysDB, traceDB, traceFile, false);
-				this.alias=alias;
+				this.alias = alias;
 			}
 
 			@Override
 			protected void saveTraceMetadata(boolean partialImport) throws SoCTraceException {
 
-				ParaverTraceMetadata metadata = new ParaverTraceMetadata(sysDB, traceDB.getDBName(),
-						alias, numberOfEvents, minTimestamp, maxTimestamp);
+				ParaverTraceMetadata metadata = new ParaverTraceMetadata(sysDB,
+						traceDB.getDBName(), alias, numberOfEvents, minTimestamp, maxTimestamp);
 				metadata.createMetadata();
 				metadata.saveMetadata();
 			}
@@ -72,16 +81,11 @@ public class ParaverImporter extends FramesocTool {
 		public ParaverImporterPluginJobBody(String[] args) {
 			this.args = args;
 		}
-		
+
 		@Override
 		public void run(IProgressMonitor monitor) {
 			DeltaManager delta = new DeltaManager();
 			delta.start();
-
-			logger.debug("Args: ");
-			for (String s : args) {
-				logger.debug(s);
-			}
 
 			ArgumentsManager argsm = new ArgumentsManager();
 			argsm.parseArgs(args);
@@ -92,6 +96,7 @@ public class ParaverImporter extends FramesocTool {
 			if (monitor.isCanceled())
 				return;
 
+			logger.debug("Importing trace {}", traceFile);
 			String traceDbName = getNewTraceDBName(traceFile);
 
 			SystemDBObject sysDB = null;
@@ -105,8 +110,9 @@ public class ParaverImporter extends FramesocTool {
 
 				// parsing
 				ArrayList<String> arguments = new ArrayList<String>();
-				String input=traceFile.replace(ParaverConstants.TRACE_EXT, "");
-				String output=ResourcesPlugin.getWorkspace().getRoot().getLocation().toString()+File.separator+"tmp";
+				String input = traceFile.replace(ParaverConstants.TRACE_EXT, "");
+				String output = ResourcesPlugin.getWorkspace().getRoot().getLocation().toString()
+						+ File.separator + "tmp";
 				arguments.add("-i");
 				arguments.add(input);
 				arguments.add("-o");
@@ -114,21 +120,16 @@ public class ParaverImporter extends FramesocTool {
 				arguments.add("-f");
 				arguments.add(PJDumpConstants.TRACE_EXT.replace(".", ""));
 				ParaverPrintWrapper printer = new ParaverPrintWrapper(arguments);
-				
-				IStatus status=printer.executeSync(monitor);
-				if (status.equals(IStatus.CANCEL)||monitor.isCanceled()){
+
+				IStatus status = printer.executeSync(monitor);
+				if (status.equals(Status.CANCEL_STATUS) || monitor.isCanceled()) {
 					throw new SoCTraceException();
 				}
-				String trueOutput=output+PJDumpConstants.TRACE_EXT;
+				String trueOutput = output + PJDumpConstants.TRACE_EXT;
 				File outputFile = new File(trueOutput);
-//				while(!outputFile.exists())
-//				{
-//					outputFile = new File(output);
-//					if (monitor.isCanceled()){
-//						throw new SoCTraceException();
-//					}
-//				}
-				ParaverParser parser = new ParaverParser(sysDB, traceDB, trueOutput, FilenameUtils.getBaseName(input));
+
+				ParaverParser parser = new ParaverParser(sysDB, traceDB, trueOutput,
+						FilenameUtils.getBaseName(input));
 				parser.parseTrace(monitor, 1, 1);
 				outputFile.delete();
 
@@ -190,11 +191,30 @@ public class ParaverImporter extends FramesocTool {
 
 		for (String file : args) {
 			File f = new File(file);
-			if (!f.isFile())
+			if (!f.isFile()) {
+				logger.debug("Not a file: {}", f.getName());
 				return false;
-		}
+			}
+			String basename = FilenameUtils.getBaseName(f.getAbsolutePath());
+			if (!f.getName().equals(basename + ParaverConstants.TRACE_EXT)) {
+				logger.debug("Wrong extension: {}", f.getName());
+				return false;
+			}
 
+			File dir = f.getParentFile();
+			File[] files = dir.listFiles();
+			Set<String> fileSet = new HashSet<>();
+			for (File tf : files) {
+				fileSet.add(tf.getName());
+			}
+
+			if (!fileSet.contains(basename + ParaverConstants.PCF_EXT)) {
+				logger.debug("{} not found", basename + ParaverConstants.PCF_EXT);
+				return false;
+			}
+
+			// check for .row too, if necessary
+		}
 		return true;
 	}
-
 }
