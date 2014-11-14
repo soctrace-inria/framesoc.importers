@@ -6,7 +6,8 @@
  * http://www.eclipse.org/legal/epl-v10.html
  * 
  * Contributors:
- * 		Damien Dosimont, Generoso Pagano
+ * 		Damien Dosimont - initial API and implementation
+ *      Generoso Pagano - refactoring
  ******************************************************************************/
 package fr.inria.soctrace.tools.importer.paraver;
 
