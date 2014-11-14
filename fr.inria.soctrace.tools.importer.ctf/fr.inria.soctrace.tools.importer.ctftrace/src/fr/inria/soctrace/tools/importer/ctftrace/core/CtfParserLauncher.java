@@ -9,7 +9,7 @@ import fr.inria.soctrace.lib.storage.DBObject.DBMode;
 import fr.inria.soctrace.lib.utils.DeltaManager;
 
 /**
- * Class used to launch the KPTrace parser.
+ * Class used to launch the Ctf parser.
  * 
  * @author "Generoso Pagano <generoso.pagano@inria.fr>"
  * 
