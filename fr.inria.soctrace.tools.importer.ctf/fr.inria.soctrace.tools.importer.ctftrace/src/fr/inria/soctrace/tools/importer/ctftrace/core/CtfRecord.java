@@ -52,6 +52,12 @@ public class CtfRecord {
 			}
 			attributesValue.put(fName, content.getField(fName).getFormattedValue());
 		}
+		for(String fName: content.getFieldNames())
+		{
+			if (fName.startsWith(CtfParserConstants.CONTEXT_FIELD_PREFIX)) {
+				attributesValue.put(fName, content.getField(fName).getFormattedValue());
+			}
+		}
 	}
 
 	public long getTimestamp() {
