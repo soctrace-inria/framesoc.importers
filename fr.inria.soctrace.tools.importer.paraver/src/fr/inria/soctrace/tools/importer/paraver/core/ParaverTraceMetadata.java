@@ -6,7 +6,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  * 
  * Contributors:
- * 		Damien Dosimont, Generoso Pagano
+ * 		Damien Dosimont
  ******************************************************************************/
 package fr.inria.soctrace.tools.importer.paraver.core;
 
@@ -16,6 +16,11 @@ import fr.inria.soctrace.lib.model.utils.ModelConstants.TimeUnit;
 import fr.inria.soctrace.lib.storage.SystemDBObject;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpTraceMetadata;
 
+/**
+ * Paraver trace metadata
+ * 
+ * @author "Damien Dosimont <damien.dosimont@imag.fr>"
+ */
 public class ParaverTraceMetadata extends PJDumpTraceMetadata {
 	
 	@Override

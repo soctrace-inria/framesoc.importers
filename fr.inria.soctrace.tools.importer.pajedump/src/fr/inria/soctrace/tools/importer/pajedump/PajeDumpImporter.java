@@ -29,8 +29,6 @@ import fr.inria.soctrace.lib.storage.DBObject;
 import fr.inria.soctrace.lib.storage.DBObject.DBMode;
 import fr.inria.soctrace.lib.storage.SystemDBObject;
 import fr.inria.soctrace.lib.storage.TraceDBObject;
-import fr.inria.soctrace.lib.utils.Configuration;
-import fr.inria.soctrace.lib.utils.Configuration.SoCTraceProperty;
 import fr.inria.soctrace.lib.utils.DeltaManager;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpConstants;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpParser;
@@ -59,16 +57,12 @@ public class PajeDumpImporter extends FramesocTool {
 		@Override
 		public void run(IProgressMonitor monitor) {
 			DeltaManager delta = new DeltaManager();
-
-			logger.debug("Args: ");
-
-			for (String s : args) {
-				logger.debug(s);
-			}
+			delta.start();
 
 			ArgumentsManager argsm = new ArgumentsManager();
 			argsm.parseArgs(args);
 			argsm.printArgs();
+
 			boolean doublePrecision = true;
 			if (!argsm.getFlags().isEmpty() && argsm.getFlags().contains("l")) {
 				doublePrecision = false;
@@ -78,15 +72,15 @@ public class PajeDumpImporter extends FramesocTool {
 			int numberOfTraces = argsm.getTokens().size();
 			int currentTrace = 1;
 			Set<String> usedNames = new HashSet<>();
+			DeltaManager traceDelta = new DeltaManager();
 			for (String traceFile : argsm.getTokens()) {
+
+				logger.debug("Importing " + traceFile);
 
 				if (monitor.isCanceled())
 					break;
 
-				delta.start();
-
-				String sysDbName = Configuration.getInstance().get(
-						SoCTraceProperty.soctrace_db_name);
+				traceDelta.start();
 
 				String traceDbName = getNewTraceDBName(usedNames, traceFile);
 
@@ -94,9 +88,8 @@ public class PajeDumpImporter extends FramesocTool {
 				TraceDBObject traceDB = null;
 
 				try {
-
 					// open system DB
-					sysDB = new SystemDBObject(sysDbName, DBMode.DB_OPEN);
+					sysDB = SystemDBObject.openNewIstance();
 					// create new trace DB
 					traceDB = new TraceDBObject(traceDbName, DBMode.DB_CREATE);
 
@@ -125,15 +118,15 @@ public class PajeDumpImporter extends FramesocTool {
 					// close the trace DB and the system DB (commit)
 					DBObject.finalClose(traceDB);
 					DBObject.finalClose(sysDB);
-					delta.end("Import trace");
+					traceDelta.end("Import trace");
 					currentTrace++;
 				}
 			}
-			delta.end("All trace imported");
+			delta.end("All traces imported");
 		}
 
 	}
-	
+
 	private String getNewTraceDBName(Set<String> usedNames, String traceFile) {
 		String basename = FilenameUtils.getBaseName(traceFile);
 		String extension = FilenameUtils.getExtension(traceFile);
@@ -161,7 +154,7 @@ public class PajeDumpImporter extends FramesocTool {
 
 	@Override
 	public boolean canLaunch(String[] args) {
-		
+
 		ArgumentsManager argsm = new ArgumentsManager();
 		try {
 			// do this in a try block, since the method is called also for

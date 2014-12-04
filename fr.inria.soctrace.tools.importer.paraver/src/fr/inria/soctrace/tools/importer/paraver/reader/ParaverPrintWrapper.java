@@ -8,39 +8,34 @@
  * Contributors:
  * 		Damien Dosimont, Generoso Pagano
  ******************************************************************************/
-
 package fr.inria.soctrace.tools.importer.paraver.reader;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
-import org.osgi.framework.Bundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.inria.soctrace.framesoc.core.tools.management.ExternalProgramWrapper;
-import fr.inria.soctrace.tools.importer.paraver.Activator;
 
-
+/**
+ * Wrapper for the perl script converting paraver traces into pjdump.
+ * 
+ * @author "Damien Dosimont <damien.dosimont@imag.fr>"
+ * @author "Generoso Pagano <generoso.pagano@inria.fr>"
+ */
 public class ParaverPrintWrapper extends ExternalProgramWrapper {
 
 	private final static Logger logger = LoggerFactory.getLogger(ParaverPrintWrapper.class);
 
-	
-	private static final String CMD = "perl";
 	/**
-	 * Default perl script executable location
+	 * Perl interpreter
 	 */
-	private static final String SCRIPT_PATH = "perl" + File.separator + "prv2pjdump.pl";
+	private static final String INTERPRETER = "perl";
 
 	/**
 	 * Constructor
@@ -49,37 +44,16 @@ public class ParaverPrintWrapper extends ExternalProgramWrapper {
 	 *            program arguments
 	 */
 	public ParaverPrintWrapper(List<String> arguments) {
-		super(CMD, generateArgs(arguments));
+		super(INTERPRETER, generateArgs(arguments));
 	}
 
 	private static List<String> generateArgs(List<String> arguments) {
-		ArrayList<String> arguments2 =new ArrayList<String>();
-		arguments2.add(readPath());
-		arguments2.addAll(arguments);
-		return arguments2;
+		ArrayList<String> trueArguments = new ArrayList<String>();
+		trueArguments.add(new ParaverPrintConfigManager().readPath());
+		trueArguments.addAll(arguments);
+		return trueArguments;
 	}
 
-	/**
-	 * Read the executable path from the configuration file
-	 * 
-	 * @return the executable path
-	 */
-	private static String readPath() {
-			// executable path
-			Bundle bundle = Platform.getBundle(Activator.PLUGIN_ID);
-			Path path = new Path(SCRIPT_PATH);
-			URL fileURL = FileLocator.find(bundle, path, null);
-			String executablePath = null;
-			try {
-				executablePath = FileLocator.resolve(fileURL).getPath().toString();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return executablePath;
-
-	}
-	
 	/**
 	 * Execute the external program.
 	 * 
@@ -91,19 +65,19 @@ public class ParaverPrintWrapper extends ExternalProgramWrapper {
 	 */
 	public IStatus executeSync(final IProgressMonitor monitor) {
 		logger.debug("Executing: {}", fCommand);
-			ProcessBuilder pb = new ProcessBuilder(fCommand);
-			int exitValue = 1;
-			try {
+		ProcessBuilder pb = new ProcessBuilder(fCommand);
+		int exitValue = 1;
+		try {
 			final Process p = pb.start();
-			
+
 			boolean exited = false;
 			while (!exited) {
 				try {
-					if (monitor.isCanceled()){
+					if (monitor.isCanceled()) {
 						p.destroy();
 						return Status.CANCEL_STATUS;
 					}
-					exitValue=p.exitValue();
+					exitValue = p.exitValue();
 					exited = true;
 				} catch (IllegalThreadStateException e) {
 					try {
@@ -113,15 +87,15 @@ public class ParaverPrintWrapper extends ExternalProgramWrapper {
 					}
 				}
 			}
-			if (exitValue==0){
+			if (exitValue == 0) {
 				return Status.OK_STATUS;
-			}else{
+			} else {
 				return Status.CANCEL_STATUS;
 			}
-			} catch (IOException e) {
-				System.err.println(e.getMessage());
-				return null;
-			}
+		} catch (IOException e) {
+			System.err.println(e.getMessage());
+			return null;
+		}
 	}
 
 }

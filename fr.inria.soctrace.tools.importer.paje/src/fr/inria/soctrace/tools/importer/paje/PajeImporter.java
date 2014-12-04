@@ -13,12 +13,14 @@ package fr.inria.soctrace.tools.importer.paje;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,8 +43,6 @@ import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpParser;
 
 /**
  * Paje importer tool
- * 
- * TODO add support to multi file
  * 
  * @author "Damien Dosimont <damien.dosimont@imag.fr>"
  * @author "Generoso Pagano <generoso.pagano@inria.fr>"
@@ -86,105 +86,115 @@ public class PajeImporter extends FramesocTool {
 			DeltaManager delta = new DeltaManager();
 			delta.start();
 
-			logger.debug("Args: ");
-			for (String s : args) {
-				logger.debug(s);
-			}
-
 			ArgumentsManager argsm = new ArgumentsManager();
 			argsm.parseArgs(args);
 			argsm.printArgs();
 
-			Assert.isTrue(argsm.getTokens().size() >= 1);
-			String traceFile = argsm.getTokens().get(0);
+			// prepare arguments for pj_dump tool
 			ArrayList<String> arguments = new ArrayList<String>();
 			for (String flag : argsm.getFlags()) {
 				arguments.add("-" + flag);
 			}
-
 			boolean doublePrecision = true;
 			if (arguments.contains("-l")) {
 				System.out.println("Long option selected");
 				doublePrecision = false;
-				// remove -l because is not managed by pj_dump: 
+				// remove -l because is not managed by pj_dump:
 				// we manage it internally in the parser
 				arguments.remove("-l");
 			}
 
-			if (monitor.isCanceled())
-				return;
+			// import traces
+			int numberOfTraces = argsm.getTokens().size();
+			int currentTrace = 1;
+			Set<String> usedNames = new HashSet<>();
+			DeltaManager traceDelta = new DeltaManager();
+			for (String traceFile : argsm.getTokens()) {
 
-			String traceDbName = getNewTraceDBName(traceFile);
+				logger.debug("Importing trace: {}", traceFile);
 
-			SystemDBObject sysDB = null;
-			TraceDBObject traceDB = null;
+				if (monitor.isCanceled())
+					break;
 
-			try {
-				// open system DB
-				sysDB = SystemDBObject.openNewIstance();
-				// create new trace DB
-				traceDB = new TraceDBObject(traceDbName, DBMode.DB_CREATE);
+				traceDelta.start();
 
-				// parsing
-				String output = ResourcesPlugin.getWorkspace().getRoot().getLocation().toString()
-						+ File.separator + "tmp";
-				arguments.add(traceFile);
-				PajeDumpWrapper printer = new PajeDumpWrapper(arguments);
-				String trueOutput = output + PJDumpConstants.TRACE_EXT;
-				File outputFile = new File(trueOutput);
-				IStatus status = printer.executeSync(monitor, outputFile);
-				if (status.equals(IStatus.CANCEL) || monitor.isCanceled()) {
-					throw new SoCTraceException();
-				}
+				String traceDbName = getNewTraceDBName(usedNames, traceFile);
 
-				// while(!outputFile.exists())
-				// {
-				// outputFile = new File(output);
-				// if (monitor.isCanceled()){
-				// throw new SoCTraceException();
-				// }
-				// }
-				PajeParser parser = new PajeParser(sysDB, traceDB, trueOutput,
-						FilenameUtils.getBaseName(traceFile), doublePrecision);
-				parser.parseTrace(monitor, 1, 1);
-				outputFile.delete();
+				SystemDBObject sysDB = null;
+				TraceDBObject traceDB = null;
 
-			} catch (SoCTraceException ex) {
-				System.err.println(ex.getMessage());
-				ex.printStackTrace();
-				System.err.println("Import failure. Trying to rollback modifications in DB.");
-				if (sysDB != null) {
-					try {
-						sysDB.rollback();
-					} catch (SoCTraceException e) {
-						e.printStackTrace();
+				try {
+					// open system DB
+					sysDB = SystemDBObject.openNewIstance();
+					// create new trace DB
+					traceDB = new TraceDBObject(traceDbName, DBMode.DB_CREATE);
+
+					// dumping
+					monitor.beginTask("Dumping trace " + traceFile, IProgressMonitor.UNKNOWN);
+					arguments.add(traceFile);
+					String output = ResourcesPlugin.getWorkspace().getRoot().getLocation()
+							.toString()
+							+ File.separator + "tmp";
+					String trueOutput = output + PJDumpConstants.TRACE_EXT;
+					File outputFile = new File(trueOutput);
+					PajeDumpWrapper printer = new PajeDumpWrapper(arguments);
+					IStatus status = printer.executeSync(monitor, outputFile);
+					System.out.println(status);
+					if (status.equals(Status.CANCEL_STATUS) || monitor.isCanceled()) {
+						throw new SoCTraceException();
 					}
+					// parsing dumped file
+					PajeParser parser = new PajeParser(sysDB, traceDB, trueOutput,
+							FilenameUtils.getBaseName(traceFile), doublePrecision);
+					parser.parseTrace(monitor, currentTrace, numberOfTraces);
+					// remove tmp file
+					outputFile.delete();
+
+				} catch (SoCTraceException ex) {
+					System.err.println(ex.getMessage());
+					ex.printStackTrace();
+					System.err.println("Import failure. Trying to rollback modifications in DB.");
+					if (sysDB != null)
+						try {
+							sysDB.rollback();
+						} catch (SoCTraceException e) {
+							e.printStackTrace();
+						}
+					if (traceDB != null)
+						try {
+							traceDB.dropDatabase();
+						} catch (SoCTraceException e) {
+							e.printStackTrace();
+						}
+				} finally {
+					// close the trace DB and the system DB (commit)
+					DBObject.finalClose(traceDB);
+					DBObject.finalClose(sysDB);
+					traceDelta.end("Import trace");
+					currentTrace++;
 				}
-				if (traceDB != null) {
-					try {
-						traceDB.dropDatabase();
-					} catch (SoCTraceException e) {
-						e.printStackTrace();
-					}
-				}
-			} finally {
-				// close the trace DB and the system DB (commit)
-				DBObject.finalClose(traceDB);
-				DBObject.finalClose(sysDB);
-				delta.end("Import trace");
 			}
+			delta.end("All traces imported");
 
 		}
 
 	}
 
-	private String getNewTraceDBName(String traceFile) {
+	private String getNewTraceDBName(Set<String> usedNames, String traceFile) {
 		String basename = FilenameUtils.getBaseName(traceFile);
 		String extension = FilenameUtils.getExtension(traceFile);
 		if (extension.equals(PajeConstants.TRACE_EXT)) {
 			basename = basename.replace(PajeConstants.TRACE_EXT, "");
 		}
-		return FramesocManager.getInstance().getTraceDBName(basename);
+		final String traceDbName = FramesocManager.getInstance().getTraceDBName(basename);
+		String realName = traceDbName;
+		int n = 0;
+		while (usedNames.contains(realName)) {
+			System.out.println("tested " + realName);
+			realName = traceDbName + "_" + n++;
+		}
+		usedNames.add(realName);
+		return realName;
 	}
 
 	@Override

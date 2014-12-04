@@ -40,5 +40,8 @@ public class CtfParserConstants {
     static final String CPU_STATUS_RUN_SYSCALL = "CPU_STATUS_RUN_SYSCALL";
     static final String CPU_STATUS_IRQ = "CPU_STATUS_IRQ";
     static final String CPU_STATUS_SOFTIRQ = "CPU_STATUS_SOFTIRQ";
+    
+    /** Prefix for context information stored as CtfTmfEventfield */
+    static final String CONTEXT_FIELD_PREFIX = "context.";
    
 }
