@@ -32,8 +32,9 @@ public class PJDumpColors {
 		ET_COLORS.put("MPI_Receive", new FramesocColor(0, 255, 0));
 
 		// Event Producers
-		EP_COLORS.put("Rank 1", new FramesocColor(255, 0, 0));
-		EP_COLORS.put("Rank 2", new FramesocColor(0, 255, 0));
+		EP_COLORS.put("rank1 (PROCESS:2)", new FramesocColor(255, 0, 0));
+		EP_COLORS.put("rank2 (PROCESS:3)", new FramesocColor(0, 255, 0));
+		EP_COLORS.put("rank3 (PROCESS:4)", new FramesocColor(0, 0, 255));
 
 	}
 }
