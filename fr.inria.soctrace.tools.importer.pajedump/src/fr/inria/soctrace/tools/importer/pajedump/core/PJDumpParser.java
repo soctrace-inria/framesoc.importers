@@ -28,6 +28,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.inria.soctrace.framesoc.ui.colors.FramesocColorManager;
 import fr.inria.soctrace.lib.model.Event;
 import fr.inria.soctrace.lib.model.EventParam;
 import fr.inria.soctrace.lib.model.EventParamType;
@@ -113,6 +114,8 @@ public class PJDumpParser {
 			saveProducers();
 			saveTypes();
 			saveTraceMetadata(part);
+			FramesocColorManager.getInstance().addEventTypeColors(PJDumpColors.ET_COLORS);
+			FramesocColorManager.getInstance().addEventProducerColors(PJDumpColors.EP_COLORS);
 		} finally {
 			monitor.done();
 		}
