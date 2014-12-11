@@ -186,20 +186,24 @@ public class ParaverImporter extends FramesocTool {
 	}
 
 	@Override
-	public boolean canLaunch(String[] args) {
-		if (args.length != 1)
-			return false;
+	public ParameterCheckStatus canLaunch(String[] args) {
+
+		if (args.length != 1) {
+			return new ParameterCheckStatus(false, "Missing " + ParaverConstants.TRACE_EXT
+					+ " file.");
+		}
 
 		for (String file : args) {
 			File f = new File(file);
 			if (!f.isFile()) {
 				logger.debug("Not a file: {}", f.getName());
-				return false;
+				return new ParameterCheckStatus(false, f.getName() + " is not a file.");
 			}
 			String basename = FilenameUtils.getBaseName(f.getAbsolutePath());
 			if (!f.getName().equals(basename + ParaverConstants.TRACE_EXT)) {
 				logger.debug("Wrong extension: {}", f.getName());
-				return false;
+				return new ParameterCheckStatus(false, "The file does not end with "
+						+ ParaverConstants.TRACE_EXT + ".");
 			}
 
 			File dir = f.getParentFile();
@@ -208,14 +212,14 @@ public class ParaverImporter extends FramesocTool {
 			for (File tf : files) {
 				fileSet.add(tf.getName());
 			}
-
 			if (!fileSet.contains(basename + ParaverConstants.PCF_EXT)) {
 				logger.debug("{} not found", basename + ParaverConstants.PCF_EXT);
-				return false;
+				return new ParameterCheckStatus(false, basename + ParaverConstants.PCF_EXT
+						+ " not found.");
 			}
 
 			// check for .row too, if necessary
 		}
-		return true;
+		return new ParameterCheckStatus(true, "");
 	}
 }

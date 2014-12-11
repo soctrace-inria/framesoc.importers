@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 
 import fr.inria.linuxtools.tmf.ctf.core.CtfTmfTrace;
 import fr.inria.soctrace.framesoc.core.FramesocManager;
@@ -20,8 +21,8 @@ import fr.inria.soctrace.tools.importer.ctftrace.core.CtfParserLauncher;
 public class CtfTraceImporterTool extends FramesocTool {
 
 	/**
-	 * Plugin Tool Job body: we use a Job since we have to perform a long
-	 * operation and we don't want to freeze the UI.
+	 * Plugin Tool Job body: we use a Job since we have to perform a long operation and we don't
+	 * want to freeze the UI.
 	 */
 	private class CtfTraceImporterPluginJobBody implements IPluginToolJobBody {
 
@@ -44,10 +45,8 @@ public class CtfTraceImporterTool extends FramesocTool {
 				return;
 			}
 
-			String sysDbName = Configuration.getInstance().get(
-					SoCTraceProperty.soctrace_db_name);
-			String traceDbName = FramesocManager.getInstance().getTraceDBName(
-					"CTFTRACE");
+			String sysDbName = Configuration.getInstance().get(SoCTraceProperty.soctrace_db_name);
+			String traceDbName = FramesocManager.getInstance().getTraceDBName("CTFTRACE");
 
 			// Arguments are given as files, but we only want directories
 			List<String> l = getUniqueDirectories(args);
@@ -88,8 +87,7 @@ public class CtfTraceImporterTool extends FramesocTool {
 	private ArrayList<String> getUniqueDirectories(String[] theArgs) {
 		ArrayList<String> directories = new ArrayList<String>();
 		for (int i = 0; i < theArgs.length; ++i) {
-			String directory = theArgs[i].substring(0,
-					theArgs[i].lastIndexOf("/") + 1);
+			String directory = theArgs[i].substring(0, theArgs[i].lastIndexOf("/") + 1);
 
 			// Make sure it is unique
 			if (!directories.contains(directory)) {
@@ -101,32 +99,21 @@ public class CtfTraceImporterTool extends FramesocTool {
 	}
 
 	/**
-	 * Check that the argument is a valid trace path and if it is valid, enable
-	 * the importation
+	 * Check that the argument is a valid trace path and if it is valid, enable the importation
 	 */
-	public boolean canLaunch(String[] args) {
+	public ParameterCheckStatus canLaunch(String[] args) {
 		List<String> traceDirectories = getUniqueDirectories(args);
-		return checkForValideTraces(traceDirectories);
-	}
-
-	/**
-	 * 
-	 * @return
-	 */
-	private boolean checkForValideTraces(List<String> uniqueTraceDirectories) {
-		boolean isValid = false;
-		for (String aDirectory : uniqueTraceDirectories) {
+		ParameterCheckStatus status = new ParameterCheckStatus(false, "");
+		for (String aDirectory : traceDirectories) {
 			CtfTmfTrace aTrace = new CtfTmfTrace();
-
-			isValid = aTrace.validate(null, aDirectory).isOK();
-
+			IStatus validateStatus = aTrace.validate(null, aDirectory);
+			status.valid = validateStatus.isOK();
+			status.message = "Illegal arguments passed.";
 			aTrace.close();
-
-			if (!isValid)
-				return false;
+			if (!status.valid)
+				return status;
 		}
-
-		return isValid;
+		return status;
 	}
 
 	@Override

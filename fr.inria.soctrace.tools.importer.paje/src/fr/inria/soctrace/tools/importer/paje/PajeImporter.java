@@ -206,7 +206,7 @@ public class PajeImporter extends FramesocTool {
 	}
 
 	@Override
-	public boolean canLaunch(String[] args) {
+	public ParameterCheckStatus canLaunch(String[] args) {
 
 		ArgumentsManager argsm = new ArgumentsManager();
 		try {
@@ -214,23 +214,23 @@ public class PajeImporter extends FramesocTool {
 			// invalid input (it is called each time input changes)
 			argsm.parseArgs(args);
 		} catch (IllegalArgumentException e) {
-			return false;
+			return new ParameterCheckStatus(false, "Illegal arguments.");
 		}
 
 		// check if at least one trace file is specified
 		if (argsm.getTokens().size() < 1) {
-			return false;
+			return new ParameterCheckStatus(false, "Specify at least one trace file.");
 		}
 
 		// check trace files
 		for (String file : argsm.getTokens()) {
 			File f = new File(file);
 			if (!f.isFile()) {
-				return false;
+				return new ParameterCheckStatus(false, f.getName() + " does not exist.");
 			}
 		}
 
-		return true;
+		return new ParameterCheckStatus(true, "");
 	}
 
 }
