@@ -65,9 +65,9 @@ public class CtfParser {
 	private HashMap<Integer, State> processState = new HashMap<Integer, State>();
 	private HashMap<Integer, State> CPUState = new HashMap<Integer, State>();
 	private HashMap<Integer, State> irqState = new HashMap<Integer, State>();
+	private HashMap<Integer, State> softIrqState = new HashMap<Integer, State>();
 	private HashMap<Integer, EventProducer> irqList = new HashMap<Integer, EventProducer>();
 	private HashMap<Integer, EventProducer> softIrqList = new HashMap<Integer, EventProducer>();
-	private HashMap<Integer, State> softIrqState = new HashMap<Integer, State>();
 	private List<String> stateEvent = new ArrayList<String>();
 
 	/*
@@ -89,8 +89,6 @@ public class CtfParser {
 	private IdManager eventIdTypeManager;
 	private IdManager eventParamTypeIdManager;
 	private IdManager eventProducerIdManager;
-	
-	public HashMap<Integer, Integer> softirq;
 
 	public CtfParser(SystemDBObject aSysDB, TraceDBObject aTraceDBSW,
 			TraceDBObject aTraceDBHW, CtfParserArgs args)
@@ -101,7 +99,6 @@ public class CtfParser {
 		tracePath = args.traceFiles;
 		traceDBNameSW = args.traceDbNameSW;
 		traceDBNameHW = args.traceDbNameHW;
-		softirq = new HashMap<Integer, Integer>();
 		
 		typeCorrespondence.put("IntegerDeclaration", "INTEGER");
 		typeCorrespondence.put("StringDeclaration", "STRING");
@@ -616,6 +613,17 @@ public class CtfParser {
 
 		// Set the created State as the current state for the process
 		processState.put(aProducer, aState);
+	}
+
+	public void endProcess(CtfRecord aRecord, int aProducerID) {
+		State previousState = processState.get(aProducerID);
+		// Check if this is the first state for this producer
+		if (previousState != null) {
+			// Set the timestamp for state ending
+			previousState.setLongPar(aRecord.getTimestamp());
+			saveEvent(previousState, true);
+		}
+		processState.put(aProducerID, null);
 	}
 
 	/**

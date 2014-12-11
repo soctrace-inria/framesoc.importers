@@ -169,12 +169,9 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 				value = CtfParserAnalysisModule.CPU_STATUS_IRQ_VALUE;
 				ss.modifyAttribute(timeStamp, value, quark);
 				
+				//Update CPU State
 				aRecord.type = CtfParserConstants.CPU_STATUS_IRQ;
 				ctfParser.setCPUState(aRecord);
-				
-				//Update CPU State
-				//aRecord.type = "CPU_STATUS_IRQ";
-				//ctfParser.setProcessState(aRecord, aRecord.cpu);
 			}
 				break;
 
@@ -443,6 +440,8 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 			{
 				Integer tid = ((Long) content.getField(CtfParserAnalysisModule.TID)
 						.getValue()).intValue();
+
+				ctfParser.endProcess(aRecord, tid);
 				/*
 				 * Remove the process and all its sub-CtfParserConstants from
 				 * the current state
