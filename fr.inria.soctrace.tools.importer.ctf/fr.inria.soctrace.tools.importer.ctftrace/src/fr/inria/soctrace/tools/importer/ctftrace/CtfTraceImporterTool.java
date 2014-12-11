@@ -45,8 +45,12 @@ public class CtfTraceImporterTool extends FramesocTool {
 				return;
 			}
 
-			String sysDbName = Configuration.getInstance().get(SoCTraceProperty.soctrace_db_name);
-			String traceDbName = FramesocManager.getInstance().getTraceDBName("CTFTRACE");
+			String sysDbName = Configuration.getInstance().get(
+					SoCTraceProperty.soctrace_db_name);
+			String traceDbNameSW = FramesocManager.getInstance().getTraceDBName(
+					"CTFTRACE_SW");
+			String traceDbNameHW = FramesocManager.getInstance().getTraceDBName(
+					"CTFTRACE_HW");
 
 			// Arguments are given as files, but we only want directories
 			List<String> l = getUniqueDirectories(args);
@@ -69,7 +73,8 @@ public class CtfTraceImporterTool extends FramesocTool {
 
 			CtfParserArgs ctfArgs = new CtfParserArgs();
 			ctfArgs.sysDbName = sysDbName;
-			ctfArgs.traceDbName = traceDbName;
+			ctfArgs.traceDbNameSW = traceDbNameSW;
+			ctfArgs.traceDbNameHW = traceDbNameHW;
 			ctfArgs.traceFiles = traceFiles;
 			monitor.beginTask("Parsing trace in " + traceFiles[0], IProgressMonitor.UNKNOWN);
 			new CtfParserLauncher().launch(ctfArgs, monitor);

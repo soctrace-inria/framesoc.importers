@@ -40,5 +40,15 @@ public class CtfParserConstants {
     static final String CPU_STATUS_RUN_SYSCALL = "CPU_STATUS_RUN_SYSCALL";
     static final String CPU_STATUS_IRQ = "CPU_STATUS_IRQ";
     static final String CPU_STATUS_SOFTIRQ = "CPU_STATUS_SOFTIRQ";
+    
+    static final String SOFT_IRQ_STATUS_ACTIVE = "SOFT_IRQ_STATUS_ACTIVE";
+    static final String SOFT_IRQ_STATUS_RAISED = "SOFT_IRQ_STATUS_RAISED";
+    static final String SOFT_IRQ_STATUS_EXIT = "SOFT_IRQ_STATUS_EXIT";
+    
+    static final String IRQ_STATUS_ACTIVE = "IRQ_STATUS_ACTIVE";
+    static final String IRQ_STATUS_EXIT = "IRQ_STATUS_EXIT";
+    
+    /** Prefix for context information stored as CtfTmfEventfield */
+    static final String CONTEXT_FIELD_PREFIX = "context.";
    
 }

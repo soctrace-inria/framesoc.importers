@@ -32,12 +32,14 @@ public class CtfParserLauncher {
 					DBMode.DB_OPEN);
 			// create new trace DB
 			delta.start();
-			TraceDBObject traceDB = new TraceDBObject(args.traceDbName,
+			TraceDBObject traceDBSoft = new TraceDBObject(args.traceDbNameSW,
+					DBMode.DB_CREATE);
+			TraceDBObject traceDBHard = new TraceDBObject(args.traceDbNameHW,
 					DBMode.DB_CREATE);
 			delta.end("Trace DB creation");
 
 			// parsing
-			CtfParser parser = new CtfParser(sysDB, traceDB, args);
+			CtfParser parser = new CtfParser(sysDB, traceDBSoft, traceDBHard, args);
 			delta.start();
 			parser.parseTrace(monitor);
 			delta.end("Parse trace");
@@ -48,7 +50,8 @@ public class CtfParserLauncher {
 			}
 
 			// close the trace DB and the system DB (commit)
-			traceDB.close();
+			traceDBSoft.close();
+			traceDBHard.close();
 			sysDB.close();
 		} catch (SoCTraceException e) {
 			System.err.println(e.getMessage());

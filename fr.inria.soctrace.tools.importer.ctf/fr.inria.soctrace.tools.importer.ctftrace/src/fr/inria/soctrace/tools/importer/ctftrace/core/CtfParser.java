@@ -45,21 +45,29 @@ public class CtfParser {
 
 	private final int MAX_EVENT_PER_PAGE = 25000;
 	private SystemDBObject sysDB;
-	private TraceDBObject traceDB;
+	private TraceDBObject traceDBSoft;
+	private TraceDBObject traceDBHard;
 	private String[] tracePath;
-	private Trace trace;
-	private int numberOfEvents = 0;
+	private int numberOfEventsSW = 0;
+	private int numberOfEventsHW = 0;
 	private int numberOfCPUs = 0;
-	private Map<String, EventType> types = new HashMap<String, EventType>();
-	private Map<Integer, EventProducer> producersMap = new HashMap<Integer, EventProducer>();
+	private Map<String, EventType> typesSW = new HashMap<String, EventType>();
+	private Map<Integer, EventProducer> producersMapSW = new HashMap<Integer, EventProducer>();
+	private Map<String, EventType> typesHW = new HashMap<String, EventType>();
+	private Map<Integer, EventProducer> producersMapHW = new HashMap<Integer, EventProducer>();
 	private long minTimestamp;
 	private long maxTimestamp;
 
-	private String traceDBName;
+	private String traceDBNameSW;
+	private String traceDBNameHW;
 	private TraceType traceType;
 
 	private HashMap<Integer, State> processState = new HashMap<Integer, State>();
 	private HashMap<Integer, State> CPUState = new HashMap<Integer, State>();
+	private HashMap<Integer, State> irqState = new HashMap<Integer, State>();
+	private HashMap<Integer, State> softIrqState = new HashMap<Integer, State>();
+	private HashMap<Integer, EventProducer> irqList = new HashMap<Integer, EventProducer>();
+	private HashMap<Integer, EventProducer> softIrqList = new HashMap<Integer, EventProducer>();
 	private List<String> stateEvent = new ArrayList<String>();
 
 	/*
@@ -68,9 +76,12 @@ public class CtfParser {
 	 */
 	private HashMap<String, String> typeCorrespondence = new HashMap<String, String>();
 
-	private int page;
-	private int eventsPerPage;
-	private List<Event> events;
+	private int pageSW;
+	private int pageHW;
+	private int eventsPerPageSW;
+	private int eventsPerPageHW;
+	private List<Event> eventsHW;
+	private List<Event> eventsSW;
 
 	// ID Managers
 	private IdManager eventIdManager;
@@ -79,37 +90,46 @@ public class CtfParser {
 	private IdManager eventParamTypeIdManager;
 	private IdManager eventProducerIdManager;
 
-	public CtfParser(SystemDBObject aSysDB, TraceDBObject aTraceDB,
-			CtfParserArgs args) throws SoCTraceException {
+	public CtfParser(SystemDBObject aSysDB, TraceDBObject aTraceDBSW,
+			TraceDBObject aTraceDBHW, CtfParserArgs args)
+			throws SoCTraceException {
 		sysDB = aSysDB;
-		traceDB = aTraceDB;
+		traceDBSoft = aTraceDBSW;
+		traceDBHard = aTraceDBHW;
 		tracePath = args.traceFiles;
-		traceDBName = args.traceDbName;
-
+		traceDBNameSW = args.traceDbNameSW;
+		traceDBNameHW = args.traceDbNameHW;
+		
 		typeCorrespondence.put("IntegerDeclaration", "INTEGER");
 		typeCorrespondence.put("StringDeclaration", "STRING");
 		typeCorrespondence.put("FloatDeclaration", "FLOAT");
 
-		stateEvent.add("PROCESS_STATUS_UNKNOWN");
-		stateEvent.add("PROCESS_STATUS_WAIT_BLOCKED");
-		stateEvent.add("PROCESS_STATUS_RUN_USERMODE");
-		stateEvent.add("PROCESS_STATUS_RUN_SYSCALL");
-		stateEvent.add("PROCESS_STATUS_INTERRUPTED");
-		stateEvent.add("PROCESS_STATUS_WAIT_FOR_CPU");
-		stateEvent.add("CPU_STATUS_IDLE");
-		stateEvent.add("CPU_STATUS_RUN_USERMODE");
-		stateEvent.add("CPU_STATUS_RUN_SYSCALL");
-		stateEvent.add("CPU_STATUS_IRQ");
-		stateEvent.add("CPU_STATUS_SOFTIRQ");
+		stateEvent.add(CtfParserConstants.PROCESS_STATUS_UNKNOWN);
+		stateEvent.add(CtfParserConstants.PROCESS_STATUS_WAIT_BLOCKED);
+		stateEvent.add(CtfParserConstants.PROCESS_STATUS_RUN_USERMODE);
+		stateEvent.add(CtfParserConstants.PROCESS_STATUS_RUN_SYSCALL);
+		stateEvent.add(CtfParserConstants.PROCESS_STATUS_INTERRUPTED);
+		stateEvent.add(CtfParserConstants.PROCESS_STATUS_WAIT_FOR_CPU);
+		stateEvent.add(CtfParserConstants.CPU_STATUS_IDLE);
+		stateEvent.add(CtfParserConstants.CPU_STATUS_RUN_USERMODE);
+		stateEvent.add(CtfParserConstants.CPU_STATUS_RUN_SYSCALL);
+		stateEvent.add(CtfParserConstants.CPU_STATUS_IRQ);
+		stateEvent.add(CtfParserConstants.CPU_STATUS_SOFTIRQ);
+		stateEvent.add(CtfParserConstants.SOFT_IRQ_STATUS_RAISED);
+		stateEvent.add(CtfParserConstants.SOFT_IRQ_STATUS_ACTIVE);
+		stateEvent.add(CtfParserConstants.SOFT_IRQ_STATUS_EXIT);
+		stateEvent.add(CtfParserConstants.IRQ_STATUS_ACTIVE);
+		stateEvent.add(CtfParserConstants.IRQ_STATUS_EXIT);
 	}
 
 	public void parseTrace(IProgressMonitor monitor) {
 		try {
-			page = 0;
-			numberOfEvents = 0;
+			pageSW = pageHW = 0;
+			numberOfEventsSW = numberOfEventsHW = 0;
 			numberOfCPUs = 0;
-			eventsPerPage = 0;
-			events = new LinkedList<Event>();
+			eventsPerPageSW = eventsPerPageHW = 0;
+			eventsHW = new LinkedList<Event>();
+			eventsSW = new LinkedList<Event>();
 			maxTimestamp = 0L;
 
 			// Init ID managers
@@ -128,40 +148,44 @@ public class CtfParser {
 			aT.buildSystem(monitor);
 			if (monitor.isCanceled()) {
 				aT.close();
-				traceDB.dropDatabase();
+				traceDBSoft.dropDatabase();
+				traceDBHard.dropDatabase();
 				sysDB.rollback();
 				return;
 			}
+			checkUnfinishedStates();
 			
 			monitor.subTask("Building links");
 			aT.buildLink(monitor);
 			
 			if (monitor.isCanceled()) {
 				aT.close();
-				traceDB.dropDatabase();
+				traceDBSoft.dropDatabase();
+				traceDBHard.dropDatabase();
 				sysDB.rollback();
 				return;
 			}
 
 			// Save the remaining events even though the page is not full
-			saveEvents(events);
-
+			saveEvents(eventsSW, traceDBSoft);
+			saveEvents(eventsHW, traceDBHard);
+			
 			// Debug
-			for (EventProducer aEP : producersMap.values()) {
+			for (EventProducer aEP : producersMapSW.values()) {
 				if (aEP.getName().equals("_StubEventProducer"))
 					logger.debug("Unitialized pid " + aEP.getLocalId());
 			}
 
-			logger.info("Number of events " + numberOfEvents
-					+ ", number of producers " + producersMap.keySet().size()
-					+ ", number of EventTypes " + types.keySet().size());
-			logger.info("Saved " + numberOfEvents + " events in " + page
+			logger.info("Number of events " + numberOfEventsSW + numberOfEventsHW
+					+ ", number of producers " + producersMapSW.keySet().size() + producersMapHW.keySet().size()
+					+ ", number of EventTypes " + typesSW.keySet().size() + typesHW.keySet().size());
+			logger.info("Saved " + numberOfEventsSW + numberOfEventsHW + " events in " + pageSW + pageHW
 					+ " pages.");
 
 			saveProducers();
 			saveTypes();
 
-			buildTrace();
+			buildTraces();
 
 			aT.close();
 
@@ -181,14 +205,14 @@ public class CtfParser {
 	 *            events list
 	 * @throws SoCTraceException
 	 */
-	private void saveEvents(List<Event> events) throws SoCTraceException {
+	private void saveEvents(List<Event> events, TraceDBObject aTraceDB) throws SoCTraceException {
 		for (Event e : events) {
-			traceDB.save(e);
+			aTraceDB.save(e);
 			for (EventParam ep : e.getEventParams()) {
-				traceDB.save(ep);
+				aTraceDB.save(ep);
 			}
 		}
-		traceDB.commit(); // committing each page is faster
+		aTraceDB.commit(); // committing each page is faster
 	}
 
 	/**
@@ -197,11 +221,17 @@ public class CtfParser {
 	 * @throws SoCTraceException
 	 */
 	private void saveProducers() throws SoCTraceException {
-		for (EventProducer e : producersMap.values()) {
-			traceDB.save(e);
+		// Soft
+		for (EventProducer e : producersMapSW.values()) {
+			traceDBSoft.save(e);
 		}
-
-		traceDB.commit();
+		traceDBSoft.commit();
+		
+		// Hard
+		for (EventProducer e : producersMapHW.values()) {
+			traceDBHard.save(e);
+		}
+		traceDBHard.commit();
 	}
 
 	/**
@@ -210,10 +240,19 @@ public class CtfParser {
 	 * @throws SoCTraceException
 	 */
 	private void saveTypes() throws SoCTraceException {
-		for (EventType et : types.values()) {
-			traceDB.save(et);
+		// Soft
+		for (EventType et : typesSW.values()) {
+			traceDBSoft.save(et);
 			for (EventParamType ept : et.getEventParamTypes()) {
-				traceDB.save(ept);
+				traceDBSoft.save(ept);
+			}
+		}
+		
+		// Hard
+		for (EventType et : typesHW.values()) {
+			traceDBHard.save(et);
+			for (EventParamType ept : et.getEventParamTypes()) {
+				traceDBHard.save(ept);
 			}
 		}
 	}
@@ -232,27 +271,39 @@ public class CtfParser {
 	 * @return the created event
 	 * @throws SoCTraceException
 	 */
-	private Event setEvent(int id, int page, CtfRecord record)
+	private Event setEvent(int id, boolean soft, CtfRecord record)
 			throws SoCTraceException {
 
 		Event e = new Event(id);
 		e.setCpu(record.cpu);
-		e.setPage(page);
+		if (soft)
+			e.setPage(pageSW);
+		else
+			e.setPage(pageHW);
 		e.setTimestamp(record.getTimestamp());
 		
 		if(e.getTimestamp() > maxTimestamp)
 			maxTimestamp = e.getTimestamp();
 
-		EventProducer aProducer = producersMap.get(record.pid);
+		EventProducer aProducer;
+		
+		if (soft)
+			aProducer = producersMapSW.get(record.pid);
+		else
+			aProducer = producersMapHW.get(record.pid);
+			
 		// Check if we have already encountered the producer
 		if (aProducer == null) {
 			// System.out.println("Error finding producer with pid: " +
 			// record.pid );
 
 			// If not then create a stub
-			createProducerStub(record.pid);
+			createProducerStub(record.pid, soft);
 		}
-		e.setEventProducer(producersMap.get(record.pid));
+		if (soft)
+			e.setEventProducer(producersMapSW.get(record.pid));
+		else
+			e.setEventProducer(producersMapHW.get(record.pid));
 
 		return e;
 	}
@@ -264,8 +315,8 @@ public class CtfParser {
 	 *            CtfRecord holding the type info
 	 * @return the requested EventType
 	 */
-	private EventType getType(CtfRecord aRecord) {
-		if (!types.containsKey(aRecord.type)) {
+	private EventType getType(CtfRecord aRecord, boolean soft) {
+		if (soft && !typesSW.containsKey(aRecord.type) || !soft && !typesHW.containsKey(aRecord.type)) {
 			// We should never get there
 			logger.debug("Adding type: " + aRecord.type);
 
@@ -288,10 +339,17 @@ public class CtfParser {
 				eventParamType.setType("STRING");
 			}
 
-			types.put(aRecord.type, et);
-		}
+			if (soft)
+				typesSW.put(aRecord.type, et);
+			else
+				typesHW.put(aRecord.type, et);
 
-		return types.get(aRecord.type);
+		}
+		if (soft)
+			return typesSW.get(aRecord.type);
+		else
+			return typesHW.get(aRecord.type);
+			
 	}
 
 	/**
@@ -361,17 +419,17 @@ public class CtfParser {
 	 * @param aRecord
 	 *            A CtfRecord holding the event info
 	 */
-	public void newEvent(CtfRecord aRecord) {
+	public void newEvent(CtfRecord aRecord, boolean soft) {
 		Event e;
 		try {
-			e = setEvent(eventIdManager.getNextId(), page, aRecord);
+			e = setEvent(eventIdManager.getNextId(), soft, aRecord);
 
-			EventType et = getType(aRecord);
+			EventType et = getType(aRecord, soft);
 			et.setName(aRecord.type);
 			e.setType(et);
 
 			setParameters(e, aRecord);
-			saveEvent(e);
+			saveEvent(e, soft);
 
 		} catch (SoCTraceException e1) {
 			// TODO Auto-generated catch block
@@ -386,12 +444,22 @@ public class CtfParser {
 	 *            pid of the producer
 	 * @return true if the producer already exist and is not a stub
 	 */
-	public boolean producerExist(int aPid) {
-		if (producersMap.containsKey(aPid)) {
-			if (producersMap.get(aPid).getName() != "_StubEventProducer") {
-				return true;
+	public boolean producerExist(int aPid, boolean soft) {
+		if (soft) {
+			if (producersMapSW.containsKey(aPid)) {
+				if (producersMapSW.get(aPid).getName() != "_StubEventProducer") {
+					return true;
+				}
+			}
+
+		} else {
+			if (producersMapHW.containsKey(aPid)) {
+				if (producersMapHW.get(aPid).getName() != "_StubEventProducer") {
+					return true;
+				}
 			}
 		}
+
 		return false;
 	}
 
@@ -406,31 +474,28 @@ public class CtfParser {
 	 *            producer name
 	 */
 	public void addProducer(int pid, int ppid, String name) {
-		//if (producersMap.get(ppid) == null || ppid < 0)
-		//	return;
-		if(producersMap.get(ppid) == null || ppid < 0)
+		if(producersMapSW.get(ppid) == null || ppid < 0)
 			ppid = EventProducer.NO_PARENT_ID;
 
 		EventProducer p;
-		if (!producersMap.containsKey(pid)) {
+		if (!producersMapSW.containsKey(pid)) {
 			p = new EventProducer(eventProducerIdManager.getNextId());
 			String stringPID = String.valueOf(pid);
 			p.setLocalId(stringPID);
 		} else {
-			p = producersMap.get(pid);
+			p = producersMapSW.get(pid);
 		}
 		p.setName(name);
 		p.setType(name);
 		p.setParentId(ppid);
-		if (ppid >= 0 && producersMap.get(ppid) != null) {
-			p.setParentId(producersMap.get(ppid).getId());
+		if (ppid >= 0 && producersMapSW.get(ppid) != null) {
+			p.setParentId(producersMapSW.get(ppid).getId());
 		} else {
 			logger.error("Could not find ppid for " + name + " (ppid: " + ppid
 					+ ", pid: " + pid + ")");
 		}
 
-		// System.out.println("new producer: " + p.toString());
-		producersMap.put(pid, p);
+		producersMapSW.put(pid, p);
 	}
 
 	/**
@@ -440,14 +505,18 @@ public class CtfParser {
 	 * @param aPid
 	 *            Pid of the event producer
 	 */
-	public void createProducerStub(int aPid) {
+	public void createProducerStub(int aPid, boolean soft) {
 		EventProducer p = new EventProducer(eventProducerIdManager.getNextId());
 		String stringPID = String.valueOf(aPid);
 		p.setLocalId(stringPID);
 
 		// Set a fake name to flag stub producer
 		p.setName("_StubEventProducer");
-		producersMap.put(aPid, p);
+		
+		if (soft)
+			producersMapSW.put(aPid, p);
+		else
+			producersMapHW.put(aPid, p);
 	}
 
 	/**
@@ -456,9 +525,10 @@ public class CtfParser {
 	 * @param anEventDeclaration
 	 *            The class representing a type
 	 */
-	public void setType(IEventDeclaration anEventDeclaration) {
-		if (!types.containsKey(anEventDeclaration.getName())) {
-			EventType et = new EventType(eventIdTypeManager.getNextId(),
+	public void setType(IEventDeclaration anEventDeclaration, boolean soft) {
+		if (soft && !typesSW.containsKey(anEventDeclaration.getName()) || !soft
+				&& !typesHW.containsKey(anEventDeclaration.getName())) {
+		EventType et = new EventType(eventIdTypeManager.getNextId(),
 					EventCategory.PUNCTUAL_EVENT);
 
 			et.setName(anEventDeclaration.getName());
@@ -474,7 +544,10 @@ public class CtfParser {
 						.getFields().getFields().get(attributeName).getClass()
 						.getSimpleName()));
 			}
-			types.put(anEventDeclaration.getName(), et);
+			if (soft)
+				typesSW.put(anEventDeclaration.getName(), et);
+			else
+				typesHW.put(anEventDeclaration.getName(), et);
 
 		}
 	}
@@ -513,26 +586,26 @@ public class CtfParser {
 		if (previousState != null) {
 			// Set the timestamp for state ending
 			previousState.setLongPar(aRecord.getTimestamp());
-			saveEvent(previousState);
+			saveEvent(previousState, true);
 		}
 
 		State aState = new State(eventIdManager.getNextId());
 		aState.setCpu(aRecord.cpu);
-		aState.setPage(page);
+		aState.setPage(pageSW);
 		aState.setTimestamp(aRecord.getTimestamp());
 		
 		if(aState.getTimestamp() > maxTimestamp)
 			maxTimestamp = aState.getTimestamp();
 
 		// Check if we have already encountered the producer
-		if (!producersMap.containsKey(aProducer)) {
+		if (!producersMapSW.containsKey(aProducer)) {
 			// If not then create a stub
-			createProducerStub(aProducer);
+			createProducerStub(aProducer, true);
 		}
-		aState.setEventProducer(producersMap.get(aProducer));
+		aState.setEventProducer(producersMapSW.get(aProducer));
 
 		try {
-			aState.setType(getType(aRecord));
+			aState.setType(getType(aRecord, true));
 		} catch (SoCTraceException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -540,6 +613,17 @@ public class CtfParser {
 
 		// Set the created State as the current state for the process
 		processState.put(aProducer, aState);
+	}
+
+	public void endProcess(CtfRecord aRecord, int aProducerID) {
+		State previousState = processState.get(aProducerID);
+		// Check if this is the first state for this producer
+		if (previousState != null) {
+			// Set the timestamp for state ending
+			previousState.setLongPar(aRecord.getTimestamp());
+			saveEvent(previousState, true);
+		}
+		processState.put(aProducerID, null);
 	}
 
 	/**
@@ -560,47 +644,85 @@ public class CtfParser {
 	 * @param anEvent
 	 *            the Event to save
 	 */
-	private void saveEvent(Event anEvent) {
-		events.add(anEvent);
-		eventsPerPage++;
-		numberOfEvents++;
+	private void saveEvent(Event anEvent, boolean soft) {
+		if (soft) {
+			eventsSW.add(anEvent);
+			eventsPerPageSW++;
+			numberOfEventsSW++;
 
-		if (eventsPerPage > MAX_EVENT_PER_PAGE) {
-			// save events
-			try {
-				saveEvents(events);
-			} catch (SoCTraceException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			if (eventsPerPageSW > MAX_EVENT_PER_PAGE) {
+				// save events
+				try {
+					saveEvents(eventsSW, traceDBSoft);
+				} catch (SoCTraceException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				eventsSW.clear();
+
+				eventsPerPageSW = 0;
+				pageSW++;
 			}
-			events.clear();
+		} else {
+			eventsHW.add(anEvent);
+			eventsPerPageHW++;
+			numberOfEventsHW++;
 
-			eventsPerPage = 0;
-			page++;
+			if (eventsPerPageHW > MAX_EVENT_PER_PAGE) {
+				// save events
+				try {
+					saveEvents(eventsHW, traceDBHard);
+				} catch (SoCTraceException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				eventsHW.clear();
+
+				eventsPerPageHW = 0;
+				pageHW++;
+			}
 		}
 	}
 
 	/**
 	 * Build and save the trace database representation
 	 */
-	private void buildTrace() {
+	private void buildTraces() {
 		try {
-			trace = new Trace(sysDB.getNewId(FramesocTable.TRACE.toString(),
+			Trace traceSoft = new Trace(sysDB.getNewId(FramesocTable.TRACE.toString(),
 					"ID"));
 
-			trace.setDescription("Ctf trace imported on " + getCurrentDate());
-			trace.setDbName(traceDBName);
+			traceSoft.setDescription("Ctf trace (SW) imported on " + getCurrentDate());
+			traceSoft.setDbName(traceDBNameSW);
 			buildTraceType();
-			trace.setType(traceType);
-			trace.setProcessed(false);
-			trace.setNumberOfEvents(numberOfEvents);
-			trace.setNumberOfCpus(numberOfCPUs);
-			trace.setTimeUnit(TimeUnit.NANOSECONDS.getInt());
+			traceSoft.setType(traceType);
+			traceSoft.setProcessed(false);
+			traceSoft.setNumberOfEvents(numberOfEventsSW);
+			traceSoft.setNumberOfCpus(numberOfCPUs);
+			traceSoft.setTimeUnit(TimeUnit.NANOSECONDS.getInt());
 			// All timestamps are modified to fit with a starting date of 0
-			trace.setMinTimestamp(0L);
-			trace.setMaxTimestamp(getMaxTimestamp());
+			traceSoft.setMinTimestamp(0L);
+			traceSoft.setMaxTimestamp(getMaxTimestamp());
 
-			sysDB.save(trace);
+			sysDB.save(traceSoft);
+			sysDB.commit();
+			
+			Trace traceHard = new Trace(sysDB.getNewId(FramesocTable.TRACE.toString(),
+					"ID"));
+
+			traceHard.setDescription("Ctf trace (HW) imported on " + getCurrentDate());
+			traceHard.setDbName(traceDBNameHW);
+			buildTraceType();
+			traceHard.setType(traceType);
+			traceHard.setProcessed(false);
+			traceHard.setNumberOfEvents(numberOfEventsHW);
+			traceHard.setNumberOfCpus(numberOfCPUs);
+			traceHard.setTimeUnit(TimeUnit.NANOSECONDS.getInt());
+			// All timestamps are modified to fit with a starting date of 0
+			traceHard.setMinTimestamp(0L);
+			traceHard.setMaxTimestamp(getMaxTimestamp());
+			
+			sysDB.save(traceHard);
 		} catch (SoCTraceException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -618,7 +740,7 @@ public class CtfParser {
 		p.setLocalId(stringPID);
 		p.setName("init");
 		p.setType("init");
-		producersMap.put(1, p);
+		producersMapSW.put(1, p);
 
 		// Create fake producer swapper with PID 0
 		EventProducer p2 = new EventProducer(eventProducerIdManager.getNextId());
@@ -626,13 +748,21 @@ public class CtfParser {
 		p2.setLocalId(stringPID);
 		p2.setName("swapper");
 		p2.setType("swapper");
-		producersMap.put(0, p2);
+		producersMapSW.put(0, p2);
 
 		// Create fake event type for link
 		EventType et = new EventType(eventIdTypeManager.getNextId(),
 				EventCategory.LINK);
 		et.setName("link");
-		types.put("link", et);
+		typesSW.put("link", et);
+		
+		// Create fake root for the CPU
+		EventProducer machine = new EventProducer(eventProducerIdManager.getNextId());
+		stringPID = String.valueOf(0);
+		machine.setLocalId(stringPID);
+		machine.setName("Machine");
+		machine.setType("Machine");
+		producersMapHW.put(0, machine);
 	}
 
 	/**
@@ -653,36 +783,36 @@ public class CtfParser {
 			long duration, int cpu) {
 		Link aLink = new Link(eventIdManager.getNextId());
 		aLink.setCpu(cpu);
-		aLink.setPage(page);
+		aLink.setPage(pageSW);
 		aLink.setTimestamp(timeStamp);
 
 		// Check if we have already encountered the producer
-		if (!producersMap.containsKey(prevThread)) {
+		if (!producersMapSW.containsKey(prevThread)) {
 			// If not then create a stub
-			createProducerStub(prevThread);
+			createProducerStub(prevThread, true);
 		}
-		aLink.setEventProducer(producersMap.get(prevThread));
+		aLink.setEventProducer(producersMapSW.get(prevThread));
 
 		// Check if we have already encountered the receiver
-		if (!producersMap.containsKey(thread)) {
+		if (!producersMapSW.containsKey(thread)) {
 			// If not then create a stub
-			createProducerStub(thread);
+			createProducerStub(thread, true);
 		}
-		aLink.setEndProducer(producersMap.get(thread));
+		aLink.setEndProducer(producersMapSW.get(thread));
 		aLink.setEndTimestamp(timeStamp + duration);
 
 		try {
-			aLink.setType(types.get("link"));
+			aLink.setType(typesSW.get("link"));
 		} catch (SoCTraceException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-		saveEvent(aLink);
+		saveEvent(aLink, true);
 	}
 
 	/**
-	 * Update the state of a process
+	 * Update the state of a processor
 	 * 
 	 * @param aRecord
 	 *            CtfRecord containing the event info
@@ -697,7 +827,7 @@ public class CtfParser {
 			// Set the timestamp for state ending
 			previousState.setLongPar(aRecord.getTimestamp());
 
-			saveEvent(previousState);
+			saveEvent(previousState, false);
 		} else {
 			// Create an event producer for this CPU
 			createCPUproducer(aRecord.cpu);
@@ -706,12 +836,12 @@ public class CtfParser {
 
 		State aState = new State(eventIdManager.getNextId());
 		aState.setCpu(aRecord.cpu);
-		aState.setPage(page);
+		aState.setPage(pageHW);
 		aState.setTimestamp(aRecord.getTimestamp());
-		aState.setEventProducer(producersMap.get(-2 - aRecord.cpu));
+		aState.setEventProducer(producersMapHW.get(-2 - aRecord.cpu));
 
 		try {
-			aState.setType(getType(aRecord));
+			aState.setType(getType(aRecord, false));
 		} catch (SoCTraceException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -736,12 +866,155 @@ public class CtfParser {
 		// Give negative pid as we are sure those are not used as real PID
 		String stringPID = String.valueOf(-2 - aCpu);
 		p.setLocalId(stringPID);
+		p.setParentId(producersMapHW.get(0).getId());
 
 		String aName = "CPU " + aCpu;
 		p.setName(aName);
 		p.setType(aName);
 
-		producersMap.put(-2 - aCpu, p);
+		producersMapHW.put(-2 - aCpu, p);
+	}
+
+	public void createIRQProducer(int anIrq) {
+		EventProducer p = new EventProducer(eventProducerIdManager.getNextId());
+
+		// Give negative pid as we are sure those are not used as real PID
+		p.setLocalId(String.valueOf(anIrq));
+		p.setParentId(producersMapHW.get(0).getId());
+
+		String aName = "IRQ " + anIrq;
+		p.setName(aName);
+		p.setType(aName);
+
+		producersMapHW.put(p.getId(), p);
+		irqList.put(anIrq, p);
+	}
+	
+	public void createSoftIRQProducer(int anIrq) {
+		EventProducer p = new EventProducer(eventProducerIdManager.getNextId());
+
+		// Give negative pid as we are sure those are not used as real PID
+		p.setLocalId(String.valueOf(anIrq));
+		p.setParentId(producersMapHW.get(0).getId());
+
+		String aName = "SOFT_IRQ " + anIrq;
+		p.setName(aName);
+		p.setType(aName);
+
+		producersMapHW.put(p.getId(), p);
+		softIrqList.put(anIrq, p);
+	}
+	
+	/**
+	 * Update the state of a soft irq
+	 */
+	public void setSoftIrqState(CtfRecord aRecord, int anIrqID) {
+		if (!softIrqState.containsKey(anIrqID))
+			// Create an event producer for this IRQ
+			createSoftIRQProducer(anIrqID);
+		
+		State previousState = softIrqState.get(anIrqID);
+
+		// Check if this is the first state for this producer
+		if (previousState != null) {
+			// Set the timestamp for state ending
+			previousState.setLongPar(aRecord.getTimestamp());
+			saveEvent(previousState, false);
+			
+			// If the event is exit, then don't create a new state
+			if (aRecord.type.equals(CtfParserConstants.SOFT_IRQ_STATUS_EXIT)) {
+				softIrqState.put(anIrqID, null);
+				return;
+			}
+		}
+
+		State aState = new State(eventIdManager.getNextId());
+		aState.setCpu(aRecord.cpu);
+		aState.setPage(pageHW);
+		aState.setTimestamp(aRecord.getTimestamp());
+		aState.setEventProducer(producersMapHW.get(softIrqList.get(anIrqID).getId()));
+
+		try {
+			aState.setType(getType(aRecord, false));
+		} catch (SoCTraceException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		// Set the created State as the current state for the soft irq
+		softIrqState.put(anIrqID, aState);
+	}
+	
+	/**
+	 * Update the state of an irq
+	 */
+	public void setIrqState(CtfRecord aRecord, int anIrqID) {
+		if (!irqState.containsKey(anIrqID))
+			// Create an event producer for this IRQ
+			createIRQProducer(anIrqID);
+		
+		State previousState = irqState.get(anIrqID);
+
+		// Check if this is the first state for this producer
+		if (previousState != null) {
+			// Set the timestamp for state ending
+			previousState.setLongPar(aRecord.getTimestamp());
+			saveEvent(previousState, false);
+
+			// If the event is exit, then don't create a new state
+			if (aRecord.type.equals(CtfParserConstants.IRQ_STATUS_EXIT)) {
+				irqState.put(anIrqID, null);
+				return;
+			}
+		}
+
+		State aState = new State(eventIdManager.getNextId());
+		aState.setCpu(aRecord.cpu);
+		aState.setPage(pageHW);
+		aState.setTimestamp(aRecord.getTimestamp());
+		aState.setEventProducer(producersMapHW.get(irqList.get(anIrqID).getId()));
+
+		try {
+			aState.setType(getType(aRecord, false));
+		} catch (SoCTraceException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		// Set the created State as the current state for the irq
+		irqState.put(anIrqID, aState);
+	}
+	
+	/**
+	 * Check if a state was not close at the end of an importation, and if so
+	 * set the end at the maximal timestamp
+	 */
+	void checkUnfinishedStates() {
+
+		// For processes
+		for (int anEpID : processState.keySet()) {
+			State previousState = processState.get(anEpID);
+
+			// Check if this is the first state for this producer
+			if (previousState != null) {
+				// Set the timestamp for state ending
+				previousState.setLongPar(maxTimestamp);
+				saveEvent(previousState, true);
+			}
+		}
+
+		// For CPU
+		for (int aCPUID : CPUState.keySet()) {
+			State previousState = CPUState.get(aCPUID);
+
+			// If not null
+			if (previousState != null) {
+				// Set the timestamp for state ending
+				previousState.setLongPar(maxTimestamp);
+
+				saveEvent(previousState, false);
+			}
+		}
 	}
 
 	public long getMinTimestamp() {

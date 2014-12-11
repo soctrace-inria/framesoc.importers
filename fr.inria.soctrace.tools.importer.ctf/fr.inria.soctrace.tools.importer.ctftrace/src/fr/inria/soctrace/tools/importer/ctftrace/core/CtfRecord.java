@@ -1,6 +1,7 @@
 package fr.inria.soctrace.tools.importer.ctftrace.core;
 
 import java.util.HashMap;
+
 import fr.inria.linuxtools.tmf.core.event.ITmfEventField;
 import fr.inria.linuxtools.tmf.core.event.ITmfEventType;
 
@@ -51,6 +52,12 @@ public class CtfRecord {
 				fName = fName.substring(1);
 			}
 			attributesValue.put(fName, content.getField(fName).getFormattedValue());
+		}
+		for(String fName: content.getFieldNames())
+		{
+			if (fName.startsWith(CtfParserConstants.CONTEXT_FIELD_PREFIX)) {
+				attributesValue.put(fName, content.getField(fName).getFormattedValue());
+			}
 		}
 	}
 

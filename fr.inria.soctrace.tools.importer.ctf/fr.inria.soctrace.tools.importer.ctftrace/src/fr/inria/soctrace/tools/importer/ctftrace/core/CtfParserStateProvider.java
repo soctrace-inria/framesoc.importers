@@ -15,7 +15,7 @@ import fr.inria.linuxtools.statesystem.core.statevalue.TmfStateValue;
 
 public class CtfParserStateProvider extends AbstractTmfStateProvider {
 
-	// Event names HashMap.
+	// Event names HashMap
 	private final HashMap<String, Integer> knownEventNames;
 	private CtfParser ctfParser;
 
@@ -64,39 +64,42 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 			quark = ss.getQuarkRelativeAndAdd(currentCPUNode,
 					CtfParserConstants.CURRENT_THREAD);
 			value = ss.queryOngoingState(quark);
+			
+			// Get the thread ID
 			int thread = value.unboxInt();
 			final Integer currentThreadNode = ss.getQuarkRelativeAndAdd(
 					getNodeThreads(), String.valueOf(thread));
 	    		
 			aRecord.pid = thread;
-			
-			if (!ctfParser.producerExist(thread)) {
+
+			// If the producer does not exist yet
+			if (!ctfParser.producerExist(thread, true)) {
+				// Create it
 				int execNameQuark = -1;
 				try {
-					try {
-						execNameQuark = ss.getQuarkRelative(currentThreadNode,
-								CtfParserConstants.EXEC_NAME);
-					} catch (AttributeNotFoundException e) {
-						//e.printStackTrace();
-					}
+
+					execNameQuark = ss.getQuarkRelative(currentThreadNode,
+							CtfParserConstants.EXEC_NAME);
 
 					int ppidQuark = ss.getQuarkRelative(currentThreadNode,
 							CtfParserConstants.PPID);
 
+					// Get its name
 					String execName = ss.queryOngoingState(execNameQuark)
 							.unboxStr();
 
 					if (ppidQuark != -1) {
+						// Get its parent id
 						int ppid = ss.queryOngoingState(ppidQuark).unboxInt();
 						ctfParser.addProducer(thread, ppid, execName);
 					}
+
 				} catch (AttributeNotFoundException e) {
-					//e.printStackTrace();
+					e.printStackTrace();
 				} catch (StateValueTypeException e) {
-					//e.printStackTrace();
+					e.printStackTrace();
 				}
 			}
-    		
 			
 			/*
 			 * Feed event to the history system if it's known to cause a state
@@ -136,10 +139,11 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 			case 2: // "irq_handler_entry":
 			/* Fields: int32 irq, string name */
 			{
-
 				Integer irqId = ((Long) content.getField(CtfParserAnalysisModule.IRQ)
 						.getValue()).intValue();
 
+				aRecord.type = CtfParserConstants.IRQ_STATUS_ACTIVE;
+				ctfParser.setIrqState(aRecord, irqId);
 				/*
 				 * Mark this IRQ as active in the resource tree. The state value
 				 * = the CPU on which this IRQ is sitting
@@ -165,12 +169,9 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 				value = CtfParserAnalysisModule.CPU_STATUS_IRQ_VALUE;
 				ss.modifyAttribute(timeStamp, value, quark);
 				
+				//Update CPU State
 				aRecord.type = CtfParserConstants.CPU_STATUS_IRQ;
 				ctfParser.setCPUState(aRecord);
-				
-				//Update CPU State
-				//aRecord.type = "CPU_STATUS_IRQ";
-				//ctfParser.setProcessState(aRecord, aRecord.cpu);
 			}
 				break;
 
@@ -179,6 +180,9 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 			{
 				Integer irqId = ((Long) content.getField(CtfParserAnalysisModule.IRQ)
 						.getValue()).intValue();
+				
+				aRecord.type = CtfParserConstants.IRQ_STATUS_EXIT;
+				ctfParser.setIrqState(aRecord, irqId);
 
 				/* Put this IRQ back to inactive in the resource tree */
 				quark = ss.getQuarkRelativeAndAdd(getNodeIRQs(),
@@ -202,6 +206,8 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 				Integer softIrqId = ((Long) content.getField(CtfParserAnalysisModule.VEC)
 						.getValue()).intValue();
 
+				aRecord.type = CtfParserConstants.SOFT_IRQ_STATUS_ACTIVE;
+				ctfParser.setSoftIrqState(aRecord, softIrqId);
 				/*
 				 * Mark this SoftIRQ as active in the resource tree. The state
 				 * value = the CPU on which this SoftIRQ is processed
@@ -237,6 +243,9 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 				Integer softIrqId = ((Long) content.getField(CtfParserAnalysisModule.VEC)
 						.getValue()).intValue();
 
+				aRecord.type = CtfParserConstants.SOFT_IRQ_STATUS_EXIT;
+				ctfParser.setSoftIrqState(aRecord, softIrqId);
+				
 				/* Put this SoftIRQ back to inactive (= -1) in the resource tree */
 				quark = ss.getQuarkRelativeAndAdd(getNodeSoftIRQs(),
 						softIrqId.toString());
@@ -267,6 +276,9 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 						softIrqId.toString());
 				value = CtfParserAnalysisModule.SOFT_IRQ_RAISED_VALUE;
 				ss.modifyAttribute(timeStamp, value, quark);
+				
+				aRecord.type = CtfParserConstants.SOFT_IRQ_STATUS_RAISED;
+				ctfParser.setSoftIrqState(aRecord, softIrqId);
 			}
 				break;
 
@@ -428,6 +440,8 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 			{
 				Integer tid = ((Long) content.getField(CtfParserAnalysisModule.TID)
 						.getValue()).intValue();
+
+				ctfParser.endProcess(aRecord, tid);
 				/*
 				 * Remove the process and all its sub-CtfParserConstants from
 				 * the current state
@@ -456,7 +470,7 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 				
 				//CTFParser addition
 				//If not already added, add producer
-				if (!ctfParser.producerExist(tid)) {
+				if (!ctfParser.producerExist(tid, true)) {
 					//System.out.println("tid " + tid + ", ppid " + ppid	+ ", execname " + name);
 					ctfParser.addProducer(tid, ppid, name);
 				}
@@ -583,7 +597,7 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 			
 			//If the event type was modified during the exploration
 			aRecord.type = eventName;
-			ctfParser.newEvent(aRecord);
+			ctfParser.newEvent(aRecord, true);
 
 		} catch (AttributeNotFoundException ae) {
 			/*

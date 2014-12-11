@@ -11,7 +11,8 @@ public class CtfParserArgs {
 	public String sysDbName = null;
 	
 	/** The name of the Trace Database */
-	public String traceDbName = null;
+	public String traceDbNameSW = null;
+	public String traceDbNameHW = null;
 	
 	/** Trace files vector. The first file must be the main one (CPU0) */
 	public String[] traceFiles = null;
