@@ -64,6 +64,10 @@ public class CtfParser {
 
 	private HashMap<Integer, State> processState = new HashMap<Integer, State>();
 	private HashMap<Integer, State> CPUState = new HashMap<Integer, State>();
+	private HashMap<Integer, State> irqState = new HashMap<Integer, State>();
+	private HashMap<Integer, EventProducer> irqList = new HashMap<Integer, EventProducer>();
+	private HashMap<Integer, EventProducer> softIrqList = new HashMap<Integer, EventProducer>();
+	private HashMap<Integer, State> softIrqState = new HashMap<Integer, State>();
 	private List<String> stateEvent = new ArrayList<String>();
 
 	/*
@@ -85,6 +89,8 @@ public class CtfParser {
 	private IdManager eventIdTypeManager;
 	private IdManager eventParamTypeIdManager;
 	private IdManager eventProducerIdManager;
+	
+	public HashMap<Integer, Integer> softirq;
 
 	public CtfParser(SystemDBObject aSysDB, TraceDBObject aTraceDBSW,
 			TraceDBObject aTraceDBHW, CtfParserArgs args)
@@ -95,22 +101,28 @@ public class CtfParser {
 		tracePath = args.traceFiles;
 		traceDBNameSW = args.traceDbNameSW;
 		traceDBNameHW = args.traceDbNameHW;
+		softirq = new HashMap<Integer, Integer>();
 		
 		typeCorrespondence.put("IntegerDeclaration", "INTEGER");
 		typeCorrespondence.put("StringDeclaration", "STRING");
 		typeCorrespondence.put("FloatDeclaration", "FLOAT");
 
-		stateEvent.add("PROCESS_STATUS_UNKNOWN");
-		stateEvent.add("PROCESS_STATUS_WAIT_BLOCKED");
-		stateEvent.add("PROCESS_STATUS_RUN_USERMODE");
-		stateEvent.add("PROCESS_STATUS_RUN_SYSCALL");
-		stateEvent.add("PROCESS_STATUS_INTERRUPTED");
-		stateEvent.add("PROCESS_STATUS_WAIT_FOR_CPU");
-		stateEvent.add("CPU_STATUS_IDLE");
-		stateEvent.add("CPU_STATUS_RUN_USERMODE");
-		stateEvent.add("CPU_STATUS_RUN_SYSCALL");
-		stateEvent.add("CPU_STATUS_IRQ");
-		stateEvent.add("CPU_STATUS_SOFTIRQ");
+		stateEvent.add(CtfParserConstants.PROCESS_STATUS_UNKNOWN);
+		stateEvent.add(CtfParserConstants.PROCESS_STATUS_WAIT_BLOCKED);
+		stateEvent.add(CtfParserConstants.PROCESS_STATUS_RUN_USERMODE);
+		stateEvent.add(CtfParserConstants.PROCESS_STATUS_RUN_SYSCALL);
+		stateEvent.add(CtfParserConstants.PROCESS_STATUS_INTERRUPTED);
+		stateEvent.add(CtfParserConstants.PROCESS_STATUS_WAIT_FOR_CPU);
+		stateEvent.add(CtfParserConstants.CPU_STATUS_IDLE);
+		stateEvent.add(CtfParserConstants.CPU_STATUS_RUN_USERMODE);
+		stateEvent.add(CtfParserConstants.CPU_STATUS_RUN_SYSCALL);
+		stateEvent.add(CtfParserConstants.CPU_STATUS_IRQ);
+		stateEvent.add(CtfParserConstants.CPU_STATUS_SOFTIRQ);
+		stateEvent.add(CtfParserConstants.SOFT_IRQ_STATUS_RAISED);
+		stateEvent.add(CtfParserConstants.SOFT_IRQ_STATUS_ACTIVE);
+		stateEvent.add(CtfParserConstants.SOFT_IRQ_STATUS_EXIT);
+		stateEvent.add(CtfParserConstants.IRQ_STATUS_ACTIVE);
+		stateEvent.add(CtfParserConstants.IRQ_STATUS_EXIT);
 	}
 
 	public void parseTrace(IProgressMonitor monitor) {
@@ -216,14 +228,12 @@ public class CtfParser {
 		for (EventProducer e : producersMapSW.values()) {
 			traceDBSoft.save(e);
 		}
-
 		traceDBSoft.commit();
 		
 		// Hard
 		for (EventProducer e : producersMapHW.values()) {
 			traceDBHard.save(e);
 		}
-
 		traceDBHard.commit();
 	}
 
@@ -737,6 +747,14 @@ public class CtfParser {
 				EventCategory.LINK);
 		et.setName("link");
 		typesSW.put("link", et);
+		
+		// Create fake root for the CPU
+		EventProducer machine = new EventProducer(eventProducerIdManager.getNextId());
+		stringPID = String.valueOf(0);
+		machine.setLocalId(stringPID);
+		machine.setName("Machine");
+		machine.setType("Machine");
+		producersMapHW.put(0, machine);
 	}
 
 	/**
@@ -786,7 +804,7 @@ public class CtfParser {
 	}
 
 	/**
-	 * Update the state of a process
+	 * Update the state of a processor
 	 * 
 	 * @param aRecord
 	 *            CtfRecord containing the event info
@@ -840,6 +858,7 @@ public class CtfParser {
 		// Give negative pid as we are sure those are not used as real PID
 		String stringPID = String.valueOf(-2 - aCpu);
 		p.setLocalId(stringPID);
+		p.setParentId(producersMapHW.get(0).getId());
 
 		String aName = "CPU " + aCpu;
 		p.setName(aName);
@@ -848,6 +867,116 @@ public class CtfParser {
 		producersMapHW.put(-2 - aCpu, p);
 	}
 
+	public void createIRQProducer(int anIrq) {
+		EventProducer p = new EventProducer(eventProducerIdManager.getNextId());
+
+		// Give negative pid as we are sure those are not used as real PID
+		p.setLocalId(String.valueOf(anIrq));
+		p.setParentId(producersMapHW.get(0).getId());
+
+		String aName = "IRQ " + anIrq;
+		p.setName(aName);
+		p.setType(aName);
+
+		producersMapHW.put(p.getId(), p);
+		irqList.put(anIrq, p);
+	}
+	
+	public void createSoftIRQProducer(int anIrq) {
+		EventProducer p = new EventProducer(eventProducerIdManager.getNextId());
+
+		// Give negative pid as we are sure those are not used as real PID
+		p.setLocalId(String.valueOf(anIrq));
+		p.setParentId(producersMapHW.get(0).getId());
+
+		String aName = "SOFT_IRQ " + anIrq;
+		p.setName(aName);
+		p.setType(aName);
+
+		producersMapHW.put(p.getId(), p);
+		softIrqList.put(anIrq, p);
+	}
+	
+	/**
+	 * Update the state of a soft irq
+	 */
+	public void setSoftIrqState(CtfRecord aRecord, int anIrqID) {
+		if (!softIrqState.containsKey(anIrqID))
+			// Create an event producer for this IRQ
+			createSoftIRQProducer(anIrqID);
+		
+		State previousState = softIrqState.get(anIrqID);
+
+		// Check if this is the first state for this producer
+		if (previousState != null) {
+			// Set the timestamp for state ending
+			previousState.setLongPar(aRecord.getTimestamp());
+			saveEvent(previousState, false);
+			
+			// If the event is exit, then don't create a new state
+			if (aRecord.type.equals(CtfParserConstants.SOFT_IRQ_STATUS_EXIT)) {
+				softIrqState.put(anIrqID, null);
+				return;
+			}
+		}
+
+		State aState = new State(eventIdManager.getNextId());
+		aState.setCpu(aRecord.cpu);
+		aState.setPage(pageHW);
+		aState.setTimestamp(aRecord.getTimestamp());
+		aState.setEventProducer(producersMapHW.get(softIrqList.get(anIrqID).getId()));
+
+		try {
+			aState.setType(getType(aRecord, false));
+		} catch (SoCTraceException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		// Set the created State as the current state for the soft irq
+		softIrqState.put(anIrqID, aState);
+	}
+	
+	/**
+	 * Update the state of an irq
+	 */
+	public void setIrqState(CtfRecord aRecord, int anIrqID) {
+		if (!irqState.containsKey(anIrqID))
+			// Create an event producer for this IRQ
+			createIRQProducer(anIrqID);
+		
+		State previousState = irqState.get(anIrqID);
+
+		// Check if this is the first state for this producer
+		if (previousState != null) {
+			// Set the timestamp for state ending
+			previousState.setLongPar(aRecord.getTimestamp());
+			saveEvent(previousState, false);
+
+			// If the event is exit, then don't create a new state
+			if (aRecord.type.equals(CtfParserConstants.IRQ_STATUS_EXIT)) {
+				irqState.put(anIrqID, null);
+				return;
+			}
+		}
+
+		State aState = new State(eventIdManager.getNextId());
+		aState.setCpu(aRecord.cpu);
+		aState.setPage(pageHW);
+		aState.setTimestamp(aRecord.getTimestamp());
+		aState.setEventProducer(producersMapHW.get(irqList.get(anIrqID).getId()));
+
+		try {
+			aState.setType(getType(aRecord, false));
+		} catch (SoCTraceException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		// Set the created State as the current state for the irq
+		irqState.put(anIrqID, aState);
+	}
+	
 	/**
 	 * Check if a state was not close at the end of an importation, and if so
 	 * set the end at the maximal timestamp

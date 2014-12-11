@@ -139,10 +139,11 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 			case 2: // "irq_handler_entry":
 			/* Fields: int32 irq, string name */
 			{
-
 				Integer irqId = ((Long) content.getField(CtfParserAnalysisModule.IRQ)
 						.getValue()).intValue();
 
+				aRecord.type = CtfParserConstants.IRQ_STATUS_ACTIVE;
+				ctfParser.setIrqState(aRecord, irqId);
 				/*
 				 * Mark this IRQ as active in the resource tree. The state value
 				 * = the CPU on which this IRQ is sitting
@@ -182,6 +183,9 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 			{
 				Integer irqId = ((Long) content.getField(CtfParserAnalysisModule.IRQ)
 						.getValue()).intValue();
+				
+				aRecord.type = CtfParserConstants.IRQ_STATUS_EXIT;
+				ctfParser.setIrqState(aRecord, irqId);
 
 				/* Put this IRQ back to inactive in the resource tree */
 				quark = ss.getQuarkRelativeAndAdd(getNodeIRQs(),
@@ -205,6 +209,8 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 				Integer softIrqId = ((Long) content.getField(CtfParserAnalysisModule.VEC)
 						.getValue()).intValue();
 
+				aRecord.type = CtfParserConstants.SOFT_IRQ_STATUS_ACTIVE;
+				ctfParser.setSoftIrqState(aRecord, softIrqId);
 				/*
 				 * Mark this SoftIRQ as active in the resource tree. The state
 				 * value = the CPU on which this SoftIRQ is processed
@@ -240,6 +246,9 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 				Integer softIrqId = ((Long) content.getField(CtfParserAnalysisModule.VEC)
 						.getValue()).intValue();
 
+				aRecord.type = CtfParserConstants.SOFT_IRQ_STATUS_EXIT;
+				ctfParser.setSoftIrqState(aRecord, softIrqId);
+				
 				/* Put this SoftIRQ back to inactive (= -1) in the resource tree */
 				quark = ss.getQuarkRelativeAndAdd(getNodeSoftIRQs(),
 						softIrqId.toString());
@@ -270,6 +279,9 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 						softIrqId.toString());
 				value = CtfParserAnalysisModule.SOFT_IRQ_RAISED_VALUE;
 				ss.modifyAttribute(timeStamp, value, quark);
+				
+				aRecord.type = CtfParserConstants.SOFT_IRQ_STATUS_RAISED;
+				ctfParser.setSoftIrqState(aRecord, softIrqId);
 			}
 				break;
 

@@ -1,6 +1,7 @@
 package fr.inria.soctrace.tools.importer.ctftrace.core;
 
 import java.util.HashMap;
+
 import fr.inria.linuxtools.tmf.core.event.ITmfEventField;
 import fr.inria.linuxtools.tmf.core.event.ITmfEventType;
 
