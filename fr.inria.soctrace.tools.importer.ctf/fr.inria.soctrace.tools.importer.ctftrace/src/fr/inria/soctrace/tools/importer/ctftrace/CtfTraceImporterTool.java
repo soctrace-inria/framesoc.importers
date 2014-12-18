@@ -113,10 +113,13 @@ public class CtfTraceImporterTool extends FramesocTool {
 			CtfTmfTrace aTrace = new CtfTmfTrace();
 			IStatus validateStatus = aTrace.validate(null, aDirectory);
 			status.valid = validateStatus.isOK();
-			status.message = "Illegal arguments passed.";
+			status.message = "";
 			aTrace.close();
-			if (!status.valid)
+			
+			if (!status.valid) {
+				status.message = "Invalid trace or illegal arguments passed";
 				return status;
+			}
 		}
 		return status;
 	}
