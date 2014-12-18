@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import fr.inria.linuxtools.tmf.core.event.TmfEvent;
 import fr.inria.linuxtools.tmf.core.exceptions.TmfTraceException;
 import fr.inria.linuxtools.ctf.core.event.IEventDeclaration;
+import fr.inria.soctrace.framesoc.ui.colors.FramesocColorManager;
 import fr.inria.soctrace.lib.model.Event;
 import fr.inria.soctrace.lib.model.EventParam;
 import fr.inria.soctrace.lib.model.EventParamType;
@@ -186,7 +187,9 @@ public class CtfParser {
 			saveTypes();
 
 			buildTraces();
-
+			// Add the color scheme to Framesoc
+			FramesocColorManager.getInstance().addEventTypeColors(CtfColors.ET_COLORS);
+			
 			aT.close();
 
 		} catch (TmfTraceException e) {
