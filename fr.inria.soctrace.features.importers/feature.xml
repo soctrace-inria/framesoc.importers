@@ -2,7 +2,7 @@
 <feature
       id="fr.inria.soctrace.features.importers"
       label="Framesoc Importers"
-      version="1.0.0.qualifier">
+      version="1.0.1.qualifier">
 
    <description url="http://soctrace-inria.github.io/">
       Framesoc Importers
