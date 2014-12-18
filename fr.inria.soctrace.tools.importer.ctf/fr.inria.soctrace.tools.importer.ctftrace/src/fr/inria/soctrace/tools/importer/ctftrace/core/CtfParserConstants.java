@@ -50,5 +50,7 @@ public class CtfParserConstants {
     
     /** Prefix for context information stored as CtfTmfEventfield */
     static final String CONTEXT_FIELD_PREFIX = "context.";
+    
+    static final String LINK_TYPE = "LINK";
    
 }

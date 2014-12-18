@@ -49,5 +49,7 @@ public class CtfColors {
 				200, 0, 100));
 		ET_COLORS.put(CtfParserConstants.IRQ_STATUS_EXIT, new FramesocColor(
 				100, 100, 100));
+		ET_COLORS.put(CtfParserConstants.LINK_TYPE, new FramesocColor(
+				100, 100, 100));
 	}
 }

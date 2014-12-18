@@ -140,7 +140,7 @@ public class CtfParser {
 			eventIdTypeManager = new IdManager();
 			eventParamTypeIdManager = new IdManager();
 
-			createSpecialproducers();
+			createSpecialProducers();
 
 			CtfTraceSub aT = new CtfTraceSub(this);
 			aT.setDirectory(tracePath[0]);
@@ -736,7 +736,7 @@ public class CtfParser {
 	 * Create event producers that do not appear in the trace as such These
 	 * producers are the init process and the swapper
 	 */
-	private void createSpecialproducers() {
+	private void createSpecialProducers() {
 		// Create fake producer init with PID 1
 		EventProducer p = new EventProducer(eventProducerIdManager.getNextId());
 		String stringPID = String.valueOf(1);
@@ -756,8 +756,8 @@ public class CtfParser {
 		// Create fake event type for link
 		EventType et = new EventType(eventIdTypeManager.getNextId(),
 				EventCategory.LINK);
-		et.setName("link");
-		typesSW.put("link", et);
+		et.setName(CtfParserConstants.LINK_TYPE);
+		typesSW.put(CtfParserConstants.LINK_TYPE, et);
 		
 		// Create fake root for the CPU
 		EventProducer machine = new EventProducer(eventProducerIdManager.getNextId());
