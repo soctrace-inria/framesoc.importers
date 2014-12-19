@@ -11,35 +11,4 @@
 		<relativePath>../fr.inria.soctrace.importers.maven.master</relativePath>
 	</parent>
 
-
-	<!-- This is used as global project version -->
-
-	<build>
-		<plugins>
-		
-			<!-- Archive -->
-			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.4</version>
-				<configuration>
-					<descriptors>
-						<descriptor>${project.basedir}/archive.xml</descriptor>
-					</descriptors>
-					<finalName>framesoc-${project.version}</finalName>
-					<appendAssemblyId>false</appendAssemblyId>
-				</configuration>
-				<executions>
-					<execution>
-						<id>make-assembly</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			
-		</plugins>
-	</build>
-
 </project>
