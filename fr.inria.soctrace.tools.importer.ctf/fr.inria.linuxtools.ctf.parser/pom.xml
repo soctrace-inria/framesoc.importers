@@ -28,14 +28,7 @@
 			<plugin>
 				<artifactId>maven-clean-plugin</artifactId>
 				<configuration>
-					<filesets>
-						<fileset>
-							<excludes>
-								<exclude>target/generated-sources/*</exclude>
-								<exclude>src/main/antlr3/*</exclude>
-							</excludes>
-						</fileset>
-					</filesets>
+					<excludeDefaultDirectories>true</excludeDefaultDirectories>
 				</configuration>
 			</plugin>
 			
