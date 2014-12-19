@@ -25,6 +25,7 @@
 				</configuration>
 			</plugin>
 
+			<!-- Avoid removing generated parser source -->
 			<plugin>
 				<artifactId>maven-clean-plugin</artifactId>
 				<configuration>
