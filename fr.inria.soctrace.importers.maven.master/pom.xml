@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>fr.inria.soctrace.importers.maven</groupId>
+	<artifactId>fr.inria.soctrace.importers.maven.master</artifactId>
+	<version>1.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>Framesoc Importers Maven Master</name>
+	<description>Maven master project for Framesoc Importers. It contains the parent pom.xml.	</description>
+
+	<properties>
+		<tycho-version>0.18.1</tycho-version>
+		<tycho-extras-version>0.18.0</tycho-extras-version>
+	</properties>
+
+	<build>
+		<plugins>
+
+			<!-- tycho -->
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-maven-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<extensions>true</extensions>
+			</plugin>
+
+
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-p2-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<executions>
+					<execution>
+						<id>attach-p2-metadata</id>
+						<phase>package</phase>
+						<goals>
+							<goal>p2-metadata</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+
+	</build>
+
+	<repositories>
+		<repository>
+			<id>eclipse-kepler</id>
+			<layout>p2</layout>
+			<url>http://download.eclipse.org/releases/kepler</url>
+		</repository>
+		<repository>
+			<id>framesoc</id>
+			<layout>p2</layout>
+			<url>http://soctrace-inria.github.io/updatesite/</url>
+		</repository>
+	</repositories>
+
+	<modules>
+
+		<!-- Framesoc Importers feature and plugins -->
+		<module>../fr.inria.soctrace.tools.importer.gstreamer</module>
+		<module>../fr.inria.soctrace.tools.importer.otf2</module>
+		<module>../fr.inria.soctrace.tools.importer.paje</module>
+		<module>../fr.inria.soctrace.tools.importer.pajedump</module>
+		<module>../fr.inria.soctrace.tools.importer.paraver</module>
+
+		<!-- Repository -->
+		<module>../fr.inria.soctrace.importers.maven.repository</module>
+
+		<!-- Trace Compass -->
+
+		<module>
+			../fr.inria.soctrace.tools.importer.ctf/fr.inria.linuxtools.ctf.core
+		</module>
+		<module>
+			../fr.inria.soctrace.tools.importer.ctf/fr.inria.linuxtools.ctf.parser
+		</module>
+		<module>
+			../fr.inria.soctrace.tools.importer.ctf/fr.inria.linuxtools.lttng2.kernel.core
+		</module>
+		<module>
+			../fr.inria.soctrace.tools.importer.ctf/fr.inria.linuxtools.tmf.ctf.core
+		</module>
+		
+	</modules>
+
+</project>
