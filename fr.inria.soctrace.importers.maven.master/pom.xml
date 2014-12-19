@@ -60,6 +60,7 @@
 	<modules>
 
 		<!-- Framesoc Importers feature and plugins -->
+		<module>../fr.inria.soctrace.features.importers</module>
 		<module>../fr.inria.soctrace.tools.importer.gstreamer</module>
 		<module>../fr.inria.soctrace.tools.importer.otf2</module>
 		<module>../fr.inria.soctrace.tools.importer.paje</module>
