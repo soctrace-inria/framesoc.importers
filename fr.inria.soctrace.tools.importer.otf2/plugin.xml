@@ -6,6 +6,7 @@
       <tool
             class="fr.inria.soctrace.tools.importer.otf2.Otf2Importer"
             doc="Select the OTF2 anchor file. Options: -novar (ignore variables), -ph (parse hierarchy)."
+            id="fr.inria.soctrace.tools.importer.otf2"
             name="OTF2 Importer"
             type="IMPORT">
       </tool>

@@ -12,6 +12,7 @@ package fr.inria.soctrace.tools.importer.pajedump;
 
 import java.io.File;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
@@ -23,7 +24,9 @@ import fr.inria.soctrace.framesoc.core.FramesocManager;
 import fr.inria.soctrace.framesoc.core.tools.management.ArgumentsManager;
 import fr.inria.soctrace.framesoc.core.tools.management.PluginImporterJob;
 import fr.inria.soctrace.framesoc.core.tools.model.FramesocTool;
+import fr.inria.soctrace.framesoc.core.tools.model.IFramesocToolInput;
 import fr.inria.soctrace.framesoc.core.tools.model.IPluginToolJobBody;
+import fr.inria.soctrace.framesoc.core.tools.model.TraceFileInput;
 import fr.inria.soctrace.lib.model.utils.SoCTraceException;
 import fr.inria.soctrace.lib.storage.DBObject;
 import fr.inria.soctrace.lib.storage.DBObject.DBMode;
@@ -48,10 +51,11 @@ public class PajeDumpImporter extends FramesocTool {
 	 */
 	public class PJDumpImporterPluginJobBody implements IPluginToolJobBody {
 
-		private String args[];
+		private String args[]; // TODO use the input with the new mechanism
 
-		public PJDumpImporterPluginJobBody(String[] args) {
-			this.args = args;
+		public PJDumpImporterPluginJobBody(IFramesocToolInput input) {
+			List<String> files= ((TraceFileInput) input).getTraceFiles();
+			this.args = files.toArray(new String[files.size()]);
 		}
 
 		@Override
@@ -145,21 +149,22 @@ public class PajeDumpImporter extends FramesocTool {
 	}
 
 	@Override
-	public void launch(String[] args) {
+	public void launch(IFramesocToolInput input) {
 		PluginImporterJob job = new PluginImporterJob("Paje Dump Importer",
-				new PJDumpImporterPluginJobBody(args));
+				new PJDumpImporterPluginJobBody(input));
 		job.setUser(true);
 		job.schedule();
 	}
 
 	@Override
-	public ParameterCheckStatus canLaunch(String[] args) {
+	public ParameterCheckStatus canLaunch(IFramesocToolInput input) {
 
+		List<String> files= ((TraceFileInput) input).getTraceFiles();
 		ArgumentsManager argsm = new ArgumentsManager();
 		try {
 			// do this in a try block, since the method is called also for
 			// invalid input (it is called each time input changes)
-			argsm.parseArgs(args);
+			argsm.parseArgs(files.toArray(new String[files.size()]));
 		} catch (IllegalArgumentException e) {
 			return new ParameterCheckStatus(false, "Illegal arguments.");
 		}

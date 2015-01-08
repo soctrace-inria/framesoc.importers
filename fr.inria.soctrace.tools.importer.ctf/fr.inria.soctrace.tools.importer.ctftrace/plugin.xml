@@ -6,6 +6,7 @@
       <tool
             class="fr.inria.soctrace.tools.importer.ctftrace.CtfTraceImporterTool"
             doc="The argument must be one (or several) file from the directory where the trace files are."
+            id="fr.inria.soctrace.tools.importer.ctftrace"
             name="CTFTrace Importer"
             type="IMPORT">
       </tool>

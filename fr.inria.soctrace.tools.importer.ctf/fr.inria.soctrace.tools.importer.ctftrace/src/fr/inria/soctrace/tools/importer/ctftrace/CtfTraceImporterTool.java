@@ -12,7 +12,9 @@ import fr.inria.linuxtools.tmf.ctf.core.CtfTmfTrace;
 import fr.inria.soctrace.framesoc.core.FramesocManager;
 import fr.inria.soctrace.framesoc.core.tools.management.PluginImporterJob;
 import fr.inria.soctrace.framesoc.core.tools.model.FramesocTool;
+import fr.inria.soctrace.framesoc.core.tools.model.IFramesocToolInput;
 import fr.inria.soctrace.framesoc.core.tools.model.IPluginToolJobBody;
+import fr.inria.soctrace.framesoc.core.tools.model.TraceFileInput;
 import fr.inria.soctrace.lib.utils.Configuration;
 import fr.inria.soctrace.lib.utils.Configuration.SoCTraceProperty;
 import fr.inria.soctrace.tools.importer.ctftrace.core.CtfParserArgs;
@@ -106,7 +108,9 @@ public class CtfTraceImporterTool extends FramesocTool {
 	/**
 	 * Check that the argument is a valid trace path and if it is valid, enable the importation
 	 */
-	public ParameterCheckStatus canLaunch(String[] args) {
+	@Override
+	public ParameterCheckStatus canLaunch(IFramesocToolInput input) {
+		String[] args = TraceFileInput.toArray(input);
 		List<String> traceDirectories = getUniqueDirectories(args);
 		ParameterCheckStatus status = new ParameterCheckStatus(false, "");
 		for (String aDirectory : traceDirectories) {
@@ -125,9 +129,9 @@ public class CtfTraceImporterTool extends FramesocTool {
 	}
 
 	@Override
-	public void launch(String[] args) {
+	public void launch(IFramesocToolInput input) {
 		PluginImporterJob job = new PluginImporterJob("CtfTrace Importer",
-				new CtfTraceImporterPluginJobBody(args));
+				new CtfTraceImporterPluginJobBody(TraceFileInput.toArray(input)));
 		job.setUser(true);
 		job.schedule();
 	}

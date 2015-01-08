@@ -6,6 +6,7 @@
       <tool
             class="fr.inria.soctrace.tools.importer.paraver.ParaverImporter"
             doc="Select the Paraver .prv file."
+            id="fr.inria.soctrace.tools.importer.paraver"
             name="Paraver Importer (experimental)"
             type="IMPORT">
       </tool>

@@ -18,7 +18,9 @@ import fr.inria.soctrace.framesoc.core.FramesocManager;
 import fr.inria.soctrace.framesoc.core.tools.management.ArgumentsManager;
 import fr.inria.soctrace.framesoc.core.tools.management.PluginImporterJob;
 import fr.inria.soctrace.framesoc.core.tools.model.FramesocTool;
+import fr.inria.soctrace.framesoc.core.tools.model.IFramesocToolInput;
 import fr.inria.soctrace.framesoc.core.tools.model.IPluginToolJobBody;
+import fr.inria.soctrace.framesoc.core.tools.model.TraceFileInput;
 import fr.inria.soctrace.lib.model.utils.SoCTraceException;
 import fr.inria.soctrace.lib.storage.DBObject;
 import fr.inria.soctrace.lib.storage.SystemDBObject;
@@ -107,16 +109,21 @@ public class GStreamerImporter extends FramesocTool {
 		}
 	}
 
+	/**
+	 * TODO use new input mechanism and manage parameters -s, -o, ..
+	 */
+	
 	@Override
-	public void launch(String[] args) {
+	public void launch(IFramesocToolInput input) {
 		PluginImporterJob job = new PluginImporterJob("GStreamer Importer",
-				new GStreamerImporterPluginJobBody(args));
+				new GStreamerImporterPluginJobBody(TraceFileInput.toArray(input)));
 		job.setUser(true);
 		job.schedule();
 	}
 
 	@Override
-	public ParameterCheckStatus canLaunch(String[] args) {
+	public ParameterCheckStatus canLaunch(IFramesocToolInput input) {
+		String[] args = TraceFileInput.toArray(input);
 		if (args.length < 1) {
 			return new ParameterCheckStatus(false, "Missing file.");
 		}

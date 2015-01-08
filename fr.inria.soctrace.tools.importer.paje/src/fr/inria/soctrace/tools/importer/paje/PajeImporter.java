@@ -28,7 +28,9 @@ import fr.inria.soctrace.framesoc.core.FramesocManager;
 import fr.inria.soctrace.framesoc.core.tools.management.ArgumentsManager;
 import fr.inria.soctrace.framesoc.core.tools.management.PluginImporterJob;
 import fr.inria.soctrace.framesoc.core.tools.model.FramesocTool;
+import fr.inria.soctrace.framesoc.core.tools.model.IFramesocToolInput;
 import fr.inria.soctrace.framesoc.core.tools.model.IPluginToolJobBody;
+import fr.inria.soctrace.framesoc.core.tools.model.TraceFileInput;
 import fr.inria.soctrace.lib.model.utils.SoCTraceException;
 import fr.inria.soctrace.lib.storage.DBObject;
 import fr.inria.soctrace.lib.storage.DBObject.DBMode;
@@ -197,22 +199,26 @@ public class PajeImporter extends FramesocTool {
 		return realName;
 	}
 
+	/**
+	 * TODO new mechanism for input + manage params for paje
+	 */
+	
 	@Override
-	public void launch(String[] args) {
+	public void launch(IFramesocToolInput input) {
 		PluginImporterJob job = new PluginImporterJob("Pajé Importer",
-				new PajeImporterPluginJobBody(args));
+				new PajeImporterPluginJobBody(TraceFileInput.toArray(input)));
 		job.setUser(true);
 		job.schedule();
 	}
 
 	@Override
-	public ParameterCheckStatus canLaunch(String[] args) {
+	public ParameterCheckStatus canLaunch(IFramesocToolInput input) {
 
 		ArgumentsManager argsm = new ArgumentsManager();
 		try {
 			// do this in a try block, since the method is called also for
 			// invalid input (it is called each time input changes)
-			argsm.parseArgs(args);
+			argsm.parseArgs(TraceFileInput.toArray(input));
 		} catch (IllegalArgumentException e) {
 			return new ParameterCheckStatus(false, "Illegal arguments.");
 		}
