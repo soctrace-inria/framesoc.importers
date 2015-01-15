@@ -14,9 +14,11 @@ import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -56,6 +58,7 @@ public class Otf2Parser {
 	private Map<Integer, EventProducer> idProducersMap = new HashMap<Integer, EventProducer>();
 	private Map<String, EventProducer> producersMap = new HashMap<String, EventProducer>();
 	private Map<String, EventType> types = new HashMap<String, EventType>();
+	private Set<EventType> activeTypes = new HashSet<EventType>();
 	private List<Event> eventList = new LinkedList<Event>();
 	private int numberOfEvents = 0;
 	private long minTimestamp = -1;
@@ -107,7 +110,8 @@ public class Otf2Parser {
 	 *            flag stating that variable must be ignored
 	 * @param parseHierarchy 
 	 */
-	public Otf2Parser(SystemDBObject sysDB, TraceDBObject traceDB, String traceFile, boolean novar, boolean parseHierarchy) {
+	public Otf2Parser(SystemDBObject sysDB, TraceDBObject traceDB,
+			String traceFile, boolean novar, boolean parseHierarchy) {
 		this.sysDB = sysDB;
 		this.traceDB = traceDB;
 		this.traceFile = traceFile;
@@ -274,7 +278,7 @@ public class Otf2Parser {
 	}
 
 	private void saveTypes() throws SoCTraceException {
-		for (EventType et : getTypes().values()) {
+		for (EventType et : activeTypes) {
 			traceDB.save(et);
 			for (EventParamType ept : et.getEventParamTypes()) {
 				traceDB.save(ept);
@@ -419,6 +423,8 @@ public class Otf2Parser {
 			anEvent.setEventProducer(anEp);
 			anEvent.setTimestamp(timeStamp);
 			anEvent.setType(getTypes().get(eventName));
+			
+			activeTypes.add(getTypes().get(eventName));
 
 			if (minTimestamp == -1)
 				minTimestamp = timeStamp;
@@ -475,6 +481,8 @@ public class Otf2Parser {
 			aState.setEventProducer(anEp);
 			aState.setTimestamp(timeStamp);
 			aState.setType(getTypes().get(eventName));
+			
+			activeTypes.add(getTypes().get(eventName));
 
 			if (minTimestamp == -1)
 				minTimestamp = timeStamp;
@@ -588,6 +596,8 @@ public class Otf2Parser {
 			aLink.setEndProducer(getIdProducersMap().get(Integer.valueOf(receiverIdString)));
 			aLink.setType(getTypes().get(eventName));
 
+			activeTypes.add(getTypes().get(eventName));
+			
 			if (minTimestamp == -1)
 				minTimestamp = timeStamp;
 
@@ -732,6 +742,8 @@ public class Otf2Parser {
 							valueTab[0].indexOf("\"", indexOfFirstQuote));
 
 					aVariable.setType(getTypes().get(eventName));
+					
+					activeTypes.add(getTypes().get(eventName));
 
 					// Get the variable value
 					int indexLastElement = valueTab.length - 1;
