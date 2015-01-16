@@ -6,9 +6,8 @@ import fr.inria.soctrace.framesoc.ui.input.AbstractToolInputComposite;
 import fr.inria.soctrace.framesoc.ui.input.AbstractToolInputCompositeFactory;
 
 /**
- * TODO 
- * @author generoso
- *
+ * 
+ * @author "Generoso Pagano <generoso.pagano@inria.fr>"
  */
 public class PajeDumpInputCompositeFactory extends AbstractToolInputCompositeFactory {
 
