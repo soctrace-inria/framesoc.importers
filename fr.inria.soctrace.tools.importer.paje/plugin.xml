@@ -11,5 +11,12 @@
             type="IMPORT">
       </tool>
    </extension>
+   <extension
+         point="fr.inria.soctrace.framesoc.ui.input.toolInput">
+      <toolInput
+            compositeFactory="fr.inria.soctrace.tools.importer.pajedump.input.PajeDumpInputCompositeFactory"
+            toolId="fr.inria.soctrace.tools.importer.paje">
+      </toolInput>
+   </extension>
 
 </plugin>
