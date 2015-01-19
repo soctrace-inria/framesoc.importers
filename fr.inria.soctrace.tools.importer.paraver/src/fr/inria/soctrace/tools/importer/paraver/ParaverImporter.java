@@ -31,7 +31,6 @@ import fr.inria.soctrace.framesoc.core.tools.management.PluginImporterJob;
 import fr.inria.soctrace.framesoc.core.tools.model.FramesocTool;
 import fr.inria.soctrace.framesoc.core.tools.model.IFramesocToolInput;
 import fr.inria.soctrace.framesoc.core.tools.model.IPluginToolJobBody;
-import fr.inria.soctrace.framesoc.core.tools.model.TraceFileInput;
 import fr.inria.soctrace.lib.model.utils.SoCTraceException;
 import fr.inria.soctrace.lib.storage.DBObject;
 import fr.inria.soctrace.lib.storage.DBObject.DBMode;
@@ -81,7 +80,7 @@ public class ParaverImporter extends FramesocTool {
 			}
 		}
 
-		public ParaverImporterPluginJobBody(String[] args) {
+		public ParaverImporterPluginJobBody(IFramesocToolInput input) {
 			this.args = args;
 		}
 
@@ -186,7 +185,7 @@ public class ParaverImporter extends FramesocTool {
 	@Override
 	public void launch(IFramesocToolInput input) {
 		PluginImporterJob job = new PluginImporterJob("Paraver Importer",
-				new ParaverImporterPluginJobBody(TraceFileInput.toArray(input)));
+				new ParaverImporterPluginJobBody(input));
 		job.setUser(true);
 		job.schedule();
 	}
@@ -194,7 +193,7 @@ public class ParaverImporter extends FramesocTool {
 	@Override
 	public ParameterCheckStatus canLaunch(IFramesocToolInput input) {
 
-		String[] args = TraceFileInput.toArray(input);
+		String[] args = new String[0];
 		
 		if (args.length != 1) {
 			return new ParameterCheckStatus(false, "Missing " + ParaverConstants.TRACE_EXT
