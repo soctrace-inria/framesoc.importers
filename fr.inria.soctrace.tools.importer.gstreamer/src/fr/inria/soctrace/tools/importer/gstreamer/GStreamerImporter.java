@@ -15,21 +15,20 @@ import java.io.File;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import fr.inria.soctrace.framesoc.core.FramesocManager;
-import fr.inria.soctrace.framesoc.core.tools.management.ArgumentsManager;
 import fr.inria.soctrace.framesoc.core.tools.management.PluginImporterJob;
 import fr.inria.soctrace.framesoc.core.tools.model.FramesocTool;
 import fr.inria.soctrace.framesoc.core.tools.model.IFramesocToolInput;
 import fr.inria.soctrace.framesoc.core.tools.model.IPluginToolJobBody;
-import fr.inria.soctrace.framesoc.core.tools.model.TraceFileInput;
 import fr.inria.soctrace.lib.model.utils.SoCTraceException;
 import fr.inria.soctrace.lib.storage.DBObject;
+import fr.inria.soctrace.lib.storage.DBObject.DBMode;
 import fr.inria.soctrace.lib.storage.SystemDBObject;
 import fr.inria.soctrace.lib.storage.TraceDBObject;
-import fr.inria.soctrace.lib.storage.DBObject.DBMode;
 import fr.inria.soctrace.lib.utils.Configuration;
-import fr.inria.soctrace.lib.utils.DeltaManager;
 import fr.inria.soctrace.lib.utils.Configuration.SoCTraceProperty;
+import fr.inria.soctrace.lib.utils.DeltaManager;
 import fr.inria.soctrace.tools.importer.gstreamer.core.GStreamerParser;
+import fr.inria.soctrace.tools.importer.gstreamer.input.GStreamerInput;
 
 /**
  * GStreamer Parser Tool
@@ -46,10 +45,10 @@ public class GStreamerImporter extends FramesocTool {
 	 */
 	public class GStreamerImporterPluginJobBody implements IPluginToolJobBody {
 
-		private String args[];
+		private GStreamerInput input;
 
-		public GStreamerImporterPluginJobBody(String[] args) {
-			this.args = args;
+		public GStreamerImporterPluginJobBody(IFramesocToolInput input) {
+			this.input = (GStreamerInput) input;
 		}
 
 		@Override
@@ -58,17 +57,8 @@ public class GStreamerImporter extends FramesocTool {
 			DeltaManager delta = new DeltaManager();
 			delta.start();
 
-			if (args.length < 1) {
-				System.err.println("Too few arguments");
-				return;
-			}
-
 			String sysDbName = Configuration.getInstance().get(SoCTraceProperty.soctrace_db_name);
 			String traceDbName = FramesocManager.getInstance().getTraceDBName("GSTREAMER");
-
-			ArgumentsManager argsm = new ArgumentsManager();
-			argsm.parseArgs(args);
-			argsm.printArgs();
 
 			SystemDBObject sysDB = null;
 			TraceDBObject traceDB = null;
@@ -77,11 +67,12 @@ public class GStreamerImporter extends FramesocTool {
 
 				// open system DB
 				sysDB = new SystemDBObject(sysDbName, DBMode.DB_OPEN);
+				
 				// create new trace DB
 				traceDB = new TraceDBObject(traceDbName, DBMode.DB_CREATE);
-
+				
 				// parsing
-				GStreamerParser parser = new GStreamerParser(sysDB, traceDB, argsm);
+				GStreamerParser parser = new GStreamerParser(sysDB, traceDB, input);
 				parser.parseTrace(monitor);
 
 			} catch (SoCTraceException ex) {
@@ -109,32 +100,21 @@ public class GStreamerImporter extends FramesocTool {
 		}
 	}
 
-	/**
-	 * TODO use new input mechanism and manage parameters -s, -o, ..
-	 */
-	
 	@Override
 	public void launch(IFramesocToolInput input) {
 		PluginImporterJob job = new PluginImporterJob("GStreamer Importer",
-				new GStreamerImporterPluginJobBody(TraceFileInput.toArray(input)));
+				new GStreamerImporterPluginJobBody(input));
 		job.setUser(true);
 		job.schedule();
 	}
 
 	@Override
 	public ParameterCheckStatus canLaunch(IFramesocToolInput input) {
-		String[] args = TraceFileInput.toArray(input);
-		if (args.length < 1) {
-			return new ParameterCheckStatus(false, "Missing file.");
-		}
-
-		String file = args[0];
-
-		File f = new File(file);
+		GStreamerInput arg = (GStreamerInput) input;
+		File f = new File(arg.fileName);
 		if (!f.isFile()) {
 			return new ParameterCheckStatus(false, "File " + f.getName() + " does not exist.");
 		}
-
 		return new ParameterCheckStatus(true, "");
 	}
 

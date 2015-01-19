@@ -12,7 +12,8 @@ Require-Bundle: org.eclipse.ui,
  fr.inria.soctrace.lib.search,
  fr.inria.soctrace.lib.model,
  fr.inria.soctrace.lib.query,
- fr.inria.soctrace.lib.slf4j
+ fr.inria.soctrace.lib.slf4j,
+ fr.inria.soctrace.framesoc.ui
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: INRIA
