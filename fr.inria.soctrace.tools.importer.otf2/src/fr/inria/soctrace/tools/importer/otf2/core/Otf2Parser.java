@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2014 INRIA.
+ * Copyright (c) 2012-2015 INRIA.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -36,6 +36,7 @@ import fr.inria.soctrace.lib.storage.SystemDBObject;
 import fr.inria.soctrace.lib.storage.TraceDBObject;
 import fr.inria.soctrace.lib.utils.IdManager;
 import fr.inria.soctrace.lib.utils.TagList;
+import fr.inria.soctrace.tools.importer.otf2.input.Otf2Input;
 import fr.inria.soctrace.tools.importer.otf2.reader.Otf2PrintWrapper;
 
 /**
@@ -101,18 +102,15 @@ public class Otf2Parser {
 	 *            system DB object
 	 * @param traceDB
 	 *            trace DB object
-	 * @param traceFile
-	 *            trace file name
-	 * @param novar
-	 *            flag stating that variable must be ignored
-	 * @param parseHierarchy 
+	 * @param input
+	 *            Otf2 parser input
 	 */
-	public Otf2Parser(SystemDBObject sysDB, TraceDBObject traceDB, String traceFile, boolean novar, boolean parseHierarchy) {
+	public Otf2Parser(SystemDBObject sysDB, TraceDBObject traceDB, Otf2Input input) {
 		this.sysDB = sysDB;
 		this.traceDB = traceDB;
-		this.traceFile = traceFile;
-		this.ignoreVariables = novar;
-		this.parseHierarchy = parseHierarchy;
+		this.traceFile = input.getTraceFile();
+		this.ignoreVariables = !input.isImportVariable();
+		this.parseHierarchy = input.isParseHierarchy();
 
 		parserMap.put(Otf2Constants.EVENT, new EventParser());
 		parserMap.put(Otf2Constants.LINK, new LinkParser());
@@ -231,7 +229,7 @@ public class Otf2Parser {
 					eventList.clear();
 				}
 			}
-			
+
 			// ensure we complete the monitor
 			monitor.worked(MONITOR_INCREMENT);
 

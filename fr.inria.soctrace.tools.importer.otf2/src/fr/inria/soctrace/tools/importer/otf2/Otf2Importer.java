@@ -13,13 +13,9 @@ package fr.inria.soctrace.tools.importer.otf2;
 import java.io.File;
 
 import org.apache.commons.io.FilenameUtils;
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import fr.inria.soctrace.framesoc.core.FramesocManager;
-import fr.inria.soctrace.framesoc.core.tools.management.ArgumentsManager;
 import fr.inria.soctrace.framesoc.core.tools.management.PluginImporterJob;
 import fr.inria.soctrace.framesoc.core.tools.model.FramesocTool;
 import fr.inria.soctrace.framesoc.core.tools.model.IFramesocToolInput;
@@ -32,6 +28,7 @@ import fr.inria.soctrace.lib.storage.TraceDBObject;
 import fr.inria.soctrace.lib.utils.DeltaManager;
 import fr.inria.soctrace.tools.importer.otf2.core.Otf2Constants;
 import fr.inria.soctrace.tools.importer.otf2.core.Otf2Parser;
+import fr.inria.soctrace.tools.importer.otf2.input.Otf2Input;
 
 /**
  * Otf2 importer tool.
@@ -40,18 +37,16 @@ import fr.inria.soctrace.tools.importer.otf2.core.Otf2Parser;
  */
 public class Otf2Importer extends FramesocTool {
 
-	private final static Logger logger = LoggerFactory.getLogger(Otf2Importer.class);
-
 	/**
 	 * Plugin Tool Job body: we use a Job since we have to perform a long operation and we don't
 	 * want to freeze the UI.
 	 */
 	public class Otf2ImporterPluginJobBody implements IPluginToolJobBody {
 
-		private String args[];
+		private Otf2Input input;
 
 		public Otf2ImporterPluginJobBody(IFramesocToolInput input) {
-			this.args = args;
+			this.input = (Otf2Input) input;
 		}
 
 		@Override
@@ -59,24 +54,10 @@ public class Otf2Importer extends FramesocTool {
 			DeltaManager delta = new DeltaManager();
 			delta.start();
 
-			logger.debug("Args: ");
-			for (String s : args) {
-				logger.debug(s);
-			}
-
-			ArgumentsManager argsm = new ArgumentsManager();
-			argsm.parseArgs(args);
-			argsm.printArgs();
-
-			boolean novar = argsm.getFlags().contains(Otf2Constants.OPT_NO_VAR);
-			boolean parseHierarchy = argsm.getFlags().contains(Otf2Constants.OPT_PARSE_HIERARCHY);
-
-			Assert.isTrue(argsm.getTokens().size() == 1);
-			String traceFile = argsm.getTokens().get(0);
 			if (monitor.isCanceled())
 				return;
 
-			String traceDbName = getNewTraceDBName(traceFile);
+			String traceDbName = getNewTraceDBName(input.getTraceFile());
 
 			SystemDBObject sysDB = null;
 			TraceDBObject traceDB = null;
@@ -88,7 +69,7 @@ public class Otf2Importer extends FramesocTool {
 				traceDB = new TraceDBObject(traceDbName, DBMode.DB_CREATE);
 
 				// parsing
-				Otf2Parser parser = new Otf2Parser(sysDB, traceDB, traceFile, novar, parseHierarchy);
+				Otf2Parser parser = new Otf2Parser(sysDB, traceDB, input);
 				parser.parseTrace(monitor);
 
 			} catch (SoCTraceException ex) {
@@ -127,10 +108,6 @@ public class Otf2Importer extends FramesocTool {
 		return FramesocManager.getInstance().getTraceDBName(basename);
 	}
 
-	/**
-	 * TODO use new mechanism for input and manage:  -novar (ignore variables), -ph (parse hierarchy).
-	 */
-	
 	@Override
 	public void launch(IFramesocToolInput input) {
 		PluginImporterJob job = new PluginImporterJob("Otf2 Importer",
@@ -142,24 +119,19 @@ public class Otf2Importer extends FramesocTool {
 	@Override
 	public ParameterCheckStatus canLaunch(IFramesocToolInput input) {
 
-		ArgumentsManager argsm = new ArgumentsManager();
-		try {
-			// do this in a try block, since the method is called also for
-			// invalid input (it is called each time input changes)
-			//argsm.parseArgs(TraceFileInput.toArray(input));
-		} catch (IllegalArgumentException e) {
-			return new ParameterCheckStatus(false, "Illegal arguments.");
+		Otf2Input args = (Otf2Input) input;
+
+		// check if a file is set
+		String file = args.getTraceFile();
+		if (file.trim().equals("")) {
+			return new ParameterCheckStatus(false, "Specify a trace file");
 		}
-
-		// check if the (single) file is specified
-		if (argsm.getTokens().size() != 1)
-			return new ParameterCheckStatus(false, "Specify a single trace file.");
-
+		
 		// check if the file exists
-		String file = argsm.getTokens().get(0);
 		File f = new File(file);
-		if (!f.isFile())
+		if (!f.exists() || !f.isFile()) {
 			return new ParameterCheckStatus(false, f.getName() + " does not exist.");
+		}
 
 		return new ParameterCheckStatus(true, "");
 	}
