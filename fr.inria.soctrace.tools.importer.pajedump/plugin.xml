@@ -6,9 +6,17 @@
       <tool
             class="fr.inria.soctrace.tools.importer.pajedump.PajeDumpImporter"
             doc="Trace file(s) produced dumping a Pajé trace with pj_dump."
+            id="fr.inria.soctrace.tools.importer.pajedump"
             name="Pajé Dump Importer"
             type="IMPORT">
       </tool>
+   </extension>
+   <extension
+         point="fr.inria.soctrace.framesoc.ui.input.toolInput">
+      <toolInput
+            compositeFactory="fr.inria.soctrace.tools.importer.pajedump.input.PajeDumpInputCompositeFactory"
+            toolId="fr.inria.soctrace.tools.importer.pajedump">
+      </toolInput>
    </extension>
 
 </plugin>

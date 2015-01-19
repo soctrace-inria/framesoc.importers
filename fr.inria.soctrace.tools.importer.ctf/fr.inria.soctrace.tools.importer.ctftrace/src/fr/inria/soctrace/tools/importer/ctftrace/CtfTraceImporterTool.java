@@ -1,9 +1,10 @@
 package fr.inria.soctrace.tools.importer.ctftrace;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -11,7 +12,9 @@ import org.eclipse.core.runtime.IStatus;
 import fr.inria.linuxtools.tmf.ctf.core.CtfTmfTrace;
 import fr.inria.soctrace.framesoc.core.FramesocManager;
 import fr.inria.soctrace.framesoc.core.tools.management.PluginImporterJob;
+import fr.inria.soctrace.framesoc.core.tools.model.FileInput;
 import fr.inria.soctrace.framesoc.core.tools.model.FramesocTool;
+import fr.inria.soctrace.framesoc.core.tools.model.IFramesocToolInput;
 import fr.inria.soctrace.framesoc.core.tools.model.IPluginToolJobBody;
 import fr.inria.soctrace.lib.utils.Configuration;
 import fr.inria.soctrace.lib.utils.Configuration.SoCTraceProperty;
@@ -26,40 +29,34 @@ public class CtfTraceImporterTool extends FramesocTool {
 	 */
 	private class CtfTraceImporterPluginJobBody implements IPluginToolJobBody {
 
-		private String args[];
+		private FileInput input;
 
-		public CtfTraceImporterPluginJobBody(String[] args) {
-			this.args = args;
+		public CtfTraceImporterPluginJobBody(IFramesocToolInput input) {
+			this.input = (FileInput) input;
 		}
 
 		@Override
 		public void run(IProgressMonitor monitor) {
 
-			System.out.println("Args: ");
-			for (String s : args) {
-				System.out.println(s);
-			}
+			List<String> files = input.getFiles();
 
-			if (args.length < 1) {
+			if (files.size() < 1) {
 				System.err.println("Too few arguments");
 				return;
 			}
 
-			String sysDbName = Configuration.getInstance().get(
-					SoCTraceProperty.soctrace_db_name);
-			String traceDbNameSW = FramesocManager.getInstance().getTraceDBName(
-					"CTFTRACE_SW");
-			String traceDbNameHW = FramesocManager.getInstance().getTraceDBName(
-					"CTFTRACE_HW");
+			String sysDbName = Configuration.getInstance().get(SoCTraceProperty.soctrace_db_name);
+			String traceDbNameSW = FramesocManager.getInstance().getTraceDBName("CTFTRACE_SW");
+			String traceDbNameHW = FramesocManager.getInstance().getTraceDBName("CTFTRACE_HW");
 
 			// Arguments are given as files, but we only want directories
-			List<String> l = getUniqueDirectories(args);
+			Set<String> l = getUniqueDirectories(files);
 
-			for (int i = 0; i < args.length; ++i) {
-				l.add(args[i]);
-				File t = new File(args[i]);
+			for (String s : files) {
+				l.add(s);
+				File t = new File(s);
 				if (!t.exists()) {
-					System.err.println("File " + args[i] + " not found");
+					System.err.println("File " + s + " not found");
 					return;
 				}
 			}
@@ -87,27 +84,27 @@ public class CtfTraceImporterTool extends FramesocTool {
 	 * 
 	 * @param theArgs
 	 *            An array of file path as String
-	 * @return A list of unique directories
+	 * @return A set of unique directories
 	 */
-	private ArrayList<String> getUniqueDirectories(String[] theArgs) {
-		ArrayList<String> directories = new ArrayList<String>();
-		for (int i = 0; i < theArgs.length; ++i) {
-			String directory = theArgs[i].substring(0, theArgs[i].lastIndexOf("/") + 1);
-
+	private Set<String> getUniqueDirectories(List<String> theArgs) {
+		Set<String> directories = new HashSet<String>();
+		for (String s : theArgs) {
+			String directory = s.substring(0, s.lastIndexOf("/") + 1);
 			// Make sure it is unique
 			if (!directories.contains(directory)) {
 				directories.add(directory);
 			}
 		}
-
 		return directories;
 	}
 
 	/**
 	 * Check that the argument is a valid trace path and if it is valid, enable the importation
 	 */
-	public ParameterCheckStatus canLaunch(String[] args) {
-		List<String> traceDirectories = getUniqueDirectories(args);
+	@Override
+	public ParameterCheckStatus canLaunch(IFramesocToolInput input) {
+		FileInput args = (FileInput) input;
+		Set<String> traceDirectories = getUniqueDirectories(args.getFiles());
 		ParameterCheckStatus status = new ParameterCheckStatus(false, "");
 		for (String aDirectory : traceDirectories) {
 			CtfTmfTrace aTrace = new CtfTmfTrace();
@@ -115,7 +112,7 @@ public class CtfTraceImporterTool extends FramesocTool {
 			status.valid = validateStatus.isOK();
 			status.message = "";
 			aTrace.close();
-			
+
 			if (!status.valid) {
 				status.message = "Invalid trace or illegal arguments passed";
 				return status;
@@ -125,9 +122,9 @@ public class CtfTraceImporterTool extends FramesocTool {
 	}
 
 	@Override
-	public void launch(String[] args) {
+	public void launch(IFramesocToolInput input) {
 		PluginImporterJob job = new PluginImporterJob("CtfTrace Importer",
-				new CtfTraceImporterPluginJobBody(args));
+				new CtfTraceImporterPluginJobBody(input));
 		job.setUser(true);
 		job.schedule();
 	}

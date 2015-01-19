@@ -28,7 +28,9 @@ import org.slf4j.LoggerFactory;
 import fr.inria.soctrace.framesoc.core.FramesocManager;
 import fr.inria.soctrace.framesoc.core.tools.management.ArgumentsManager;
 import fr.inria.soctrace.framesoc.core.tools.management.PluginImporterJob;
+import fr.inria.soctrace.framesoc.core.tools.model.FileInput;
 import fr.inria.soctrace.framesoc.core.tools.model.FramesocTool;
+import fr.inria.soctrace.framesoc.core.tools.model.IFramesocToolInput;
 import fr.inria.soctrace.framesoc.core.tools.model.IPluginToolJobBody;
 import fr.inria.soctrace.lib.model.utils.SoCTraceException;
 import fr.inria.soctrace.lib.storage.DBObject;
@@ -58,7 +60,7 @@ public class ParaverImporter extends FramesocTool {
 	 */
 	public class ParaverImporterPluginJobBody implements IPluginToolJobBody {
 
-		private String args[];
+		private FileInput input;
 
 		class ParaverParser extends PJDumpParser {
 			String alias;
@@ -79,8 +81,8 @@ public class ParaverImporter extends FramesocTool {
 			}
 		}
 
-		public ParaverImporterPluginJobBody(String[] args) {
-			this.args = args;
+		public ParaverImporterPluginJobBody(IFramesocToolInput input) {
+			this.input = (FileInput) input;
 		}
 
 		@Override
@@ -88,12 +90,8 @@ public class ParaverImporter extends FramesocTool {
 			DeltaManager delta = new DeltaManager();
 			delta.start();
 
-			ArgumentsManager argsm = new ArgumentsManager();
-			argsm.parseArgs(args);
-			argsm.printArgs();
-
-			Assert.isTrue(argsm.getTokens().size() == 1);
-			String traceFile = argsm.getTokens().get(0);
+			Assert.isTrue(input.getFiles().size() == 1);
+			String traceFile = input.getFiles().iterator().next();
 			if (monitor.isCanceled())
 				return;
 
@@ -178,48 +176,51 @@ public class ParaverImporter extends FramesocTool {
 	}
 
 	@Override
-	public void launch(String[] args) {
+	public void launch(IFramesocToolInput input) {
 		PluginImporterJob job = new PluginImporterJob("Paraver Importer",
-				new ParaverImporterPluginJobBody(args));
+				new ParaverImporterPluginJobBody(input));
 		job.setUser(true);
 		job.schedule();
 	}
 
 	@Override
-	public ParameterCheckStatus canLaunch(String[] args) {
+	public ParameterCheckStatus canLaunch(IFramesocToolInput input) {
 
-		if (args.length != 1) {
-			return new ParameterCheckStatus(false, "Missing " + ParaverConstants.TRACE_EXT
+		FileInput arg = (FileInput) input;
+
+		if (arg.getFiles().size() != 1) {
+			return new ParameterCheckStatus(false, "Specify a single " + ParaverConstants.TRACE_EXT
 					+ " file.");
 		}
 
-		for (String file : args) {
-			File f = new File(file);
-			if (!f.isFile()) {
-				logger.debug("Not a file: {}", f.getName());
-				return new ParameterCheckStatus(false, f.getName() + " is not a file.");
-			}
-			String basename = FilenameUtils.getBaseName(f.getAbsolutePath());
-			if (!f.getName().equals(basename + ParaverConstants.TRACE_EXT)) {
-				logger.debug("Wrong extension: {}", f.getName());
-				return new ParameterCheckStatus(false, "The file does not end with "
-						+ ParaverConstants.TRACE_EXT + ".");
-			}
+		String fileName = arg.getFiles().iterator().next();
 
-			File dir = f.getParentFile();
-			File[] files = dir.listFiles();
-			Set<String> fileSet = new HashSet<>();
-			for (File tf : files) {
-				fileSet.add(tf.getName());
-			}
-			if (!fileSet.contains(basename + ParaverConstants.PCF_EXT)) {
-				logger.debug("{} not found", basename + ParaverConstants.PCF_EXT);
-				return new ParameterCheckStatus(false, basename + ParaverConstants.PCF_EXT
-						+ " not found.");
-			}
-
-			// check for .row too, if necessary
+		File f = new File(fileName);
+		if (!f.isFile()) {
+			logger.debug("Not a file: {}", f.getName());
+			return new ParameterCheckStatus(false, f.getName() + " is not a file.");
 		}
+		String basename = FilenameUtils.getBaseName(f.getAbsolutePath());
+		if (!f.getName().equals(basename + ParaverConstants.TRACE_EXT)) {
+			logger.debug("Wrong extension: {}", f.getName());
+			return new ParameterCheckStatus(false, "The file does not end with "
+					+ ParaverConstants.TRACE_EXT + ".");
+		}
+
+		File dir = f.getParentFile();
+		File[] files = dir.listFiles();
+		Set<String> fileSet = new HashSet<>();
+		for (File tf : files) {
+			fileSet.add(tf.getName());
+		}
+		if (!fileSet.contains(basename + ParaverConstants.PCF_EXT)) {
+			logger.debug("{} not found", basename + ParaverConstants.PCF_EXT);
+			return new ParameterCheckStatus(false, basename + ParaverConstants.PCF_EXT
+					+ " not found.");
+		}
+
+		// check for .row too, if necessary
+
 		return new ParameterCheckStatus(true, "");
 	}
 }

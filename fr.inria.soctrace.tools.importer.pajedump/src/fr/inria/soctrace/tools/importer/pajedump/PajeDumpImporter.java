@@ -12,6 +12,7 @@ package fr.inria.soctrace.tools.importer.pajedump;
 
 import java.io.File;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
@@ -20,9 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.inria.soctrace.framesoc.core.FramesocManager;
-import fr.inria.soctrace.framesoc.core.tools.management.ArgumentsManager;
 import fr.inria.soctrace.framesoc.core.tools.management.PluginImporterJob;
 import fr.inria.soctrace.framesoc.core.tools.model.FramesocTool;
+import fr.inria.soctrace.framesoc.core.tools.model.IFramesocToolInput;
 import fr.inria.soctrace.framesoc.core.tools.model.IPluginToolJobBody;
 import fr.inria.soctrace.lib.model.utils.SoCTraceException;
 import fr.inria.soctrace.lib.storage.DBObject;
@@ -32,6 +33,7 @@ import fr.inria.soctrace.lib.storage.TraceDBObject;
 import fr.inria.soctrace.lib.utils.DeltaManager;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpConstants;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpParser;
+import fr.inria.soctrace.tools.importer.pajedump.input.PajeDumpInput;
 
 /**
  * Paje dump importer tool.
@@ -48,10 +50,10 @@ public class PajeDumpImporter extends FramesocTool {
 	 */
 	public class PJDumpImporterPluginJobBody implements IPluginToolJobBody {
 
-		private String args[];
+		private PajeDumpInput input; 
 
-		public PJDumpImporterPluginJobBody(String[] args) {
-			this.args = args;
+		public PJDumpImporterPluginJobBody(IFramesocToolInput input) {
+			this.input = (PajeDumpInput) input;
 		}
 
 		@Override
@@ -59,21 +61,15 @@ public class PajeDumpImporter extends FramesocTool {
 			DeltaManager delta = new DeltaManager();
 			delta.start();
 
-			ArgumentsManager argsm = new ArgumentsManager();
-			argsm.parseArgs(args);
-			argsm.printArgs();
-
-			boolean doublePrecision = true;
-			if (!argsm.getFlags().isEmpty() && argsm.getFlags().contains("l")) {
-				doublePrecision = false;
-				System.out.println("Long option selected");
-			}
-
-			int numberOfTraces = argsm.getTokens().size();
+			// long precision arg
+			boolean doublePrecision = input.isDoublePrecision();
+			List<String> traces = input.getFiles();
+			
+			int numberOfTraces = traces.size();
 			int currentTrace = 1;
 			Set<String> usedNames = new HashSet<>();
 			DeltaManager traceDelta = new DeltaManager();
-			for (String traceFile : argsm.getTokens()) {
+			for (String traceFile : traces) {
 
 				logger.debug("Importing " + traceFile);
 
@@ -145,32 +141,24 @@ public class PajeDumpImporter extends FramesocTool {
 	}
 
 	@Override
-	public void launch(String[] args) {
+	public void launch(IFramesocToolInput input) {
 		PluginImporterJob job = new PluginImporterJob("Paje Dump Importer",
-				new PJDumpImporterPluginJobBody(args));
+				new PJDumpImporterPluginJobBody(input));
 		job.setUser(true);
 		job.schedule();
 	}
 
 	@Override
-	public ParameterCheckStatus canLaunch(String[] args) {
+	public ParameterCheckStatus canLaunch(IFramesocToolInput input) {
 
-		ArgumentsManager argsm = new ArgumentsManager();
-		try {
-			// do this in a try block, since the method is called also for
-			// invalid input (it is called each time input changes)
-			argsm.parseArgs(args);
-		} catch (IllegalArgumentException e) {
-			return new ParameterCheckStatus(false, "Illegal arguments.");
-		}
-
+		PajeDumpInput pjinput = (PajeDumpInput) input;
 		// check if at least one trace file is specified
-		if (argsm.getTokens().size() < 1) {
+		if (pjinput.getFiles().size() < 1) {
 			return new ParameterCheckStatus(false, "Specify at least one trace file.");
 		}
 
 		// check trace files
-		for (String file : argsm.getTokens()) {
+		for (String file : pjinput.getFiles()) {
 			File f = new File(file);
 			if (!f.isFile()) {
 				return new ParameterCheckStatus(false, f.getName() + " does not exist.");

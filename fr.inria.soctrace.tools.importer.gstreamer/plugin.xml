@@ -6,9 +6,17 @@
       <tool
             class="fr.inria.soctrace.tools.importer.gstreamer.GStreamerImporter"
             doc="[ -s=start_frame_event_type_name ] [-o] (-o allows overlapping frames)"
+            id="fr.inria.soctrace.tools.importer.gstreamer"
             name="GStreamer Importer"
             type="IMPORT">
       </tool>
+   </extension>
+   <extension
+         point="fr.inria.soctrace.framesoc.ui.input.toolInput">
+      <toolInput
+            compositeFactory="fr.inria.soctrace.tools.importer.gstreamer.input.GStreamerInputCompositeFactory"
+            toolId="fr.inria.soctrace.tools.importer.gstreamer">
+      </toolInput>
    </extension>
 
 </plugin>
