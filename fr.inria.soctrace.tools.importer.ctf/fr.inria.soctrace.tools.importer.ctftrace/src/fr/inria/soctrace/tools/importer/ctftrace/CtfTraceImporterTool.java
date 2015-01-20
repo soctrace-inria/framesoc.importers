@@ -109,6 +109,11 @@ public class CtfTraceImporterTool extends FramesocTool {
 	@Override
 	public ParameterCheckStatus canLaunch(IFramesocToolInput input) {
 		FileInput args = (FileInput) input;
+		
+		if (args.getFiles().size() == 0) {
+			return new ParameterCheckStatus(false, "Specify a trace file or a directory containing trace files.");
+		}
+		
 		Set<String> traceDirectories = getUniqueDirectories(args.getFiles());
 		ParameterCheckStatus status = new ParameterCheckStatus(false, "");
 		for (String aDirectory : traceDirectories) {

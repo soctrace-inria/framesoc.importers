@@ -108,7 +108,7 @@ public class Otf2Importer extends FramesocTool {
 		// check if a file is set
 		String file = args.getTraceFile();
 		if (file.trim().equals("")) {
-			return new ParameterCheckStatus(false, "Specify a trace file");
+			return new ParameterCheckStatus(false, "Specify a trace file.");
 		}
 
 		// check if the file exists
