@@ -39,44 +39,48 @@ public class CtfTraceImporterTool extends FramesocTool {
 		@Override
 		public void run(IProgressMonitor monitor) throws SoCTraceException {
 
-			List<String> files = input.getFiles();
+			try {
+				List<String> files = input.getFiles();
 
-			if (files.size() < 1) {
-				System.err.println("Too few arguments");
-				return;
-			}
-
-			String sysDbName = Configuration.getInstance().get(SoCTraceProperty.soctrace_db_name);
-			String traceDbNameSW = FramesocManager.getInstance().getTraceDBName("CTFTRACE_SW");
-			String traceDbNameHW = FramesocManager.getInstance().getTraceDBName("CTFTRACE_HW");
-
-			// Arguments are given as files, but we only want directories
-			Set<String> l = getUniqueDirectories(files);
-
-			for (String s : files) {
-				l.add(s);
-				File t = new File(s);
-				if (!t.exists()) {
-					System.err.println("File " + s + " not found");
+				if (files.size() < 1) {
+					System.err.println("Too few arguments");
 					return;
 				}
-			}
 
-			int numTraceFiles = l.size();
-			String[] traceFiles = new String[numTraceFiles];
-			Iterator<String> it = l.iterator();
-			for (int i = 0; i < numTraceFiles; ++i) {
-				traceFiles[i] = it.next();
-			}
+				String sysDbName = Configuration.getInstance().get(
+						SoCTraceProperty.soctrace_db_name);
+				String traceDbNameSW = FramesocManager.getInstance().getTraceDBName("CTFTRACE_SW");
+				String traceDbNameHW = FramesocManager.getInstance().getTraceDBName("CTFTRACE_HW");
 
-			CtfParserArgs ctfArgs = new CtfParserArgs();
-			ctfArgs.sysDbName = sysDbName;
-			ctfArgs.traceDbNameSW = traceDbNameSW;
-			ctfArgs.traceDbNameHW = traceDbNameHW;
-			ctfArgs.traceFiles = traceFiles;
-			monitor.beginTask("Parsing trace in " + traceFiles[0], IProgressMonitor.UNKNOWN);
-			new CtfParserLauncher().launch(ctfArgs, monitor);
-			monitor.done();
+				// Arguments are given as files, but we only want directories
+				Set<String> l = getUniqueDirectories(files);
+
+				for (String s : files) {
+					l.add(s);
+					File t = new File(s);
+					if (!t.exists()) {
+						System.err.println("File " + s + " not found");
+						return;
+					}
+				}
+
+				int numTraceFiles = l.size();
+				String[] traceFiles = new String[numTraceFiles];
+				Iterator<String> it = l.iterator();
+				for (int i = 0; i < numTraceFiles; ++i) {
+					traceFiles[i] = it.next();
+				}
+
+				CtfParserArgs ctfArgs = new CtfParserArgs();
+				ctfArgs.sysDbName = sysDbName;
+				ctfArgs.traceDbNameSW = traceDbNameSW;
+				ctfArgs.traceDbNameHW = traceDbNameHW;
+				ctfArgs.traceFiles = traceFiles;
+				monitor.beginTask("Parsing trace in " + traceFiles[0], IProgressMonitor.UNKNOWN);
+				new CtfParserLauncher().launch(ctfArgs, monitor);
+			} finally {
+				monitor.done();
+			}
 		}
 	}
 
