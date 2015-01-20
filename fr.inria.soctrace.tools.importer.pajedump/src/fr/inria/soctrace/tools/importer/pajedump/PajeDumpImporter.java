@@ -50,21 +50,21 @@ public class PajeDumpImporter extends FramesocTool {
 	 */
 	public class PJDumpImporterPluginJobBody implements IPluginToolJobBody {
 
-		private PajeDumpInput input; 
+		private PajeDumpInput input;
 
 		public PJDumpImporterPluginJobBody(IFramesocToolInput input) {
 			this.input = (PajeDumpInput) input;
 		}
 
 		@Override
-		public void run(IProgressMonitor monitor) {
+		public void run(IProgressMonitor monitor) throws SoCTraceException {
 			DeltaManager delta = new DeltaManager();
 			delta.start();
 
 			// long precision arg
 			boolean doublePrecision = input.isDoublePrecision();
 			List<String> traces = input.getFiles();
-			
+
 			int numberOfTraces = traces.size();
 			int currentTrace = 1;
 			Set<String> usedNames = new HashSet<>();
@@ -94,22 +94,8 @@ public class PajeDumpImporter extends FramesocTool {
 							doublePrecision);
 					parser.parseTrace(monitor, currentTrace, numberOfTraces);
 
-				} catch (SoCTraceException ex) {
-					System.err.println(ex.getMessage());
-					ex.printStackTrace();
-					System.err.println("Import failure. Trying to rollback modifications in DB.");
-					if (sysDB != null)
-						try {
-							sysDB.rollback();
-						} catch (SoCTraceException e) {
-							e.printStackTrace();
-						}
-					if (traceDB != null)
-						try {
-							traceDB.dropDatabase();
-						} catch (SoCTraceException e) {
-							e.printStackTrace();
-						}
+				} catch (SoCTraceException e) {
+					PluginImporterJob.catchImporterException(e, sysDB, traceDB);
 				} finally {
 					// close the trace DB and the system DB (commit)
 					DBObject.finalClose(traceDB);

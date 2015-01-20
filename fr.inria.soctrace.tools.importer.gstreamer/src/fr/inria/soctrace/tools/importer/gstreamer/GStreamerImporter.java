@@ -52,7 +52,7 @@ public class GStreamerImporter extends FramesocTool {
 		}
 
 		@Override
-		public void run(IProgressMonitor monitor) {
+		public void run(IProgressMonitor monitor) throws SoCTraceException {
 
 			DeltaManager delta = new DeltaManager();
 			delta.start();
@@ -67,30 +67,16 @@ public class GStreamerImporter extends FramesocTool {
 
 				// open system DB
 				sysDB = new SystemDBObject(sysDbName, DBMode.DB_OPEN);
-				
+
 				// create new trace DB
 				traceDB = new TraceDBObject(traceDbName, DBMode.DB_CREATE);
-				
+
 				// parsing
 				GStreamerParser parser = new GStreamerParser(sysDB, traceDB, input);
 				parser.parseTrace(monitor);
 
-			} catch (SoCTraceException ex) {
-				System.err.println(ex.getMessage());
-				ex.printStackTrace();
-				System.err.println("Import failure. Trying to rollback modifications in DB.");
-				if (sysDB != null)
-					try {
-						sysDB.rollback();
-					} catch (SoCTraceException e) {
-						e.printStackTrace();
-					}
-				if (traceDB != null)
-					try {
-						traceDB.dropDatabase();
-					} catch (SoCTraceException e) {
-						e.printStackTrace();
-					}
+			} catch (SoCTraceException e) {
+				PluginImporterJob.catchImporterException(e, sysDB, traceDB);
 			} finally {
 				// close the trace DB and the system DB (commit)
 				DBObject.finalClose(traceDB);

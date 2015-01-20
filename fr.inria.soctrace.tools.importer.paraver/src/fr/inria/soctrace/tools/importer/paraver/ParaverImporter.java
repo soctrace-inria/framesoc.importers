@@ -86,7 +86,7 @@ public class ParaverImporter extends FramesocTool {
 		}
 
 		@Override
-		public void run(IProgressMonitor monitor) {
+		public void run(IProgressMonitor monitor) throws SoCTraceException {
 			DeltaManager delta = new DeltaManager();
 			delta.start();
 
@@ -132,22 +132,8 @@ public class ParaverImporter extends FramesocTool {
 				parser.parseTrace(monitor, 1, 1);
 				outputFile.delete();
 
-			} catch (SoCTraceException ex) {
-				System.err.println(ex.getMessage());
-				ex.printStackTrace();
-				System.err.println("Import failure. Trying to rollback modifications in DB.");
-				if (sysDB != null)
-					try {
-						sysDB.rollback();
-					} catch (SoCTraceException e) {
-						e.printStackTrace();
-					}
-				if (traceDB != null)
-					try {
-						traceDB.dropDatabase();
-					} catch (SoCTraceException e) {
-						e.printStackTrace();
-					}
+			} catch (SoCTraceException e) {
+				PluginImporterJob.catchImporterException(e, sysDB, traceDB);
 			} finally {
 				// close the trace DB and the system DB (commit)
 				DBObject.finalClose(traceDB);

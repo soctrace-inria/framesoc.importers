@@ -50,7 +50,7 @@ public class Otf2Importer extends FramesocTool {
 		}
 
 		@Override
-		public void run(IProgressMonitor monitor) {
+		public void run(IProgressMonitor monitor) throws SoCTraceException {
 			DeltaManager delta = new DeltaManager();
 			delta.start();
 
@@ -72,24 +72,8 @@ public class Otf2Importer extends FramesocTool {
 				Otf2Parser parser = new Otf2Parser(sysDB, traceDB, input);
 				parser.parseTrace(monitor);
 
-			} catch (SoCTraceException ex) {
-				System.err.println(ex.getMessage());
-				ex.printStackTrace();
-				System.err.println("Import failure. Trying to rollback modifications in DB.");
-				if (sysDB != null) {
-					try {
-						sysDB.rollback();
-					} catch (SoCTraceException e) {
-						e.printStackTrace();
-					}
-				}
-				if (traceDB != null) {
-					try {
-						traceDB.dropDatabase();
-					} catch (SoCTraceException e) {
-						e.printStackTrace();
-					}
-				}
+			} catch (SoCTraceException e) {
+				PluginImporterJob.catchImporterException(e, sysDB, traceDB);
 			} finally {
 				// close the trace DB and the system DB (commit)
 				DBObject.finalClose(traceDB);
@@ -126,7 +110,7 @@ public class Otf2Importer extends FramesocTool {
 		if (file.trim().equals("")) {
 			return new ParameterCheckStatus(false, "Specify a trace file");
 		}
-		
+
 		// check if the file exists
 		File f = new File(file);
 		if (!f.exists() || !f.isFile()) {
