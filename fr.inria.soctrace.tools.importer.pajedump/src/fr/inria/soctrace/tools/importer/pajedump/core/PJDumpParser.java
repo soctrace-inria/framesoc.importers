@@ -147,8 +147,17 @@ public class PJDumpParser {
 			String[] line;
 			while ((line = getLine(br)) != null) {
 
+				if (line.length < PJDumpConstants.MIN_LINE_NUMBER_OF_PARAMETERS) {
+					malformedLineException(line);
+				}
+
 				logger.debug(Arrays.toString(line));
-				parserMap.get(line[PJDumpConstants.ENTITY]).parseLine(line);
+				PJDumpLineParser parser = parserMap.get(line[PJDumpConstants.ENTITY]);
+				if (parser == null) {
+					malformedLineException(line);
+				}
+				
+				parser.parseLine(line);
 
 				if (elist.size() == PJDumpConstants.PAGE_SIZE)
 					page++;
@@ -168,6 +177,7 @@ public class PJDumpParser {
 						break;
 					}
 				}
+
 			}
 
 			if (elist.size() > 0) {
@@ -188,7 +198,11 @@ public class PJDumpParser {
 
 	}
 
-	int getWorked(double scale) {
+	private void malformedLineException(String[] line) throws SoCTraceException {
+		throw new SoCTraceException("Malformed line: " + Arrays.toString(line));
+	}
+	
+	private int getWorked(double scale) {
 		return (int) (scale * byteRead);
 	}
 
@@ -306,6 +320,7 @@ public class PJDumpParser {
 
 	private class EventParser implements PJDumpLineParser {
 		public void parseLine(String[] fields) throws SoCTraceException {
+			checkLine(fields, PJDumpConstants.E_ARGUMENTS);
 			PunctualEvent e = new PunctualEvent(eIdManager.getNextId());
 			e.setEventProducer(producersMap.get(fields[PJDumpConstants.E_CONTAINER]));
 			e.setPage(page);
@@ -316,8 +331,16 @@ public class PJDumpParser {
 		}
 	}
 
+	private void checkLine(String[] fields, int number) throws SoCTraceException {
+		if (fields.length < PJDumpConstants.L_ARGUMENTS) {
+			throw new SoCTraceException("Line has the wrong number of arguments: "
+					+ Arrays.toString(fields));
+		}
+	}
+
 	private class LinkParser implements PJDumpLineParser {
 		public void parseLine(String[] fields) throws SoCTraceException {
+			checkLine(fields, PJDumpConstants.L_ARGUMENTS);
 			Link l = new Link(eIdManager.getNextId());
 			l.setPage(page);
 			l.setTimestamp(getTimestamp(fields[PJDumpConstants.L_START_TIME]));
@@ -353,6 +376,7 @@ public class PJDumpParser {
 
 	private class StateParser implements PJDumpLineParser {
 		public void parseLine(String[] fields) throws SoCTraceException {
+			checkLine(fields, PJDumpConstants.S_ARGUMENTS);
 			State s = new State(eIdManager.getNextId());
 			s.setEventProducer(producersMap.get(fields[PJDumpConstants.S_CONTAINER]));
 			s.setPage(page);
@@ -368,6 +392,7 @@ public class PJDumpParser {
 
 	private class VariableParser implements PJDumpLineParser {
 		public void parseLine(String[] fields) throws SoCTraceException {
+			checkLine(fields, PJDumpConstants.V_ARGUMENTS);
 			Variable v = new Variable(eIdManager.getNextId());
 			v.setEventProducer(producersMap.get(fields[PJDumpConstants.V_CONTAINER]));
 			v.setPage(page);
@@ -381,7 +406,8 @@ public class PJDumpParser {
 	}
 
 	private class ContainerParser implements PJDumpLineParser {
-		public void parseLine(String[] fields) {
+		public void parseLine(String[] fields) throws SoCTraceException {
+			checkLine(fields, PJDumpConstants.C_ARGUMENTS);
 			if (producersMap.containsKey(fields[PJDumpConstants.C_NAME]))
 				return;
 			EventProducer ep = new EventProducer(epIdManager.getNextId());

@@ -51,11 +51,16 @@ public class PJDumpConstants {
 	
 	public static final int ENTITY = 0;
 	
+	// Minimum number of parameters in a pjdump line
+	public static final int MIN_LINE_NUMBER_OF_PARAMETERS = 5;
+	
 	//	Container, parentContainer, containerType, startTime, endTime, duration, name
+	public static final int C_ARGUMENTS = 7;
 	public static final int C_PARENT_CONTAINER = 1;
 	public static final int C_TYPE = 2;
 	public static final int C_NAME = 6;
 	//	State, container, stateType, startTime, endTime, duration, imbrication, value
+	public static final int S_ARGUMENTS = 8;
 	public static final int S_CONTAINER = 1;
 	public static final int S_TYPE = 2;
 	public static final int S_START_TIME = 3;
@@ -63,16 +68,19 @@ public class PJDumpConstants {
 	public static final int S_IMBRICATION = 6;
 	public static final int S_VALUE = 7;
 	//	Variable, container, variableType, startTime, endTime, duration, value
+	public static final int V_ARGUMENTS = 7;
 	public static final int V_CONTAINER = 1;
 	public static final int V_TYPE = 2;
 	public static final int V_START_TIME = 3;
 	public static final int V_VALUE = 6;
 	//	Event, container, eventType, time, value
+	public static final int E_ARGUMENTS = 5;
 	public static final int E_CONTAINER = 1;
 	public static final int E_TYPE = 2;
 	public static final int E_TIME = 3;
 	public static final int E_VALUE = 4;
 	//	Link, container, linkType, startTime, endTime, duration, value, startContainer, endContainer
+	public static final int L_ARGUMENTS = 9;
 	public static final int L_TYPE = 2;
 	public static final int L_START_TIME = 3;
 	public static final int L_END_TIME = 4;

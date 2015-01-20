@@ -95,6 +95,7 @@ public class PajeDumpImporter extends FramesocTool {
 					parser.parseTrace(monitor, currentTrace, numberOfTraces);
 
 				} catch (SoCTraceException e) {
+					e.printStackTrace();
 					PluginImporterJob.catchImporterException(e, sysDB, traceDB);
 				} finally {
 					// close the trace DB and the system DB (commit)

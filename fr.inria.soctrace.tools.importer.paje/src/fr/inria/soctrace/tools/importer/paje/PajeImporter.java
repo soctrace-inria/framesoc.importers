@@ -25,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.inria.soctrace.framesoc.core.FramesocManager;
-import fr.inria.soctrace.framesoc.core.tools.management.ArgumentsManager;
 import fr.inria.soctrace.framesoc.core.tools.management.PluginImporterJob;
 import fr.inria.soctrace.framesoc.core.tools.model.FramesocTool;
 import fr.inria.soctrace.framesoc.core.tools.model.IFramesocToolInput;
@@ -168,10 +167,6 @@ public class PajeImporter extends FramesocTool {
 		return realName;
 	}
 
-	/**
-	 * TODO new mechanism for input + manage params for paje
-	 */
-
 	@Override
 	public void launch(IFramesocToolInput input) {
 		PluginImporterJob job = new PluginImporterJob("Pajé Importer",
@@ -183,22 +178,14 @@ public class PajeImporter extends FramesocTool {
 	@Override
 	public ParameterCheckStatus canLaunch(IFramesocToolInput input) {
 
-		ArgumentsManager argsm = new ArgumentsManager();
-		try {
-			// do this in a try block, since the method is called also for
-			// invalid input (it is called each time input changes)
-			// argsm.parseArgs(TraceFileInput.toArray(input));
-		} catch (IllegalArgumentException e) {
-			return new ParameterCheckStatus(false, "Illegal arguments.");
-		}
-
+		PajeDumpInput pjinput = (PajeDumpInput) input;
 		// check if at least one trace file is specified
-		if (argsm.getTokens().size() < 1) {
+		if (pjinput.getFiles().size() < 1) {
 			return new ParameterCheckStatus(false, "Specify at least one trace file.");
 		}
 
 		// check trace files
-		for (String file : argsm.getTokens()) {
+		for (String file : pjinput.getFiles()) {
 			File f = new File(file);
 			if (!f.isFile()) {
 				return new ParameterCheckStatus(false, f.getName() + " does not exist.");
