@@ -90,6 +90,15 @@ class Otf2PreParser {
 					parseMetricMember(line);
 				} else if (keyword.equals(Otf2Constants.LOCATION)) {
 					parseLocation(line);
+				} // No known keyword was found. Check for error 
+				else if (line.contains("error:")) {
+					// Close the file
+					br.close();
+					// Stop importation
+					monitor.setCanceled(true);
+					throw new SoCTraceException(
+							"File could not be parsed by otfPrint which returned the following error: "
+									+ line);
 				}
 			}
 			br.close();
