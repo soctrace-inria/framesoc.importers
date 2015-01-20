@@ -58,6 +58,7 @@ public class CtfParser {
 	private Map<Integer, EventProducer> producersMapHW = new HashMap<Integer, EventProducer>();
 	private long minTimestamp;
 	private long maxTimestamp;
+	private SoCTraceException socTraceException = null;
 
 	private String traceDBNameSW;
 	private String traceDBNameHW;
@@ -123,7 +124,7 @@ public class CtfParser {
 		stateEvent.add(CtfParserConstants.IRQ_STATUS_EXIT);
 	}
 
-	public void parseTrace(IProgressMonitor monitor) {
+	public void parseTrace(IProgressMonitor monitor) throws SoCTraceException {
 		try {
 			pageSW = pageHW = 0;
 			numberOfEventsSW = numberOfEventsHW = 0;
@@ -195,10 +196,7 @@ public class CtfParser {
 		} catch (TmfTraceException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (SoCTraceException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		} 
 	}
 
 	/**
@@ -422,22 +420,18 @@ public class CtfParser {
 	 * @param aRecord
 	 *            A CtfRecord holding the event info
 	 */
-	public void newEvent(CtfRecord aRecord, boolean soft) {
+	public void newEvent(CtfRecord aRecord, boolean soft)
+			throws SoCTraceException {
 		Event e;
-		try {
-			e = setEvent(eventIdManager.getNextId(), soft, aRecord);
 
-			EventType et = getType(aRecord, soft);
-			et.setName(aRecord.type);
-			e.setType(et);
+		e = setEvent(eventIdManager.getNextId(), soft, aRecord);
 
-			setParameters(e, aRecord);
-			saveEvent(e, soft);
+		EventType et = getType(aRecord, soft);
+		et.setName(aRecord.type);
+		e.setType(et);
 
-		} catch (SoCTraceException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+		setParameters(e, aRecord);
+		saveEvent(e, soft);
 	}
 
 	/**
@@ -454,7 +448,6 @@ public class CtfParser {
 					return true;
 				}
 			}
-
 		} else {
 			if (producersMapHW.containsKey(aPid)) {
 				if (producersMapHW.get(aPid).getName() != "_StubEventProducer") {
@@ -582,7 +575,7 @@ public class CtfParser {
 	 * @param aProducer
 	 *            Event producer for which we changed the state
 	 */
-	public void setProcessState(CtfRecord aRecord, int aProducer) {
+	public void setProcessState(CtfRecord aRecord, int aProducer) throws SoCTraceException {
 		State previousState = processState.get(aProducer);
 
 		// Check if this is the first state for this producer
@@ -607,18 +600,14 @@ public class CtfParser {
 		}
 		aState.setEventProducer(producersMapSW.get(aProducer));
 
-		try {
-			aState.setType(getType(aRecord, true));
-		} catch (SoCTraceException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		aState.setType(getType(aRecord, true));
 
 		// Set the created State as the current state for the process
 		processState.put(aProducer, aState);
 	}
 
-	public void endProcess(CtfRecord aRecord, int aProducerID) {
+	public void endProcess(CtfRecord aRecord, int aProducerID)
+			throws SoCTraceException {
 		State previousState = processState.get(aProducerID);
 		// Check if this is the first state for this producer
 		if (previousState != null) {
@@ -647,20 +636,16 @@ public class CtfParser {
 	 * @param anEvent
 	 *            the Event to save
 	 */
-	private void saveEvent(Event anEvent, boolean soft) {
-		if (soft) {
+	private void saveEvent(Event anEvent, boolean soft)
+			throws SoCTraceException {
+	if (soft) {
 			eventsSW.add(anEvent);
 			eventsPerPageSW++;
 			numberOfEventsSW++;
 
 			if (eventsPerPageSW > MAX_EVENT_PER_PAGE) {
 				// save events
-				try {
-					saveEvents(eventsSW, traceDBSoft);
-				} catch (SoCTraceException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				saveEvents(eventsSW, traceDBSoft);
 				eventsSW.clear();
 
 				eventsPerPageSW = 0;
@@ -673,12 +658,8 @@ public class CtfParser {
 
 			if (eventsPerPageHW > MAX_EVENT_PER_PAGE) {
 				// save events
-				try {
-					saveEvents(eventsHW, traceDBHard);
-				} catch (SoCTraceException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				saveEvents(eventsHW, traceDBHard);
+
 				eventsHW.clear();
 
 				eventsPerPageHW = 0;
@@ -690,8 +671,7 @@ public class CtfParser {
 	/**
 	 * Build and save the trace database representation
 	 */
-	private void buildTraces() {
-		try {
+	private void buildTraces() throws SoCTraceException {
 			Trace traceSoft = new Trace(sysDB.getNewId(FramesocTable.TRACE.toString(),
 					"ID"));
 
@@ -726,10 +706,6 @@ public class CtfParser {
 			traceHard.setMaxTimestamp(getMaxTimestamp());
 			
 			sysDB.save(traceHard);
-		} catch (SoCTraceException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	/**
@@ -783,7 +759,7 @@ public class CtfParser {
 	 *            cpu number on which the event occurs
 	 */
 	public void createLink(int prevThread, int thread, long timeStamp,
-			long duration, int cpu) {
+			long duration, int cpu) throws SoCTraceException {
 		Link aLink = new Link(eventIdManager.getNextId());
 		aLink.setCpu(cpu);
 		aLink.setPage(pageSW);
@@ -803,13 +779,7 @@ public class CtfParser {
 		}
 		aLink.setEndProducer(producersMapSW.get(thread));
 		aLink.setEndTimestamp(timeStamp + duration);
-
-		try {
-			aLink.setType(typesSW.get("link"));
-		} catch (SoCTraceException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		aLink.setType(typesSW.get(CtfParserConstants.LINK_TYPE));
 
 		saveEvent(aLink, true);
 	}
@@ -822,7 +792,7 @@ public class CtfParser {
 	 * @param aProducer
 	 *            Event producer for which we changed the state
 	 */
-	public void setCPUState(CtfRecord aRecord) {
+	public void setCPUState(CtfRecord aRecord) throws SoCTraceException {
 		State previousState = CPUState.get(aRecord.cpu);
 
 		// Check if this is the first state for this producer
@@ -842,13 +812,7 @@ public class CtfParser {
 		aState.setPage(pageHW);
 		aState.setTimestamp(aRecord.getTimestamp());
 		aState.setEventProducer(producersMapHW.get(-2 - aRecord.cpu));
-
-		try {
-			aState.setType(getType(aRecord, false));
-		} catch (SoCTraceException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		aState.setType(getType(aRecord, false));
 
 		// Set the created State as the current state for the process
 		CPUState.put(aRecord.cpu, aState);
@@ -911,7 +875,7 @@ public class CtfParser {
 	/**
 	 * Update the state of a soft irq
 	 */
-	public void setSoftIrqState(CtfRecord aRecord, int anIrqID) {
+	public void setSoftIrqState(CtfRecord aRecord, int anIrqID) throws SoCTraceException {
 		if (!softIrqState.containsKey(anIrqID))
 			// Create an event producer for this IRQ
 			createSoftIRQProducer(anIrqID);
@@ -936,13 +900,7 @@ public class CtfParser {
 		aState.setPage(pageHW);
 		aState.setTimestamp(aRecord.getTimestamp());
 		aState.setEventProducer(producersMapHW.get(softIrqList.get(anIrqID).getId()));
-
-		try {
-			aState.setType(getType(aRecord, false));
-		} catch (SoCTraceException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		aState.setType(getType(aRecord, false));
 
 		// Set the created State as the current state for the soft irq
 		softIrqState.put(anIrqID, aState);
@@ -951,7 +909,8 @@ public class CtfParser {
 	/**
 	 * Update the state of an irq
 	 */
-	public void setIrqState(CtfRecord aRecord, int anIrqID) {
+	public void setIrqState(CtfRecord aRecord, int anIrqID)
+			throws SoCTraceException {
 		if (!irqState.containsKey(anIrqID))
 			// Create an event producer for this IRQ
 			createIRQProducer(anIrqID);
@@ -976,13 +935,7 @@ public class CtfParser {
 		aState.setPage(pageHW);
 		aState.setTimestamp(aRecord.getTimestamp());
 		aState.setEventProducer(producersMapHW.get(irqList.get(anIrqID).getId()));
-
-		try {
-			aState.setType(getType(aRecord, false));
-		} catch (SoCTraceException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		aState.setType(getType(aRecord, false));
 
 		// Set the created State as the current state for the irq
 		irqState.put(anIrqID, aState);
@@ -992,7 +945,7 @@ public class CtfParser {
 	 * Check if a state was not close at the end of an importation, and if so
 	 * set the end at the maximal timestamp
 	 */
-	void checkUnfinishedStates() {
+	void checkUnfinishedStates() throws SoCTraceException {
 
 		// For processes
 		for (int anEpID : processState.keySet()) {
@@ -1020,6 +973,18 @@ public class CtfParser {
 		}
 	}
 
+	/**
+	 * Handle exception that way in order to avoid changing API in tmf code
+	 * 
+	 * @param e
+	 *            the soctraceException that was thrown
+	 */
+	public void handleException(SoCTraceException e) {
+		// Keep only the first exception
+		if (socTraceException != null)
+			socTraceException = e;
+	}
+
 	public long getMinTimestamp() {
 		return minTimestamp;
 	}
@@ -1034,5 +999,13 @@ public class CtfParser {
 
 	public void setMaxTimestamp(long maxTimestamp) {
 		this.maxTimestamp = maxTimestamp;
+	}
+
+	public SoCTraceException getSocTraceException() {
+		return socTraceException;
+	}
+
+	public void setSocTraceException(SoCTraceException socTraceException) {
+		this.socTraceException = socTraceException;
 	}
 }

@@ -1,6 +1,7 @@
 package fr.inria.soctrace.tools.importer.ctftrace.core;
 
 import java.util.HashMap;
+
 import fr.inria.linuxtools.tmf.ctf.core.CtfTmfEvent;
 import fr.inria.linuxtools.tmf.ctf.core.CtfTmfTrace;
 import fr.inria.linuxtools.tmf.core.event.ITmfEvent;
@@ -12,12 +13,14 @@ import fr.inria.linuxtools.tmf.core.statesystem.AbstractTmfStateProvider;
 import fr.inria.linuxtools.tmf.core.statesystem.ITmfStateProvider;
 import fr.inria.linuxtools.statesystem.core.statevalue.ITmfStateValue;
 import fr.inria.linuxtools.statesystem.core.statevalue.TmfStateValue;
+import fr.inria.soctrace.lib.model.utils.SoCTraceException;
 
 public class CtfParserStateProvider extends AbstractTmfStateProvider {
 
 	// Event names HashMap
 	private final HashMap<String, Integer> knownEventNames;
 	private CtfParser ctfParser;
+	private boolean exceptionThrown = false;
 
 	public CtfParserStateProvider(CtfTmfTrace trace, CtfParser aCtfParser) {
 		super(trace, CtfTmfEvent.class, "LTTng Kernel"); //$NON-NLS-1$
@@ -31,7 +34,11 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 	}
 
 	@Override
-	protected void eventHandle(ITmfEvent ev) {
+	protected void eventHandle(ITmfEvent ev)  {
+		// If an exception was thrown, don't do anything
+		if(exceptionThrown)
+			return;
+		
 		/*
 		 * AbstractStateChangeInput should have already checked for the correct
 		 * class type
@@ -623,6 +630,9 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 			 * type integer. Which, once again, should never happen.
 			 */
 			sve.printStackTrace();
+		} catch (SoCTraceException e) {
+			exceptionThrown = true;
+			ctfParser.handleException(e);
 		}
 	}
 

@@ -22,41 +22,37 @@ public class CtfParserLauncher {
 	 * @param args
 	 *            CtfTrace Arguments
 	 */
-	public void launch(CtfParserArgs args, IProgressMonitor monitor) {
+	public void launch(CtfParserArgs args, IProgressMonitor monitor)
+			throws SoCTraceException {
 
 		DeltaManager delta = new DeltaManager();
 
-		try {
-			// open system DB
-			SystemDBObject sysDB = new SystemDBObject(args.sysDbName,
-					DBMode.DB_OPEN);
-			// create new trace DB
-			delta.start();
-			TraceDBObject traceDBSoft = new TraceDBObject(args.traceDbNameSW,
-					DBMode.DB_CREATE);
-			TraceDBObject traceDBHard = new TraceDBObject(args.traceDbNameHW,
-					DBMode.DB_CREATE);
-			delta.end("Trace DB creation");
+		// open system DB
+		SystemDBObject sysDB = new SystemDBObject(args.sysDbName,
+				DBMode.DB_OPEN);
+		// create new trace DB
+		delta.start();
+		TraceDBObject traceDBSoft = new TraceDBObject(args.traceDbNameSW,
+				DBMode.DB_CREATE);
+		TraceDBObject traceDBHard = new TraceDBObject(args.traceDbNameHW,
+				DBMode.DB_CREATE);
+		delta.end("Trace DB creation");
 
-			// parsing
-			CtfParser parser = new CtfParser(sysDB, traceDBSoft, traceDBHard, args);
-			delta.start();
-			parser.parseTrace(monitor);
-			delta.end("Parse trace");
-			
-			if (monitor.isCanceled()) {
-				sysDB.close();
-				return;
-			}
+		// parsing
+		CtfParser parser = new CtfParser(sysDB, traceDBSoft, traceDBHard, args);
+		delta.start();
+		parser.parseTrace(monitor);
+		delta.end("Parse trace");
 
-			// close the trace DB and the system DB (commit)
-			traceDBSoft.close();
-			traceDBHard.close();
+		if (monitor.isCanceled()) {
 			sysDB.close();
-		} catch (SoCTraceException e) {
-			System.err.println(e.getMessage());
-			e.printStackTrace();
+			return;
 		}
+
+		// close the trace DB and the system DB (commit)
+		traceDBSoft.close();
+		traceDBHard.close();
+		sysDB.close();
 	}
 
 }

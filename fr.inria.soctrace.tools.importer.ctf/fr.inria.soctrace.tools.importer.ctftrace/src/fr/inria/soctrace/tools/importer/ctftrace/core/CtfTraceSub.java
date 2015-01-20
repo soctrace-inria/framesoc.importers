@@ -13,6 +13,7 @@ import fr.inria.linuxtools.statesystem.core.exceptions.TimeRangeException;
 import fr.inria.linuxtools.tmf.core.exceptions.TmfAnalysisException;
 import fr.inria.linuxtools.statesystem.core.interval.ITmfStateInterval;
 import fr.inria.linuxtools.statesystem.core.ITmfStateSystem;
+import fr.inria.soctrace.lib.model.utils.SoCTraceException;
 
 public class CtfTraceSub extends CtfTmfTrace {
 
@@ -29,7 +30,7 @@ public class CtfTraceSub extends CtfTmfTrace {
 	 * Run the customized state system builder. We explore all the events and
 	 * build the state events at the same time
 	 */
-	public void buildSystem(IProgressMonitor monitor) {
+	public void buildSystem(IProgressMonitor monitor) throws SoCTraceException {
 		try {
 			// Build the state system specific to LTTng kernel traces 
 			htFile = new File(directory + CtfParserAnalysisModule.HISTORY_TREE_FILE_NAME);
@@ -47,9 +48,13 @@ public class CtfTraceSub extends CtfTmfTrace {
 
 			// Get the events and build states
 			analysisModule.performAnalysis(monitor);
-			if (monitor.isCanceled()) {
+	
+			if (monitor.isCanceled() || aParser.getSocTraceException() != null) {
 				analysisModule.close();
 				htFile.delete();
+				// If an exception was thrown during the analysis
+				if(aParser.getSocTraceException() != null)
+					throw new SoCTraceException(aParser.getSocTraceException());
 			}
 		} catch (TmfAnalysisException e) {
 			// TODO Auto-generated catch block
@@ -59,8 +64,9 @@ public class CtfTraceSub extends CtfTmfTrace {
 
 	/**
 	 * Create the link events
+	 * @throws SoCTraceException 
 	 */
-	public void buildLink(IProgressMonitor monitor) {
+	public void buildLink(IProgressMonitor monitor) throws SoCTraceException {
 		ITmfStateSystem ssq = analysisModule.getStateSystem();
 		try {
 			long start = ssq.getStartTime();

@@ -16,6 +16,7 @@ import fr.inria.soctrace.framesoc.core.tools.model.FileInput;
 import fr.inria.soctrace.framesoc.core.tools.model.FramesocTool;
 import fr.inria.soctrace.framesoc.core.tools.model.IFramesocToolInput;
 import fr.inria.soctrace.framesoc.core.tools.model.IPluginToolJobBody;
+import fr.inria.soctrace.lib.model.utils.SoCTraceException;
 import fr.inria.soctrace.lib.utils.Configuration;
 import fr.inria.soctrace.lib.utils.Configuration.SoCTraceProperty;
 import fr.inria.soctrace.tools.importer.ctftrace.core.CtfParserArgs;
@@ -36,7 +37,7 @@ public class CtfTraceImporterTool extends FramesocTool {
 		}
 
 		@Override
-		public void run(IProgressMonitor monitor) {
+		public void run(IProgressMonitor monitor) throws SoCTraceException {
 
 			List<String> files = input.getFiles();
 
