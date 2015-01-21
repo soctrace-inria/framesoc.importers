@@ -7,6 +7,7 @@
  * 
  * Contributors:
  *     Generoso Pagano - initial API and implementation
+ *     Youenn Corre - OTF2 adaptation
  ******************************************************************************/
 package fr.inria.soctrace.tools.importer.otf2.core;
 
