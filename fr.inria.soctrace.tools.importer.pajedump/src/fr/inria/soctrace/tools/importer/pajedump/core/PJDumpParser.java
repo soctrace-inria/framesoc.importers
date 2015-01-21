@@ -332,7 +332,7 @@ public class PJDumpParser {
 	}
 
 	private void checkLine(String[] fields, int number) throws SoCTraceException {
-		if (fields.length < PJDumpConstants.L_ARGUMENTS) {
+		if (fields.length < number) {
 			throw new SoCTraceException("Line has the wrong number of arguments: "
 					+ Arrays.toString(fields));
 		}
