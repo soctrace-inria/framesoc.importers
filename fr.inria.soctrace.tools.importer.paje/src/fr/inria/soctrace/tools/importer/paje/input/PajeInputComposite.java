@@ -27,14 +27,14 @@ import fr.inria.soctrace.tools.importer.pajedump.input.PajeDumpInputComposite;
 public class PajeInputComposite extends PajeDumpInputComposite {
 
 	private final static String PJDUMP_DOC = ""
-			+ "-a, --stop-at=TIME         Stop the trace simulation at TIME\n"
-			+ "-e, --end=END              Dump ends at timestamp END (instead of EOF)\n"
-			+ "-f, --flex                 Use flex-based file reader\n"
-			+ "-n, --no-strict            Support old field names in event definitions\n"
-			+ "-q, --quiet                Do not dump, only simulate\n"
-			+ "-s, --start=START          Dump starts at timestamp START (instead of 0)\n"
-			+ "-u, --user-defined         Dump user-defined fields\n"
-			+ "-z, --ignore-incomplete-links   Ignore incomplete links (not recommended)\n";
+			+ "-a, --stop-at=TIME - Stop the trace simulation at TIME\n"
+			+ "-e, --end=END - Dump ends at timestamp END (instead of EOF)\n"
+			+ "-f, --flex - Use flex-based file reader\n"
+			+ "-n, --no-strict - Support old field names in event definitions\n"
+			+ "-q, --quiet - Do not dump, only simulate\n"
+			+ "-s, --start=START - Dump starts at timestamp START (instead of 0)\n"
+			+ "-u, --user-defined - Dump user-defined fields\n"
+			+ "-z, --ignore-incomplete-links - Ignore incomplete links (not recommended)\n";
 
 	private TextListener argumentListener;
 
