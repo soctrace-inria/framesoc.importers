@@ -15,8 +15,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
 import fr.inria.soctrace.framesoc.core.tools.model.IFramesocToolInput;
+import fr.inria.soctrace.framesoc.ui.dialogs.IArgumentDialog;
 import fr.inria.soctrace.framesoc.ui.input.CommandLineArgsInputComposite;
-import fr.inria.soctrace.framesoc.ui.listeners.TextListener;
+import fr.inria.soctrace.framesoc.ui.listeners.LaunchTextListener;
 import fr.inria.soctrace.tools.importer.pajedump.input.PajeDumpInput;
 import fr.inria.soctrace.tools.importer.pajedump.input.PajeDumpInputComposite;
 
@@ -26,26 +27,22 @@ import fr.inria.soctrace.tools.importer.pajedump.input.PajeDumpInputComposite;
  */
 public class PajeInputComposite extends PajeDumpInputComposite {
 
-	private final static String PJDUMP_DOC = ""
-			+ "-a, --stop-at=TIME - Stop the trace simulation at TIME\n"
-			+ "-e, --end=END - Dump ends at timestamp END (instead of EOF)\n"
-			+ "-f, --flex - Use flex-based file reader\n"
-			+ "-n, --no-strict - Support old field names in event definitions\n"
-			+ "-q, --quiet - Do not dump, only simulate\n"
-			+ "-s, --start=START - Dump starts at timestamp START (instead of 0)\n"
-			+ "-u, --user-defined - Dump user-defined fields\n"
-			+ "-z, --ignore-incomplete-links - Ignore incomplete links (not recommended)\n";
-
-	private TextListener argumentListener;
+	private LaunchTextListener argumentListener;
+	private CommandLineArgsInputComposite argComposite;
 
 	public PajeInputComposite(Composite parent, int style) {
 		super(parent, style);
 		setLayout(new GridLayout(1, false));
-		argumentListener = new TextListener("");
-		CommandLineArgsInputComposite argComposite = new CommandLineArgsInputComposite(
+		argComposite = new CommandLineArgsInputComposite(
 				parent, SWT.NONE, true);
+		argComposite.setDocText(PajeInput.getDoc());
+	}
+	
+	@Override
+	public void setArgumentDialog(IArgumentDialog dialog) {
+		super.setArgumentDialog(dialog);
+		argumentListener = new LaunchTextListener("", dialog);
 		argComposite.addArgsModifyListener(argumentListener);
-		argComposite.setDocText(PJDUMP_DOC);
 	}
 
 	@Override
@@ -54,7 +51,7 @@ public class PajeInputComposite extends PajeDumpInputComposite {
 		PajeInput input = new PajeInput();
 		input.setDoublePrecision(superInput.isDoublePrecision());
 		input.setFiles(superInput.getFiles());
-		input.setArguments(argumentListener.getText());
+		input.setArgumentLine(argumentListener.getText());
 		return input;
 	}
 

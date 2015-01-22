@@ -39,7 +39,6 @@ import fr.inria.soctrace.tools.importer.paje.input.PajeInput;
 import fr.inria.soctrace.tools.importer.paje.reader.PajeDumpWrapper;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpConstants;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpParser;
-import fr.inria.soctrace.tools.importer.pajedump.input.PajeDumpInput;
 
 /**
  * Paje importer tool
@@ -114,7 +113,9 @@ public class PajeImporter extends FramesocTool {
 					monitor.beginTask("Dumping trace " + traceFile, IProgressMonitor.UNKNOWN);
 					// prepare arguments for pj_dump tool
 					ArrayList<String> arguments = new ArrayList<String>();
-					arguments.add(input.getArguments());
+					for (String arg : input.getArguments()) {
+						arguments.add(arg);
+					}
 					arguments.add(traceFile);
 					String output = ResourcesPlugin.getWorkspace().getRoot().getLocation()
 							.toString()
@@ -190,7 +191,7 @@ public class PajeImporter extends FramesocTool {
 	@Override
 	public ParameterCheckStatus canLaunch(IFramesocToolInput input) {
 
-		PajeDumpInput pjinput = (PajeDumpInput) input;
+		PajeInput pjinput = (PajeInput) input;
 		// check if at least one trace file is specified
 		if (pjinput.getFiles().size() < 1) {
 			return new ParameterCheckStatus(false, "Specify at least one trace file.");
@@ -201,6 +202,14 @@ public class PajeImporter extends FramesocTool {
 			File f = new File(file);
 			if (!f.isFile()) {
 				return new ParameterCheckStatus(false, f.getName() + " does not exist.");
+			}
+		}
+		
+		// check options
+		
+		for (String arg : pjinput.getArguments()) {
+			if (!PajeInput.correctOption(arg)) {
+				return new ParameterCheckStatus(false, "Wrong argument " + arg);
 			}
 		}
 
