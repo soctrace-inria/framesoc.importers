@@ -87,4 +87,14 @@
 		
 	</modules>
 
+	<organization>
+		<name>SoC-Trace Inria</name>
+		<url>https://github.com/soctrace-inria</url>
+	</organization>
+	<scm>
+		<url>https://github.com/soctrace-inria/framesoc.importers</url>
+	</scm>
+	<issueManagement>
+		<url>https://github.com/soctrace-inria/framesoc.importers/issues</url>
+	</issueManagement>
 </project>
