@@ -4,10 +4,10 @@ Bundle-Name: Ctftrace
 Bundle-SymbolicName: fr.inria.soctrace.tools.importer.ctftrace;singleton:=true
 Bundle-Version: 1.0.2.qualifier
 Require-Bundle: org.eclipse.core.runtime,
- fr.inria.soctrace.framesoc.core;bundle-version="1.0.0",
- fr.inria.soctrace.lib.model;bundle-version="1.0.0",
- fr.inria.soctrace.lib.storage;bundle-version="1.0.0",
- fr.inria.soctrace.lib.utils;bundle-version="1.0.0",
+ fr.inria.soctrace.framesoc.core;bundle-version="1.0.2",
+ fr.inria.soctrace.lib.model;bundle-version="1.0.2",
+ fr.inria.soctrace.lib.storage;bundle-version="1.0.2",
+ fr.inria.soctrace.lib.utils;bundle-version="1.0.2",
  fr.inria.linuxtools.ctf.core;bundle-version="2.2.1",
  fr.inria.linuxtools.ctf.parser;bundle-version="1.2.1",
  fr.inria.linuxtools.tmf.core;bundle-version="2.2.1",

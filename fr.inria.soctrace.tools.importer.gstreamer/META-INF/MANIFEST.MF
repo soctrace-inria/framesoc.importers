@@ -6,14 +6,14 @@ Bundle-Version: 1.0.2.qualifier
 Bundle-Activator: fr.inria.soctrace.tools.importer.gstreamer.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- fr.inria.soctrace.framesoc.core,
- fr.inria.soctrace.lib.utils,
- fr.inria.soctrace.lib.storage,
- fr.inria.soctrace.lib.search,
- fr.inria.soctrace.lib.model,
- fr.inria.soctrace.lib.query,
- fr.inria.soctrace.lib.slf4j,
- fr.inria.soctrace.framesoc.ui
+ fr.inria.soctrace.framesoc.core;bundle-version="1.0.2",
+ fr.inria.soctrace.lib.utils;bundle-version="1.0.2",
+ fr.inria.soctrace.lib.storage;bundle-version="1.0.2",
+ fr.inria.soctrace.lib.search;bundle-version="1.0.2",
+ fr.inria.soctrace.lib.model;bundle-version="1.0.2",
+ fr.inria.soctrace.lib.query;bundle-version="1.0.2",
+ fr.inria.soctrace.lib.slf4j;bundle-version="1.0.2",
+ fr.inria.soctrace.framesoc.ui;bundle-version="1.0.2"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: INRIA
