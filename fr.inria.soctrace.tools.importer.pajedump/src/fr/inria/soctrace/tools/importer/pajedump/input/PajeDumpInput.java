@@ -34,6 +34,12 @@ public class PajeDumpInput implements IFramesocToolInput {
 
 	public void setDoublePrecision(boolean doublePrecision) {
 		this.doublePrecision = doublePrecision;
+	}
+
+	@Override
+	public String toString() {
+		return "PajeDumpInput [files=" + files + ", doublePrecision="
+				+ doublePrecision + "]";
 	}	
 	
 }
