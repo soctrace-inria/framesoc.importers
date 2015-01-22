@@ -17,7 +17,6 @@ import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +56,7 @@ public class PajeDumpWrapper extends ExternalProgramWrapper {
 	 *            line processor
 	 * @return the execution status
 	 */
-	public IStatus executeSync(final IProgressMonitor monitor, File output) {
+	public int executeSync(final IProgressMonitor monitor, File output) {
 		logger.debug("Executing: {}", fCommand);
 		ProcessBuilder pb = new ProcessBuilder(fCommand);
 		pb.redirectOutput(output);
@@ -70,7 +69,7 @@ public class PajeDumpWrapper extends ExternalProgramWrapper {
 				try {
 					if (monitor.isCanceled()) {
 						p.destroy();
-						return Status.CANCEL_STATUS;
+						return 0;
 					}
 					exitValue = p.exitValue();
 					exited = true;
@@ -82,14 +81,10 @@ public class PajeDumpWrapper extends ExternalProgramWrapper {
 					}
 				}
 			}
-			if (exitValue == 0) {
-				return Status.OK_STATUS;
-			} else {
-				return Status.CANCEL_STATUS;
-			}
+			return exitValue;
 		} catch (IOException e) {
 			e.printStackTrace();
-			return null;
+			return IStatus.ERROR;
 		}
 	}
 

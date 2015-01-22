@@ -14,7 +14,7 @@
    <extension
          point="fr.inria.soctrace.framesoc.ui.input.toolInput">
       <toolInput
-            compositeFactory="fr.inria.soctrace.tools.importer.pajedump.input.PajeDumpInputCompositeFactory"
+            compositeFactory="fr.inria.soctrace.tools.importer.paje.input.PajeInputCompositeFactory"
             toolId="fr.inria.soctrace.tools.importer.paje">
       </toolInput>
    </extension>

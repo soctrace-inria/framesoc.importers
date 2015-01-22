@@ -12,8 +12,8 @@ import fr.inria.soctrace.framesoc.core.tools.model.IFramesocToolInput;
  */
 public class PajeDumpInput implements IFramesocToolInput {
 
-	private List<String> files;
-	private boolean doublePrecision;
+	protected List<String> files;
+	protected boolean doublePrecision;
 	
 	@Override
 	public String getCommand() {

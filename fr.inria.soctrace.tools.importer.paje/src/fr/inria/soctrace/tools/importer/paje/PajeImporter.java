@@ -19,8 +19,6 @@ import java.util.Set;
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +35,7 @@ import fr.inria.soctrace.lib.storage.TraceDBObject;
 import fr.inria.soctrace.lib.utils.DeltaManager;
 import fr.inria.soctrace.tools.importer.paje.core.PajeConstants;
 import fr.inria.soctrace.tools.importer.paje.core.PajeTraceMetadata;
+import fr.inria.soctrace.tools.importer.paje.input.PajeInput;
 import fr.inria.soctrace.tools.importer.paje.reader.PajeDumpWrapper;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpConstants;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpParser;
@@ -58,7 +57,7 @@ public class PajeImporter extends FramesocTool {
 	 */
 	public class PajeImporterPluginJobBody implements IPluginToolJobBody {
 
-		private PajeDumpInput input;
+		private PajeInput input;
 
 		class PajeParser extends PJDumpParser {
 			private String alias;
@@ -79,7 +78,7 @@ public class PajeImporter extends FramesocTool {
 		}
 
 		public PajeImporterPluginJobBody(IFramesocToolInput input) {
-			this.input = (PajeDumpInput) input;
+			this.input = (PajeInput) input;
 		}
 
 		@Override
@@ -107,15 +106,15 @@ public class PajeImporter extends FramesocTool {
 				TraceDBObject traceDB = null;
 
 				try {
-					// open system DB
-					sysDB = SystemDBObject.openNewIstance();
-					// create new trace DB
-					traceDB = new TraceDBObject(traceDbName, DBMode.DB_CREATE);
-
-					// dumping
+					
+					/*
+					 * dumping
+					 */
+					
 					monitor.beginTask("Dumping trace " + traceFile, IProgressMonitor.UNKNOWN);
 					// prepare arguments for pj_dump tool
 					ArrayList<String> arguments = new ArrayList<String>();
+					arguments.add(input.getArguments());
 					arguments.add(traceFile);
 					String output = ResourcesPlugin.getWorkspace().getRoot().getLocation()
 							.toString()
@@ -123,11 +122,24 @@ public class PajeImporter extends FramesocTool {
 					String trueOutput = output + PJDumpConstants.TRACE_EXT;
 					File outputFile = new File(trueOutput);
 					PajeDumpWrapper printer = new PajeDumpWrapper(arguments);
-					IStatus status = printer.executeSync(monitor, outputFile);
-					if (status.equals(Status.CANCEL_STATUS) || monitor.isCanceled()) {
-						throw new SoCTraceException();
+					int status = printer.executeSync(monitor, outputFile);
+					if (monitor.isCanceled()) {
+						outputFile.delete();
+						return;
 					}
-					// parsing dumped file
+					if (status != 0) {
+						outputFile.delete();
+						throw new SoCTraceException("pj_dump return code was " + status + ".");	
+					} 
+
+					/*
+					 * parsing dumped file
+					 */
+					
+					// open system DB
+					sysDB = SystemDBObject.openNewIstance();
+					// create new trace DB
+					traceDB = new TraceDBObject(traceDbName, DBMode.DB_CREATE);
 					PajeParser parser = new PajeParser(sysDB, traceDB, trueOutput,
 							FilenameUtils.getBaseName(traceFile), input.isDoublePrecision());
 					parser.parseTrace(monitor, currentTrace, numberOfTraces);
