@@ -111,31 +111,31 @@ public class PJDumpTraceSizeMetadata {
 	private String getStringSize(File file) {
 		double size = file.length();
 		DecimalFormat df = new DecimalFormat("###.##");
-		if (size < 1024)
+		if (size < 1000)
 			return df.format(size) + " B";
-		size = size / 1024;
-		if (size < 1024)
+		size = size / 1000;
+		if (size < 1000)
 			return df.format(size) + " kB";
-		size = size / 1024;
-		if (size < 1024)
+		size = size / 1000;
+		if (size < 1000)
 			return df.format(size) + " MB";
-		size = size / 1024;
-		if (size < 1024)
+		size = size / 1000;
+		if (size < 1000)
 			return df.format(size) + " GB";
-		size = size / 1024;
-		if (size < 1024)
+		size = size / 1000;
+		if (size < 1000)
 			return df.format(size) + " TB";
-		size = size / 1024;
-		if (size < 1024)
+		size = size / 1000;
+		if (size < 1000)
 			return df.format(size) + " PB";
-		size = size / 1024;
-		if (size < 1024)
+		size = size / 1000;
+		if (size < 1000)
 			return df.format(size) + " EB";
-		size = size / 1024;
-		if (size < 1024)
+		size = size / 1000;
+		if (size < 1000)
 			return df.format(size) + " ZB";
-		size = size / 1024;
-		if (size < 1024)
+		size = size / 1000;
+		if (size < 1000)
 			return df.format(size) + " YB";
 		else
 			return "unknown size";
