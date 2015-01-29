@@ -64,10 +64,10 @@ public class GStreamerTestReader {
 		String traceDbName = argsm.getOptions().get("db");
 		readByPage(traceDbName);
 
-		Map<String, Integer> name2id = buildTypeMap(traceDbName);
-		Iterator<Entry<String, Integer>> it = name2id.entrySet().iterator();
+		Map<String, Long> name2id = buildTypeMap(traceDbName);
+		Iterator<Entry<String, Long>> it = name2id.entrySet().iterator();
 		while (it.hasNext()) {
-			Entry<String, Integer> e = it.next();
+			Entry<String, Long> e = it.next();
 			System.out.println("NAME: " + e.getKey() + ", ID: " + e.getValue());
 		}
 
@@ -128,7 +128,7 @@ public class GStreamerTestReader {
 
 	}
 
-	private static Map<String, Integer> buildTypeMap(String traceDbName) throws SoCTraceException {
+	private static Map<String, Long> buildTypeMap(String traceDbName) throws SoCTraceException {
 		TraceDBObject traceDB = null;
 		try{
 			traceDB = TraceDBObject.openNewIstance(traceDbName);
@@ -140,7 +140,7 @@ public class GStreamerTestReader {
 			traceDB.close();
 
 			// create the map
-			Map<String, Integer> name2id = new HashMap<String, Integer>();
+			Map<String, Long> name2id = new HashMap<>();
 			for (EventType et: etlist) {
 				name2id.put(et.getName(), et.getId());
 			}

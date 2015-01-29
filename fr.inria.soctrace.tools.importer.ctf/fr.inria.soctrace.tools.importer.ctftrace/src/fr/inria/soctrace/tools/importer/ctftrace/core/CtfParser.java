@@ -63,9 +63,9 @@ public class CtfParser {
 	private int numberOfEventsHW = 0;
 	private int numberOfCPUs = 0;
 	private Map<String, EventType> typesSW = new HashMap<String, EventType>();
-	private Map<Integer, EventProducer> producersMapSW = new HashMap<Integer, EventProducer>();
+	private Map<Long, EventProducer> producersMapSW = new HashMap<>();
 	private Map<String, EventType> typesHW = new HashMap<String, EventType>();
-	private Map<Integer, EventProducer> producersMapHW = new HashMap<Integer, EventProducer>();
+	private Map<Long, EventProducer> producersMapHW = new HashMap<>();
 	private long minTimestamp;
 	private long maxTimestamp;
 	private SoCTraceException socTraceException = null;
@@ -282,7 +282,7 @@ public class CtfParser {
 	 * @return the created event
 	 * @throws SoCTraceException
 	 */
-	private Event setEvent(int id, boolean soft, CtfRecord record)
+	private Event setEvent(long id, boolean soft, CtfRecord record)
 			throws SoCTraceException {
 
 		Event e = new Event(id);
@@ -479,7 +479,7 @@ public class CtfParser {
 	 * @param name
 	 *            producer name
 	 */
-	public void addProducer(int pid, int ppid, String name) {
+	public void addProducer(long pid, long ppid, String name) {
 		if(producersMapSW.get(ppid) == null || ppid < 0)
 			ppid = EventProducer.NO_PARENT_ID;
 
@@ -511,7 +511,7 @@ public class CtfParser {
 	 * @param aPid
 	 *            Pid of the event producer
 	 */
-	public void createProducerStub(int aPid, boolean soft) {
+	public void createProducerStub(long aPid, boolean soft) {
 		EventProducer p = new EventProducer(eventProducerIdManager.getNextId());
 		String stringPID = String.valueOf(aPid);
 		p.setLocalId(stringPID);
@@ -729,7 +729,7 @@ public class CtfParser {
 		p.setLocalId(stringPID);
 		p.setName("init");
 		p.setType("init");
-		producersMapSW.put(1, p);
+		producersMapSW.put(1L, p);
 
 		// Create fake producer swapper with PID 0
 		EventProducer p2 = new EventProducer(eventProducerIdManager.getNextId());
@@ -737,7 +737,7 @@ public class CtfParser {
 		p2.setLocalId(stringPID);
 		p2.setName("swapper");
 		p2.setType("swapper");
-		producersMapSW.put(0, p2);
+		producersMapSW.put(0L, p2);
 
 		// Create fake event type for link
 		EventType et = new EventType(eventIdTypeManager.getNextId(),
@@ -751,7 +751,7 @@ public class CtfParser {
 		machine.setLocalId(stringPID);
 		machine.setName("Machine");
 		machine.setType("Machine");
-		producersMapHW.put(0, machine);
+		producersMapHW.put(0L, machine);
 	}
 
 	/**
@@ -849,7 +849,7 @@ public class CtfParser {
 		p.setName(aName);
 		p.setType(aName);
 
-		producersMapHW.put(-2 - aCpu, p);
+		producersMapHW.put(-2L - aCpu, p);
 	}
 
 	public void createIRQProducer(int anIrq) {

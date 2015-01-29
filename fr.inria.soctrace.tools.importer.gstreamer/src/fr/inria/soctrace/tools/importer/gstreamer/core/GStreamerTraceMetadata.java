@@ -63,7 +63,7 @@ public class GStreamerTraceMetadata {
 	 * @param startFrameEventTypeId
 	 * @param numberOfEvents
 	 */
-	public void computeMetadata(int startFrameEventTypeId, int numberOfFrames, int numberOfEvents,
+	public void computeMetadata(long startFrameEventTypeId, int numberOfFrames, int numberOfEvents,
 			long minTimestamp, long maxTimestamp) throws SoCTraceException {
 
 		// Trace Type
@@ -139,7 +139,7 @@ public class GStreamerTraceMetadata {
 	 *            trace file buffered reader
 	 * @throws SoCTraceException
 	 */
-	private void buildTrace(int startFrameEventTypeId, int numberOfFrames, int numberOfEvents, long minTimestamp, long maxTimestamp)
+	private void buildTrace(long startFrameEventTypeId, int numberOfFrames, int numberOfEvents, long minTimestamp, long maxTimestamp)
 			throws SoCTraceException {
 
 		trace = new Trace(sysDB.getNewId(FramesocTable.TRACE.toString(), "ID"));

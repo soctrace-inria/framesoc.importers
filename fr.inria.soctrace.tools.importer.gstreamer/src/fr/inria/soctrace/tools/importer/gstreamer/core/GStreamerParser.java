@@ -55,7 +55,7 @@ public class GStreamerParser {
 
 	private Map<Integer, Map<String, EventProducer>> producersMap = new HashMap<Integer, Map<String, EventProducer>>();
 	private Map<String, EventType> types = new HashMap<String, EventType>();
-	private int startFrameEventTypeId = -1;
+	private long startFrameEventTypeId = -1;
 	private int numberOfFrames = 0;
 	private int numberOfEvents = 0;
 	private long minTimestamp = Long.MAX_VALUE;
@@ -351,7 +351,7 @@ public class GStreamerParser {
 		while (pit.hasNext()) {
 			Entry<Integer, Map<String, EventProducer>> entry = pit.next();
 			Integer pid = entry.getKey();
-			int parentId = producerIdManager.getNextId();
+			long parentId = producerIdManager.getNextId();
 			EventProducer ep = new EventProducer(parentId);
 			ep.setType(GStreamerConstants.GStreamerEventProducer.PROCESS.toString());
 			ep.setName(String.valueOf(pid));

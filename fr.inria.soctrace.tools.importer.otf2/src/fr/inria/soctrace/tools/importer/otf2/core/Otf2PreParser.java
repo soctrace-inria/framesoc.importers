@@ -178,7 +178,7 @@ class Otf2PreParser {
 		String name = "";
 		String type = "";
 		String parentName = "";
-		int parentId = EventProducer.NO_PARENT_ID;
+		long parentId = EventProducer.NO_PARENT_ID;
 
 		String conf = aLine.substring(Otf2Constants.LOCATION_GROUP.length());
 		conf = conf.trim();
@@ -235,7 +235,7 @@ class Otf2PreParser {
 		String fullName = "";
 		String type = "";
 		String parentName = "";
-		int parentId = EventProducer.NO_PARENT_ID;
+		long parentId = EventProducer.NO_PARENT_ID;
 
 		String conf = aLine.substring(Otf2Constants.SYSTEM_TREE_NODE.length());
 		conf = conf.trim();
@@ -295,9 +295,9 @@ class Otf2PreParser {
 	 * Parse the name of hierarchy node in order to build the full hierarchy NOTE: For now it is
 	 * only compliant with the grid5000 format (i.e. "cluster-machine.site.grid5k.country")
 	 */
-	String[] parseHierarchy(String aName, int pid, int id) {
+	String[] parseHierarchy(String aName, long pid, long id) {
 		String[] epNames = aName.split(Otf2Constants.PH_SEPARATOR);
-		int parentId = pid;
+		long parentId = pid;
 		int i;
 
 		// If the header is not valid
@@ -402,7 +402,7 @@ class Otf2PreParser {
 	 *            the parent name
 	 * @return the parent id
 	 */
-	private int getParentId(String aParent) {
+	private long getParentId(String aParent) {
 		if (theParser.getProducersMap().containsKey(aParent))
 			return theParser.getProducersMap().get(aParent).getId();
 		return EventProducer.NO_PARENT_ID;
@@ -421,7 +421,7 @@ class Otf2PreParser {
 	 *            parent ID
 	 * @return The created event producer
 	 */
-	private EventProducer createProducer(String name, int id, String type, int pid) {
+	private EventProducer createProducer(String name, long id, String type, long pid) {
 		EventProducer anEP = new EventProducer(epIdManager.getNextId());
 
 		anEP.setName(name);

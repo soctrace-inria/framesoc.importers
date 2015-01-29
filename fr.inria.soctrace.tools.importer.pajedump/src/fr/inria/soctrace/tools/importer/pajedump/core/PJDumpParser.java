@@ -63,15 +63,15 @@ public class PJDumpParser {
 	protected long minTimestamp;
 	protected long maxTimestamp;
 
-	private Map<String, PJDumpLineParser> parserMap = new HashMap<String, PJDumpLineParser>();
+	private Map<String, PJDumpLineParser> parserMap = new HashMap<>();
 
-	private Map<String, EventProducer> producersMap = new HashMap<String, EventProducer>();
-	private Map<String, EventType> types = new HashMap<String, EventType>();
+	private Map<String, EventProducer> producersMap = new HashMap<>();
+	private Map<String, EventType> types = new HashMap<>();
 	private int page = 0;
 	private IdManager eIdManager = new IdManager();
 	private IdManager etIdManager = new IdManager();
 	private IdManager epIdManager = new IdManager();
-	private List<Event> elist = new LinkedList<Event>();
+	private List<Event> elist = new LinkedList<>();
 	private Map<String, List<Link>> endPendingLinks = new HashMap<String, List<Link>>();
 	private Map<String, List<Link>> startPendingLinks = new HashMap<String, List<Link>>();
 	private long byteRead = 0; // byte read corresponding to events not saved yet
@@ -299,7 +299,7 @@ public class PJDumpParser {
 		return types.get(name);
 	}
 
-	private int getEventProducerId(String name) {
+	private long getEventProducerId(String name) {
 		if (!producersMap.containsKey(name)) {
 			return -1;
 		}
