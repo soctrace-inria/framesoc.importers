@@ -1,6 +1,7 @@
 package fr.inria.soctrace.tools.importer.pajedump.core;
 
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -108,33 +109,34 @@ public class PJDumpTraceSizeMetadata {
 	
 
 	private String getStringSize(File file) {
-		double bytes = file.length();
-		if (bytes < 1024)
-			return String.format("%.2g",bytes) + " B";
-		double kilobytes = (bytes / 1024);
-		if (kilobytes < 1024)
-			return String.format("%.2g",kilobytes) + " kB";
-		double megabytes = (kilobytes / 1024);
-		if (megabytes < 1024)
-			return String.format("%.2g",megabytes) + " MB";
-		double gigabytes = (megabytes / 1024);
-		if (gigabytes < 1024)
-			return String.format("%.2g",gigabytes) + " GB";
-		double terabytes = (gigabytes / 1024);
-		if (terabytes < 1024)
-			return String.format("%.2g",terabytes) + " TB";
-		double petabytes = (terabytes / 1024);
-		if (petabytes < 1024)
-			return String.format("%.2g",petabytes) + " PB";
-		double exabytes = (petabytes / 1024);
-		if (exabytes < 1024)
-			return String.format("%.2g",exabytes) + " EB";
-		double zettabytes = (exabytes / 1024);
-		if (zettabytes < 1024)
-			return String.format("%.2g",zettabytes) + " ZB";
-		double yottabytes = (zettabytes / 1024);
-		if (yottabytes < 1024)
-			return String.format("%.2g",yottabytes) + " YB";
+		double size = file.length();
+		DecimalFormat df = new DecimalFormat("###.##");
+		if (size < 1024)
+			return df.format(size) + " B";
+		size = size / 1024;
+		if (size < 1024)
+			return df.format(size) + " kB";
+		size = size / 1024;
+		if (size < 1024)
+			return df.format(size) + " MB";
+		size = size / 1024;
+		if (size < 1024)
+			return df.format(size) + " GB";
+		size = size / 1024;
+		if (size < 1024)
+			return df.format(size) + " TB";
+		size = size / 1024;
+		if (size < 1024)
+			return df.format(size) + " PB";
+		size = size / 1024;
+		if (size < 1024)
+			return df.format(size) + " EB";
+		size = size / 1024;
+		if (size < 1024)
+			return df.format(size) + " ZB";
+		size = size / 1024;
+		if (size < 1024)
+			return df.format(size) + " YB";
 		else
 			return "unknown size";
 	}
