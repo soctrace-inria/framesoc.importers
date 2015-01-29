@@ -16,8 +16,8 @@ import java.util.SimpleTimeZone;
 
 import fr.inria.soctrace.framesoc.core.tools.importers.AbstractTraceMetadataManager;
 import fr.inria.soctrace.lib.model.Trace;
-import fr.inria.soctrace.lib.model.utils.SoCTraceException;
 import fr.inria.soctrace.lib.model.utils.ModelConstants.TimeUnit;
+import fr.inria.soctrace.lib.model.utils.SoCTraceException;
 import fr.inria.soctrace.lib.storage.SystemDBObject;
 
 /**
@@ -59,11 +59,12 @@ public class PJDumpTraceMetadata extends AbstractTraceMetadataManager {
 		trace.setMinTimestamp(min);
 		trace.setMaxTimestamp(max);
 		trace.setTimeUnit(TimeUnit.NANOSECONDS.getInt());
-		
 		trace.setTracedApplication("unknown");
 		trace.setBoard("unknown");
 		trace.setOperatingSystem("unknown");
 	}
+	
+
 
 	/**
 	 * Get the current date.

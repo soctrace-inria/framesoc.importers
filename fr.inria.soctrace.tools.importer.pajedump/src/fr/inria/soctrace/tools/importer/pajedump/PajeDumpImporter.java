@@ -33,6 +33,7 @@ import fr.inria.soctrace.lib.storage.TraceDBObject;
 import fr.inria.soctrace.lib.utils.DeltaManager;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpConstants;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpParser;
+import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpTraceSizeMetadata;
 import fr.inria.soctrace.tools.importer.pajedump.input.PajeDumpInput;
 
 /**
@@ -101,6 +102,9 @@ public class PajeDumpImporter extends FramesocTool {
 					// close the trace DB and the system DB (commit)
 					DBObject.finalClose(traceDB);
 					DBObject.finalClose(sysDB);
+					if (monitor.isCanceled())
+						break;
+					new PJDumpTraceSizeMetadata(new File(traceFile), traceDbName);
 					traceDelta.end("Import trace");
 					currentTrace++;
 				}
