@@ -105,11 +105,11 @@ public class PajeImporter extends FramesocTool {
 				TraceDBObject traceDB = null;
 
 				try {
-					
+
 					/*
 					 * dumping
 					 */
-					
+
 					monitor.beginTask("Dumping trace " + traceFile, IProgressMonitor.UNKNOWN);
 					// prepare arguments for pj_dump tool
 					ArrayList<String> arguments = new ArrayList<String>();
@@ -130,13 +130,13 @@ public class PajeImporter extends FramesocTool {
 					}
 					if (status != 0) {
 						outputFile.delete();
-						throw new SoCTraceException("pj_dump return code was " + status + ".");	
-					} 
+						throw new SoCTraceException("pj_dump return code was " + status + ".");
+					}
 
 					/*
 					 * parsing dumped file
 					 */
-					
+
 					// open system DB
 					sysDB = SystemDBObject.openNewIstance();
 					// create new trace DB
@@ -204,10 +204,13 @@ public class PajeImporter extends FramesocTool {
 				return new ParameterCheckStatus(false, f.getName() + " does not exist.");
 			}
 		}
-		
+
 		// check options
-		
+
 		for (String arg : pjinput.getArguments()) {
+			if (arg.trim().equals("")) {
+				continue;
+			}
 			if (!PajeInput.correctOption(arg)) {
 				return new ParameterCheckStatus(false, "Wrong argument " + arg);
 			}
