@@ -16,6 +16,6 @@
 #####################################################################
 
 SCRIPT="../../../soctrace-inria.github.io/updatesite/upload-site.sh"
-REPO="../fr.inria.soctrace.importers.maven.repository/target/repository/"
+REPO="../../framesoc.importers/fr.inria.soctrace.importers.maven.repository/target/repository/"
 PROJECT="importers"
 $SCRIPT $REPO $PROJECT
