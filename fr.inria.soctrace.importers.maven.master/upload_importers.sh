@@ -15,7 +15,7 @@
 # Author: Generoso Pagano
 #####################################################################
 
-SCRIPT="../../../soctrace-inria.github.io/updatesite/upload-site.sh"
+SCRIPT="../../soctrace-inria.github.io/updatesite/upload-site.sh"
 REPO="../../framesoc.importers/fr.inria.soctrace.importers.maven.repository/target/repository/"
-PROJECT="importers"
+PROJECT="framesoc.importers"
 $SCRIPT $REPO $PROJECT
