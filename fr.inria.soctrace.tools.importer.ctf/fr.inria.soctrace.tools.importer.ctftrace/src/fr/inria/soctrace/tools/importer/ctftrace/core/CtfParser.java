@@ -188,10 +188,10 @@ public class CtfParser {
 					logger.debug("Unitialized pid " + aEP.getLocalId());
 			}
 
-			logger.info("Number of events " + numberOfEventsSW + numberOfEventsHW
+			logger.info("Number of events " + numberOfEventsSW + "/" + numberOfEventsHW
 					+ ", number of producers " + producersMapSW.keySet().size() + producersMapHW.keySet().size()
 					+ ", number of EventTypes " + typesSW.keySet().size() + typesHW.keySet().size());
-			logger.info("Saved " + numberOfEventsSW + numberOfEventsHW + " events in " + pageSW + pageHW
+			logger.info("Saved " + numberOfEventsSW + "/" + numberOfEventsHW + " events in " + pageSW + pageHW
 					+ " pages.");
 
 			saveProducers();

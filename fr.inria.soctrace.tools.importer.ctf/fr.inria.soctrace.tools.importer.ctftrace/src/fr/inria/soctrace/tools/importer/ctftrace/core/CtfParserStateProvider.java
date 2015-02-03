@@ -94,11 +94,10 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 				// Create it
 				int execNameQuark = -1;
 				try {
-
-					execNameQuark = ss.getQuarkRelative(currentThreadNode,
+					execNameQuark = ss.getQuarkRelativeAndAdd(currentThreadNode,
 							CtfParserConstants.EXEC_NAME);
 
-					int ppidQuark = ss.getQuarkRelative(currentThreadNode,
+					int ppidQuark = ss.getQuarkRelativeAndAdd(currentThreadNode,
 							CtfParserConstants.PPID);
 
 					// Get its name

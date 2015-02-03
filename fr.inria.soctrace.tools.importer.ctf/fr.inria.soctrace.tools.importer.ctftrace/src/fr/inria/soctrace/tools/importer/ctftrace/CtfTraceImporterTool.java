@@ -36,8 +36,8 @@ import fr.inria.soctrace.tools.importer.ctftrace.core.CtfParserLauncher;
 public class CtfTraceImporterTool extends FramesocTool {
 
 	/**
-	 * Plugin Tool Job body: we use a Job since we have to perform a long operation and we don't
-	 * want to freeze the UI.
+	 * Plugin Tool Job body: we use a Job since we have to perform a long
+	 * operation and we don't want to freeze the UI.
 	 */
 	private class CtfTraceImporterPluginJobBody implements IPluginToolJobBody {
 
@@ -60,14 +60,15 @@ public class CtfTraceImporterTool extends FramesocTool {
 
 				String sysDbName = Configuration.getInstance().get(
 						SoCTraceProperty.soctrace_db_name);
-				String traceDbNameSW = FramesocManager.getInstance().getTraceDBName("CTFTRACE_SW");
-				String traceDbNameHW = FramesocManager.getInstance().getTraceDBName("CTFTRACE_HW");
+				String traceDbNameSW = FramesocManager.getInstance()
+						.getTraceDBName("CTFTRACE_SW");
+				String traceDbNameHW = FramesocManager.getInstance()
+						.getTraceDBName("CTFTRACE_HW");
 
 				// Arguments are given as files, but we only want directories
 				Set<String> l = getUniqueDirectories(files);
 
 				for (String s : files) {
-					l.add(s);
 					File t = new File(s);
 					if (!t.exists()) {
 						System.err.println("File " + s + " not found");
@@ -87,7 +88,8 @@ public class CtfTraceImporterTool extends FramesocTool {
 				ctfArgs.traceDbNameSW = traceDbNameSW;
 				ctfArgs.traceDbNameHW = traceDbNameHW;
 				ctfArgs.traceFiles = traceFiles;
-				monitor.beginTask("Parsing trace in " + traceFiles[0], IProgressMonitor.UNKNOWN);
+				monitor.beginTask("Parsing trace in " + traceFiles[0],
+						IProgressMonitor.UNKNOWN);
 				new CtfParserLauncher().launch(ctfArgs, monitor);
 			} finally {
 				monitor.done();
@@ -115,16 +117,18 @@ public class CtfTraceImporterTool extends FramesocTool {
 	}
 
 	/**
-	 * Check that the argument is a valid trace path and if it is valid, enable the importation
+	 * Check that the argument is a valid trace path and if it is valid, enable
+	 * the importation
 	 */
 	@Override
 	public ParameterCheckStatus canLaunch(IFramesocToolInput input) {
 		FileInput args = (FileInput) input;
-		
+
 		if (args.getFiles().size() == 0) {
-			return new ParameterCheckStatus(false, "Specify a trace file or a directory containing trace files.");
+			return new ParameterCheckStatus(false,
+					"Specify a trace file or a directory containing trace files.");
 		}
-		
+
 		Set<String> traceDirectories = getUniqueDirectories(args.getFiles());
 		ParameterCheckStatus status = new ParameterCheckStatus(false, "");
 		for (String aDirectory : traceDirectories) {
