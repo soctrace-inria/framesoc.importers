@@ -62,15 +62,15 @@ public class PajeImporter extends FramesocTool {
 			private String alias;
 
 			public PajeParser(SystemDBObject sysDB, TraceDBObject traceDB, String traceFile,
-					String alias, boolean doublePrecision) {
-				super(sysDB, traceDB, traceFile, doublePrecision);
+					String alias, boolean doublePrecision, int timeUnit) {
+				super(sysDB, traceDB, traceFile, doublePrecision, timeUnit);
 				this.alias = alias;
 			}
 
 			@Override
 			protected void saveTraceMetadata(boolean partialImport) throws SoCTraceException {
 				PajeTraceMetadata metadata = new PajeTraceMetadata(sysDB, traceDB.getDBName(),
-						alias, numberOfEvents, minTimestamp, maxTimestamp);
+						alias, numberOfEvents, minTimestamp, maxTimestamp, timeUnit);
 				metadata.createMetadata();
 				metadata.saveMetadata();
 			}
@@ -142,7 +142,7 @@ public class PajeImporter extends FramesocTool {
 					// create new trace DB
 					traceDB = new TraceDBObject(traceDbName, DBMode.DB_CREATE);
 					PajeParser parser = new PajeParser(sysDB, traceDB, trueOutput,
-							FilenameUtils.getBaseName(traceFile), input.isDoublePrecision());
+							FilenameUtils.getBaseName(traceFile), input.isDoublePrecision(), input.getTimeUnit());
 					parser.parseTrace(monitor, currentTrace, numberOfTraces);
 					// remove tmp file
 					outputFile.delete();

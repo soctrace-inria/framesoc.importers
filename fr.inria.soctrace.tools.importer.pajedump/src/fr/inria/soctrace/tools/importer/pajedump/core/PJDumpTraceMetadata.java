@@ -16,7 +16,6 @@ import java.util.TimeZone;
 
 import fr.inria.soctrace.framesoc.core.tools.importers.AbstractTraceMetadataManager;
 import fr.inria.soctrace.lib.model.Trace;
-import fr.inria.soctrace.lib.model.utils.ModelConstants.TimeUnit;
 import fr.inria.soctrace.lib.model.utils.SoCTraceException;
 import fr.inria.soctrace.lib.storage.SystemDBObject;
 
@@ -32,19 +31,21 @@ public class PJDumpTraceMetadata extends AbstractTraceMetadataManager {
 	protected int events;
 	protected long min;
 	protected long max;
+	protected int timeUnit;
 	
 	@Override
 	public String getTraceTypeName() {
 		return PJDumpConstants.TRACE_TYPE;
 	}
 		
-	public PJDumpTraceMetadata(SystemDBObject sysDB, String dbName, String alias, int events, long min, long max) throws SoCTraceException {
+	public PJDumpTraceMetadata(SystemDBObject sysDB, String dbName, String alias, int events, long min, long max, int aTimeUnit) throws SoCTraceException {
 		super(sysDB);
 		this.dbName = dbName;
 		this.alias = alias;
 		this.events = events;
 		this.min = min;
 		this.max = max;
+		this.timeUnit = aTimeUnit;
 	}
 	
 	@Override
@@ -58,7 +59,7 @@ public class PJDumpTraceMetadata extends AbstractTraceMetadataManager {
 		trace.setProcessed(false);
 		trace.setMinTimestamp(min);
 		trace.setMaxTimestamp(max);
-		trace.setTimeUnit(TimeUnit.NANOSECONDS.getInt());
+		trace.setTimeUnit(timeUnit);
 		trace.setTracedApplication("unknown");
 		trace.setBoard("unknown");
 		trace.setOperatingSystem("unknown");

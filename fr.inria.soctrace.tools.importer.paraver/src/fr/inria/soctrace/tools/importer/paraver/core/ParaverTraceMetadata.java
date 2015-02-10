@@ -29,7 +29,7 @@ public class ParaverTraceMetadata extends PJDumpTraceMetadata {
 	}
 		
 	public ParaverTraceMetadata(SystemDBObject sysDB, String dbName, String alias, int events, long min, long max) throws SoCTraceException {
-	super(sysDB, dbName, alias, events, min, max);
+		super(sysDB, dbName, alias, events, min, max, 0);
 	}
 	
 	@Override

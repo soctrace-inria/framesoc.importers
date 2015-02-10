@@ -65,6 +65,7 @@ public class PajeDumpImporter extends FramesocTool {
 			// long precision arg
 			boolean doublePrecision = input.isDoublePrecision();
 			List<String> traces = input.getFiles();
+			int timeUnit = input.getTimeUnit();
 
 			int numberOfTraces = traces.size();
 			int currentTrace = 1;
@@ -92,7 +93,7 @@ public class PajeDumpImporter extends FramesocTool {
 
 					// parsing
 					PJDumpParser parser = new PJDumpParser(sysDB, traceDB, traceFile,
-							doublePrecision);
+							doublePrecision, timeUnit);
 					parser.parseTrace(monitor, currentTrace, numberOfTraces);
 
 				} catch (SoCTraceException e) {

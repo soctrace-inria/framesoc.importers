@@ -17,11 +17,14 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 
 import fr.inria.soctrace.framesoc.core.tools.model.IFramesocToolInput;
 import fr.inria.soctrace.framesoc.ui.input.DefaultImporterInputComposite;
 import fr.inria.soctrace.framesoc.ui.listeners.LaunchTextListener;
+import fr.inria.soctrace.lib.model.utils.ModelConstants.TimeUnit;
 
 /**
  * 
@@ -30,6 +33,7 @@ import fr.inria.soctrace.framesoc.ui.listeners.LaunchTextListener;
 public class PajeDumpInputComposite extends DefaultImporterInputComposite {
 
 	protected boolean doublePrecision = true;
+	protected int timeUnit = TimeUnit.UNKNOWN.getInt();
 
 	public PajeDumpInputComposite(Composite parent, int style) {
 		super(parent, style);
@@ -44,6 +48,22 @@ public class PajeDumpInputComposite extends DefaultImporterInputComposite {
 				doublePrecision = btnDoublePrecision.getSelection();
 			}
 		});
+		
+		final Label lblTimeUnit = new Label(this, SWT.NONE);
+		lblTimeUnit.setText("Time Unit Selection:");
+		
+		final Combo comboTimeUnit = new Combo(this, SWT.READ_ONLY);
+		comboTimeUnit.setToolTipText("Time Unit of the Trace");
+		comboTimeUnit.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				timeUnit = TimeUnit.getInt(comboTimeUnit.getText());
+			}
+		});
+		for (final TimeUnit aTimeUnit : TimeUnit.values()) {
+			comboTimeUnit.add(aTimeUnit.getLabel());
+		}
+		comboTimeUnit.setText(TimeUnit.UNKNOWN.getLabel());
 	}
 	
 	@Override
@@ -51,6 +71,7 @@ public class PajeDumpInputComposite extends DefaultImporterInputComposite {
 		PajeDumpInput input = new PajeDumpInput();
 		input.setFiles(Arrays.asList(LaunchTextListener.getTokens(traceFileListener.getText())));
 		input.setDoublePrecision(doublePrecision);
+		input.setTimeUnit(timeUnit);
 		return input;
 	}
 

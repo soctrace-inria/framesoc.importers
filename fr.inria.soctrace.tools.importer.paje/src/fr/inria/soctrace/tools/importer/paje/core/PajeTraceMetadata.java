@@ -12,7 +12,6 @@ package fr.inria.soctrace.tools.importer.paje.core;
 
 import fr.inria.soctrace.lib.model.Trace;
 import fr.inria.soctrace.lib.model.utils.SoCTraceException;
-import fr.inria.soctrace.lib.model.utils.ModelConstants.TimeUnit;
 import fr.inria.soctrace.lib.storage.SystemDBObject;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpTraceMetadata;
 
@@ -24,8 +23,8 @@ public class PajeTraceMetadata extends PJDumpTraceMetadata {
 	}
 
 	public PajeTraceMetadata(SystemDBObject sysDB, String dbName, String alias,
-			int events, long min, long max) throws SoCTraceException {
-		super(sysDB, dbName, alias, events, min, max);
+			int events, long min, long max, int timeUnit) throws SoCTraceException {
+		super(sysDB, dbName, alias, events, min, max, timeUnit);
 	}
 
 	@Override
@@ -39,7 +38,7 @@ public class PajeTraceMetadata extends PJDumpTraceMetadata {
 		trace.setProcessed(false);
 		trace.setMinTimestamp(min);
 		trace.setMaxTimestamp(max);
-		trace.setTimeUnit(TimeUnit.NANOSECONDS.getInt());
+		trace.setTimeUnit(timeUnit);
 
 		trace.setTracedApplication("unknown");
 		trace.setBoard("unknown");

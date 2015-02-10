@@ -62,6 +62,7 @@ public class PJDumpParser {
 	protected int numberOfEvents = 0;
 	protected long minTimestamp;
 	protected long maxTimestamp;
+	protected int timeUnit;
 
 	private Map<String, PJDumpLineParser> parserMap = new HashMap<String, PJDumpLineParser>();
 
@@ -78,12 +79,13 @@ public class PJDumpParser {
 	private boolean doublePrecision = true;
 
 	public PJDumpParser(SystemDBObject sysDB, TraceDBObject traceDB, String traceFile,
-			boolean doublePrecision) {
+			boolean doublePrecision, int aTimeUnit) {
 
 		this.traceFile = traceFile;
 		this.sysDB = sysDB;
 		this.traceDB = traceDB;
-
+		this.timeUnit = aTimeUnit;
+		
 		parserMap.put(PJDumpConstants.CONTAINER, new ContainerParser());
 		parserMap.put(PJDumpConstants.EVENT, new EventParser());
 		parserMap.put(PJDumpConstants.LINK, new LinkParser());
@@ -278,7 +280,7 @@ public class PJDumpParser {
 		String alias = FilenameUtils.getBaseName(traceFile);
 		String realAlias = (partialImport) ? (alias + " [part]") : alias;
 		PJDumpTraceMetadata metadata = new PJDumpTraceMetadata(sysDB, traceDB.getDBName(),
-				realAlias, numberOfEvents, minTimestamp, maxTimestamp);
+				realAlias, numberOfEvents, minTimestamp, maxTimestamp, timeUnit);
 		metadata.createMetadata();
 		metadata.saveMetadata();
 	}
