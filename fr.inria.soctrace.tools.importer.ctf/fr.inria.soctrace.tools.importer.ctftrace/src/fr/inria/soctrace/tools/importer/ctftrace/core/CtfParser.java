@@ -153,7 +153,7 @@ public class CtfParser {
 
 			createSpecialProducers();
 
-			CtfTraceSub aT = new CtfTraceSub(this);
+			CtfParserTrace aT = new CtfParserTrace(this);
 			aT.setDirectory(tracePath[0]);
 			aT.initTrace(null, tracePath[0], TmfEvent.class);
 			monitor.subTask("Building states and events");
@@ -188,11 +188,14 @@ public class CtfParser {
 					logger.debug("Unitialized pid " + aEP.getLocalId());
 			}
 
-			logger.info("Number of events " + numberOfEventsSW + "/" + numberOfEventsHW
-					+ ", number of producers " + producersMapSW.keySet().size() + producersMapHW.keySet().size()
-					+ ", number of EventTypes " + typesSW.keySet().size() + typesHW.keySet().size());
-			logger.info("Saved " + numberOfEventsSW + "/" + numberOfEventsHW + " events in " + pageSW + pageHW
-					+ " pages.");
+			logger.info("Number of events " + numberOfEventsSW + "/"
+					+ numberOfEventsHW + " (SW/HW), number of producers "
+					+ producersMapSW.keySet().size() + "/"
+					+ producersMapHW.keySet().size()
+					+ ", number of EventTypes " + typesSW.keySet().size() + "/"
+					+ typesHW.keySet().size());
+			logger.info("Saved " + numberOfEventsSW + "/" + numberOfEventsHW
+					+ " events in " + pageSW + "/" + pageHW + " pages.");
 
 			saveProducers();
 			saveTypes();
@@ -398,7 +401,7 @@ public class CtfParser {
 	 */
 	private String getCurrentDate() {
 		SimpleDateFormat sdf = new SimpleDateFormat();
-		sdf.setTimeZone(new SimpleTimeZone(0, "GMT"));
+		sdf.setTimeZone(SimpleTimeZone.getDefault());
 		sdf.applyPattern("dd MMM yyyy HH:mm:ss z");
 		return sdf.format(new Date()).toString();
 	}
@@ -494,7 +497,7 @@ public class CtfParser {
 		p.setName(name);
 		p.setType(name);
 		p.setParentId(ppid);
-		if (ppid >= 0 && producersMapSW.get(ppid) != null) {
+		if (producersMapSW.get(ppid) != null) {
 			p.setParentId(producersMapSW.get(ppid).getId());
 		} else {
 			logger.error("Could not find ppid for " + name + " (ppid: " + ppid
@@ -682,45 +685,49 @@ public class CtfParser {
 	 * Build and save the trace database representation
 	 */
 	private void buildTraces() throws SoCTraceException {
-			Trace traceSoft = new Trace(sysDB.getNewId(FramesocTable.TRACE.toString(),
-					"ID"));
+		// Trace containing software events
+		Trace traceSoft = new Trace(sysDB.getNewId(
+				FramesocTable.TRACE.toString(), "ID"));
 
-			traceSoft.setDescription("Ctf trace (SW) imported on " + getCurrentDate());
-			traceSoft.setDbName(traceDBNameSW);
-			buildTraceType();
-			traceSoft.setType(traceType);
-			traceSoft.setProcessed(false);
-			traceSoft.setNumberOfEvents(numberOfEventsSW);
-			traceSoft.setNumberOfCpus(numberOfCPUs);
-			traceSoft.setTimeUnit(TimeUnit.NANOSECONDS.getInt());
-			// All timestamps are modified to fit with a starting date of 0
-			traceSoft.setMinTimestamp(0L);
-			traceSoft.setMaxTimestamp(getMaxTimestamp());
+		traceSoft.setDescription("CTF trace (SW) imported on "
+				+ getCurrentDate());
+		traceSoft.setDbName(traceDBNameSW);
+		buildTraceType();
+		traceSoft.setType(traceType);
+		traceSoft.setProcessed(false);
+		traceSoft.setNumberOfEvents(numberOfEventsSW);
+		traceSoft.setNumberOfCpus(numberOfCPUs);
+		traceSoft.setTimeUnit(TimeUnit.NANOSECONDS.getInt());
+		// All timestamps are modified to fit with a starting date of 0
+		traceSoft.setMinTimestamp(0L);
+		traceSoft.setMaxTimestamp(getMaxTimestamp());
 
-			sysDB.save(traceSoft);
-			sysDB.commit();
-			
-			Trace traceHard = new Trace(sysDB.getNewId(FramesocTable.TRACE.toString(),
-					"ID"));
+		sysDB.save(traceSoft);
+		sysDB.commit();
 
-			traceHard.setDescription("Ctf trace (HW) imported on " + getCurrentDate());
-			traceHard.setDbName(traceDBNameHW);
-			buildTraceType();
-			traceHard.setType(traceType);
-			traceHard.setProcessed(false);
-			traceHard.setNumberOfEvents(numberOfEventsHW);
-			traceHard.setNumberOfCpus(numberOfCPUs);
-			traceHard.setTimeUnit(TimeUnit.NANOSECONDS.getInt());
-			// All timestamps are modified to fit with a starting date of 0
-			traceHard.setMinTimestamp(0L);
-			traceHard.setMaxTimestamp(getMaxTimestamp());
-			
-			sysDB.save(traceHard);
+		// Trace containing hardware events
+		Trace traceHard = new Trace(sysDB.getNewId(
+				FramesocTable.TRACE.toString(), "ID"));
+		traceHard.setDescription("CTF trace (HW) imported on "
+				+ getCurrentDate());
+		traceHard.setDbName(traceDBNameHW);
+		buildTraceType();
+		traceHard.setType(traceType);
+		traceHard.setProcessed(false);
+		traceHard.setNumberOfEvents(numberOfEventsHW);
+		traceHard.setNumberOfCpus(numberOfCPUs);
+		traceHard.setTimeUnit(TimeUnit.NANOSECONDS.getInt());
+		// All timestamps are modified to fit with a starting date of 0
+		traceHard.setMinTimestamp(0L);
+		traceHard.setMaxTimestamp(getMaxTimestamp());
+
+		sysDB.save(traceHard);
 	}
 
 	/**
 	 * Create event producers that do not appear in the trace as such These
-	 * producers are the init process and the swapper
+	 * producers are the init process, the swapper and a fake root ("machine")
+	 * for the HW hierarchy
 	 */
 	private void createSpecialProducers() {
 		// Create fake producer init with PID 1

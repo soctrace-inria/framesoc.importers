@@ -12,7 +12,7 @@ package fr.inria.soctrace.tools.importer.pajedump.core;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.SimpleTimeZone;
+import java.util.TimeZone;
 
 import fr.inria.soctrace.framesoc.core.tools.importers.AbstractTraceMetadataManager;
 import fr.inria.soctrace.lib.model.Trace;
@@ -64,15 +64,13 @@ public class PJDumpTraceMetadata extends AbstractTraceMetadataManager {
 		trace.setOperatingSystem("unknown");
 	}
 	
-
-
 	/**
 	 * Get the current date.
 	 * @return a string with the current date 
 	 */
 	protected String getCurrentDate() {
 		SimpleDateFormat sdf = new SimpleDateFormat();
-		sdf.setTimeZone(new SimpleTimeZone(0, "GMT"));
+		sdf.setTimeZone(TimeZone.getDefault());
 		sdf.applyPattern("dd MMM yyyy HH:mm:ss z");
 		return sdf.format(new Date()).toString();
 	}

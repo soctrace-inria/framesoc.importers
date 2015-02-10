@@ -35,7 +35,7 @@ public class CtfParserAnalysisModule extends TmfStateSystemAnalysisModule {
 	public static final String ID = "fr.inria.soctrace.tools.importer.ctftrace.core.analysis"; //$NON-NLS-1$
 
 	private CtfParser theCtfParser;
-	private CtfTraceSub theTrace;
+	private CtfParserTrace theTrace;
 	private File htFile;
 
 	@Override
@@ -43,7 +43,7 @@ public class CtfParserAnalysisModule extends TmfStateSystemAnalysisModule {
 		return new CtfParserStateProvider(theTrace, theCtfParser);
 	}
 
-	public CtfParserAnalysisModule(CtfTraceSub aTrace, CtfParser aParser,
+	public CtfParserAnalysisModule(CtfParserTrace aTrace, CtfParser aParser,
 			String aDirectory, File aFile) {
 		theTrace = aTrace;
 		theCtfParser = aParser;

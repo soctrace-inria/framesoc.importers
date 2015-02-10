@@ -175,7 +175,7 @@ public class GStreamerTraceMetadata {
 	 */
 	private String getCurrentDate() {
 		SimpleDateFormat sdf = new SimpleDateFormat();
-		sdf.setTimeZone(new SimpleTimeZone(0, "GMT"));
+		sdf.setTimeZone(SimpleTimeZone.getDefault());
 		sdf.applyPattern("dd MMM yyyy HH:mm:ss z");
 		return sdf.format(new Date()).toString();
 	}

@@ -25,14 +25,14 @@ import fr.inria.linuxtools.statesystem.core.interval.ITmfStateInterval;
 import fr.inria.linuxtools.statesystem.core.ITmfStateSystem;
 import fr.inria.soctrace.lib.model.utils.SoCTraceException;
 
-public class CtfTraceSub extends CtfTmfTrace {
+public class CtfParserTrace extends CtfTmfTrace {
 
 	private String directory;
 	private CtfParser aParser;
 	protected CtfParserAnalysisModule analysisModule;
 	protected File htFile;
 
-	public CtfTraceSub(CtfParser aCtfParser) {
+	public CtfParserTrace(CtfParser aCtfParser) {
 		aParser = aCtfParser;
 	}
 
@@ -85,7 +85,7 @@ public class CtfTraceSub extends CtfTmfTrace {
 			List<Integer> currentThreadQuarks = ssq.getQuarks(
 					CtfParserConstants.CPUS,
 					"*", CtfParserConstants.CURRENT_THREAD); //$NON-NLS-1$
-
+			
 			for (int currentThreadQuark : currentThreadQuarks) {
 
 				// Adjust the query range to include the previous and following
@@ -96,7 +96,7 @@ public class CtfTraceSub extends CtfTmfTrace {
 				long qend = Math.min(
 						ssq.querySingleState(end, currentThreadQuark)
 								.getEndTime() + 1, ssq.getCurrentEndTime());
-				
+	
 				// Get the CPU number
 				String fullPath = ssq.getFullAttributePath(currentThreadQuark);
 				String[] tokens = fullPath.split("/");
