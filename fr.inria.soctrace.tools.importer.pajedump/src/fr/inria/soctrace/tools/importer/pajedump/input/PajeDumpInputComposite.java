@@ -37,7 +37,7 @@ public class PajeDumpInputComposite extends DefaultImporterInputComposite {
 
 	public PajeDumpInputComposite(Composite parent, int style) {
 		super(parent, style);
-		setLayout(new GridLayout(1, false));
+		setLayout(new GridLayout(2, false));
 
 		final Button btnDoublePrecision = new Button(this, SWT.CHECK);
 		btnDoublePrecision.setText("Double precision");
@@ -48,9 +48,13 @@ public class PajeDumpInputComposite extends DefaultImporterInputComposite {
 				doublePrecision = btnDoublePrecision.getSelection();
 			}
 		});
+		new Label(this, SWT.NONE);
+		
+		//final Composite compTimeUnit = new Composite(parent, SWT.NONE);
+		//compTimeUnit.setLayout(new GridLayout(2, false));
 		
 		final Label lblTimeUnit = new Label(this, SWT.NONE);
-		lblTimeUnit.setText("Time Unit Selection:");
+		lblTimeUnit.setText("Time Unit Selection");
 		
 		final Combo comboTimeUnit = new Combo(this, SWT.READ_ONLY);
 		comboTimeUnit.setToolTipText("Time Unit of the Trace");

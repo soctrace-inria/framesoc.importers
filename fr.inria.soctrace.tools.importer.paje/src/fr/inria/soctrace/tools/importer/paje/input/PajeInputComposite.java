@@ -11,7 +11,6 @@
 package fr.inria.soctrace.tools.importer.paje.input;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
 import fr.inria.soctrace.framesoc.core.tools.model.IFramesocToolInput;
@@ -32,12 +31,10 @@ public class PajeInputComposite extends PajeDumpInputComposite {
 
 	public PajeInputComposite(Composite parent, int style) {
 		super(parent, style);
-		setLayout(new GridLayout(1, false));
-		argComposite = new CommandLineArgsInputComposite(
-				parent, SWT.NONE, true);
+		argComposite = new CommandLineArgsInputComposite(parent, SWT.NONE, true);
 		argComposite.setDocText(PajeInput.getDoc());
 	}
-	
+
 	@Override
 	public void setArgumentDialog(IArgumentDialog dialog) {
 		super.setArgumentDialog(dialog);
