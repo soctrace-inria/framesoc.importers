@@ -2,7 +2,7 @@
 <feature
       id="fr.inria.soctrace.features.importers"
       label="Framesoc Importers"
-      version="1.0.2.qualifier">
+      version="1.0.3.qualifier">
 
    <description url="http://soctrace-inria.github.io/">
       Framesoc Importers
@@ -71,7 +71,7 @@ Java and all Java-based trademarks are trademarks of Oracle Corporation in the U
    </license>
 
    <requires>
-      <import feature="fr.inria.soctrace.features.framesoc" version="1.0.2.qualifier"/>
+      <import feature="fr.inria.soctrace.features.framesoc" version="1.0.3.qualifier"/>
    </requires>
 
    <plugin
