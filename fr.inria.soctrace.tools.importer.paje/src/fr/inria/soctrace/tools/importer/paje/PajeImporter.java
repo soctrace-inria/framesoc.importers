@@ -206,13 +206,13 @@ public class PajeImporter extends FramesocTool {
 		}
 
 		// check options
-
 		for (String arg : pjinput.getArguments()) {
 			if (arg.trim().equals("")) {
 				continue;
 			}
-			if (!PajeInput.correctOption(arg)) {
-				return new ParameterCheckStatus(false, "Wrong argument " + arg);
+			ParameterCheckStatus returnStatus = PajeInput.correctOption(arg);
+			if (!returnStatus.valid) {
+				return returnStatus;
 			}
 		}
 

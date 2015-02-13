@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import fr.inria.soctrace.framesoc.core.tools.model.IFramesocTool.ParameterCheckStatus;
 import fr.inria.soctrace.tools.importer.pajedump.input.PajeDumpInput;
 
 /**
@@ -46,7 +47,7 @@ public class PajeInput extends PajeDumpInput {
 
 	static {
 		os.add(new PJDumpOpt("-a", "--stop-at", "Stop the trace simulation at TIME", true, "TIME"));
-		os.add(new PJDumpOpt("-e", "-end", "Dump ends at timestamp END (instead of EOF)", true,
+		os.add(new PJDumpOpt("-e", "--end", "Dump ends at timestamp END (instead of EOF)", true,
 				"END"));
 		os.add(new PJDumpOpt("-f", "--flex", "Use flex-based file reader", false));
 		os.add(new PJDumpOpt("-n", "--no-strict", "Support old field names in event definitions",
@@ -93,35 +94,68 @@ public class PajeInput extends PajeDumpInput {
 		return sb.toString();
 	}
 
-	public static boolean correctOption(String s) {
+	public static ParameterCheckStatus correctOption(String s) {
 
 		if (s.matches("(.+)=.*")) {
 			String t[] = s.split("=");
 			if (shorts.containsKey(t[0])) {
-				if (!paramOk(shorts, t)) {
-					return false;
+				ParameterCheckStatus returnValue = paramOk(shorts, t);
+				if (!returnValue.valid) {
+					return new ParameterCheckStatus(false, returnValue.message
+							+ s);
 				}
 			} else if (longs.containsKey(t[0])) {
-				if (!paramOk(longs, t)) {
-					return false;
+				ParameterCheckStatus returnValue = paramOk(longs, t);
+				if (!returnValue.valid) {
+					return new ParameterCheckStatus(false, returnValue.message
+							+ s);
 				}
 			} else {
-				return false;
+				return new ParameterCheckStatus(false, "Unknown argument: " + s);
 			}
-			return true;
+			return new ParameterCheckStatus(true, "");
 		}
 
-		return (shorts.containsKey(s) && !shorts.get(s).hasParam)
-				|| (longs.containsKey(s) && !longs.get(s).hasParam);
+		if (s.length() > 2) {
+			if (s.startsWith("-") && !s.startsWith("--")) {
+				for (int i = 1; i < s.length(); i++) {
+					if (!correctOption("-" + s.charAt(i)).valid) {
+						return new ParameterCheckStatus(false,
+								"Wrong argument \"" +  s.charAt(i) + "\" in the series of arguments: " + s);
+					}
+				}
+				return new ParameterCheckStatus(true, "");
+			}
+		}
 
+		if (shorts.containsKey(s)) {
+			if (shorts.get(s).hasParam)
+				return new ParameterCheckStatus(false,
+						"Argument is missing parameter: " + s);
+
+			return new ParameterCheckStatus(true, "");
+		}
+		
+		if (longs.containsKey(s)) {
+			if (longs.get(s).hasParam)
+				return new ParameterCheckStatus(false,
+						"Argument is missing parameter: " + s);
+
+			return new ParameterCheckStatus(true, "");
+		}
+
+		return new ParameterCheckStatus(false, "Wrong argument: " + s);
 	}
 
-	private static boolean paramOk(Map<String, PJDumpOpt> map, String t[]) {
+	private static ParameterCheckStatus paramOk(Map<String, PJDumpOpt> map,
+			String t[]) {
 		if (!map.get(t[0]).hasParam) {
-			return false;
+			return new ParameterCheckStatus(false,
+					"Argument does not take parameter: ");
 		} else if (t.length < 2) {
-			return false;
+			return new ParameterCheckStatus(false,
+					"Argument is missing parameter: ");
 		}
-		return true;
+		return new ParameterCheckStatus(true, "");
 	}
 }
