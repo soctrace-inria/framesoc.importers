@@ -184,8 +184,10 @@ public class CtfParser {
 			
 			// Debug
 			for (EventProducer aEP : producersMapSW.values()) {
-				if (aEP.getName().equals("_StubEventProducer"))
-					logger.debug("Unitialized pid " + aEP.getLocalId());
+				if (aEP.getName().equals(CtfParserConstants.STUB_PRODUCER_NAME)
+						|| aEP.getName().equals(
+								CtfParserConstants.NULL_PRODUCER_NAME))
+					logger.debug("Unitialized pid " + aEP.getLocalId() + " (ppid: " + aEP.getParentId() + ")");
 			}
 
 			logger.info("Number of events " + numberOfEventsSW + "/"
@@ -308,8 +310,8 @@ public class CtfParser {
 			
 		// Check if we have already encountered the producer
 		if (aProducer == null) {
-			// System.out.println("Error finding producer with pid: " +
-			// record.pid );
+			 //System.out.println("Could not find producer with pid: " +
+			 //record.pid);
 
 			// If not then create a stub
 			createProducerStub(record.pid, soft);
@@ -457,13 +459,16 @@ public class CtfParser {
 	public boolean producerExist(int aPid, boolean soft) {
 		if (soft) {
 			if (producersMapSW.containsKey(aPid)) {
-				if (producersMapSW.get(aPid).getName() != "_StubEventProducer") {
+				if ((!producersMapSW.get(aPid).getName().equals(CtfParserConstants.STUB_PRODUCER_NAME)
+						&& !producersMapSW.get(aPid).getName()
+								.equals(CtfParserConstants.NULL_PRODUCER_NAME) && producersMapSW.get(aPid).getParentId() != -1)) {
 					return true;
 				}
 			}
 		} else {
 			if (producersMapHW.containsKey(aPid)) {
-				if (producersMapHW.get(aPid).getName() != "_StubEventProducer") {
+				if (!producersMapHW.get(aPid).getName().equals(CtfParserConstants.STUB_PRODUCER_NAME)
+						&& !producersMapHW.get(aPid).getName().equals(CtfParserConstants.NULL_PRODUCER_NAME)) {
 					return true;
 				}
 			}
@@ -491,14 +496,25 @@ public class CtfParser {
 			p = new EventProducer(eventProducerIdManager.getNextId());
 			String stringPID = String.valueOf(pid);
 			p.setLocalId(stringPID);
+			p.setName(name);
+			p.setType(name);
 		} else {
 			p = producersMapSW.get(pid);
 		}
-		p.setName(name);
-		p.setType(name);
+		
+		if (p.getName().equals(CtfParserConstants.STUB_PRODUCER_NAME)
+				|| p.getName().equals(CtfParserConstants.NULL_PRODUCER_NAME)){
+			p.setName(name);
+			p.setType(name);
+		}
+		
 		p.setParentId(ppid);
+
 		if (producersMapSW.get(ppid) != null) {
-			p.setParentId(producersMapSW.get(ppid).getId());
+			if(producersMapSW.get(ppid).getId() != p.getId())
+				p.setParentId(producersMapSW.get(ppid).getId());
+			else
+				p.setParentId(EventProducer.NO_PARENT_ID);
 		} else {
 			logger.error("Could not find ppid for " + name + " (ppid: " + ppid
 					+ ", pid: " + pid + ")");
@@ -520,7 +536,7 @@ public class CtfParser {
 		p.setLocalId(stringPID);
 
 		// Set a fake name to flag stub producer
-		p.setName("_StubEventProducer");
+		p.setName(CtfParserConstants.STUB_PRODUCER_NAME);
 		
 		if (soft)
 			producersMapSW.put(aPid, p);
@@ -933,7 +949,7 @@ public class CtfParser {
 			createIRQProducer(anIrqID);
 		
 		State previousState = irqState.get(anIrqID);
-
+		
 		// Check if this is the first state for this producer
 		if (previousState != null) {
 			// Set the timestamp for state ending
@@ -986,6 +1002,18 @@ public class CtfParser {
 				previousState.setLongPar(maxTimestamp);
 
 				saveEvent(previousState, false);
+			}
+		}
+	}
+	
+	public void updateName(String aProcessName, int aPid) {
+		// If swapper, skip
+		if (aPid == 0)
+			return;
+
+		if (producersMapSW.containsKey(aPid)) {
+			if (!producersMapSW.get(aPid).getName().equals(aProcessName)) {
+				producersMapSW.get(aPid).setName(aProcessName);
 			}
 		}
 	}

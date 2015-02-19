@@ -84,6 +84,7 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 			
 			// Get the thread ID
 			int thread = value.unboxInt();
+			
 			final Integer currentThreadNode = ss.getQuarkRelativeAndAdd(
 					getNodeThreads(), String.valueOf(thread));
 	    		
@@ -103,7 +104,7 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 					// Get its name
 					String execName = ss.queryOngoingState(execNameQuark)
 							.unboxStr();
-
+					
 					if (ppidQuark != -1) {
 						// Get its parent id
 						int ppid = ss.queryOngoingState(ppidQuark).unboxInt();
@@ -317,6 +318,8 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 						getNodeThreads(), prevTid.toString());
 				Integer newCurrentThreadNode = ss.getQuarkRelativeAndAdd(
 						getNodeThreads(), nextTid.toString());
+				
+				ctfParser.updateName(nextProcessName, nextTid);
 
 				/* Set the status of the process that got scheduled out. */
 				quark = ss.getQuarkRelativeAndAdd(formerThreadNode,
@@ -393,6 +396,7 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 						CtfParserAnalysisModule.CHILD_COMM).getValue();
 				// assert ( parentProcessName.equals(childProcessName) );
 
+
 				Integer parentTid = ((Long) content.getField(
 						CtfParserAnalysisModule.PARENT_TID).getValue()).intValue();
 				Integer childTid = ((Long) content.getField(
@@ -438,6 +442,7 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 				}
 				quark = ss.getQuarkRelativeAndAdd(childTidNode,
 						CtfParserConstants.SYSTEM_CALL);
+
 				ss.modifyAttribute(timeStamp, value, quark);
 			}
 				break;

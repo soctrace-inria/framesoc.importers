@@ -62,5 +62,8 @@ public class CtfParserConstants {
     static final String CONTEXT_FIELD_PREFIX = "context.";
     
     static final String LINK_TYPE = "LINK";
+    
+    static final String STUB_PRODUCER_NAME = "_StubEventProducer";
+    static final String NULL_PRODUCER_NAME = "nullValue";
    
 }
