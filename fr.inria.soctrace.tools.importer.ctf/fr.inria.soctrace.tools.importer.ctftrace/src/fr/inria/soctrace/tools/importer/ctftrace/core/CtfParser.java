@@ -80,6 +80,8 @@ public class CtfParser {
 	private HashMap<Integer, State> softIrqState = new HashMap<Integer, State>();
 	private HashMap<Integer, EventProducer> irqList = new HashMap<Integer, EventProducer>();
 	private HashMap<Integer, EventProducer> softIrqList = new HashMap<Integer, EventProducer>();
+	private HashMap<Integer, Long> schedSwitchTS = new HashMap<Integer, Long>();
+
 	private List<String> stateEvent = new ArrayList<String>();
 
 	/*
@@ -187,6 +189,7 @@ public class CtfParser {
 				if (aEP.getName().equals(CtfParserConstants.STUB_PRODUCER_NAME)
 						|| aEP.getName().equals(
 								CtfParserConstants.NULL_PRODUCER_NAME))
+					aEP.setName("Unknown PID Events");
 					logger.debug("Unitialized pid " + aEP.getLocalId() + " (ppid: " + aEP.getParentId() + ")");
 			}
 
@@ -741,27 +744,10 @@ public class CtfParser {
 	}
 
 	/**
-	 * Create event producers that do not appear in the trace as such These
-	 * producers are the init process, the swapper and a fake root ("machine")
-	 * for the HW hierarchy
+	 * Create event producers that do not appear in the trace
+	 * These producers are a fake root ("machine") for the HW hierarchy
 	 */
 	private void createSpecialProducers() {
-		// Create fake producer init with PID 1
-		EventProducer p = new EventProducer(eventProducerIdManager.getNextId());
-		String stringPID = String.valueOf(1);
-		p.setLocalId(stringPID);
-		p.setName("init");
-		p.setType("init");
-		producersMapSW.put(1, p);
-
-		// Create fake producer swapper with PID 0
-		EventProducer p2 = new EventProducer(eventProducerIdManager.getNextId());
-		stringPID = String.valueOf(0);
-		p2.setLocalId(stringPID);
-		p2.setName("swapper");
-		p2.setType("swapper");
-		producersMapSW.put(0, p2);
-
 		// Create fake event type for link
 		EventType et = new EventType(eventIdTypeManager.getNextId(),
 				EventCategory.LINK);
@@ -770,7 +756,7 @@ public class CtfParser {
 		
 		// Create fake root for the CPU
 		EventProducer machine = new EventProducer(eventProducerIdManager.getNextId());
-		stringPID = String.valueOf(0);
+		String stringPID = String.valueOf(0);
 		machine.setLocalId(stringPID);
 		machine.setName("Machine");
 		machine.setType("Machine");
@@ -986,8 +972,13 @@ public class CtfParser {
 
 			// Check if this is the first state for this producer
 			if (previousState != null) {
-				// Set the timestamp for state ending
-				previousState.setLongPar(maxTimestamp);
+				if (anEpID != CtfParserConstants.UNKNOWN_PID_PRODUCER) {
+					// Set the timestamp for state ending
+					previousState.setLongPar(maxTimestamp);
+				} else {
+					
+					 previousState.setLongPar(schedSwitchTS.get(previousState.getCpu()));
+				}
 				saveEvent(previousState, true);
 			}
 		}
@@ -1030,6 +1021,14 @@ public class CtfParser {
 			socTraceException = e;
 	}
 
+	public HashMap<Integer, Long> getSchedSwitchTS() {
+		return schedSwitchTS;
+	}
+
+	public void setSchedSwitchTS(HashMap<Integer, Long> schedSwitchTS) {
+		this.schedSwitchTS = schedSwitchTS;
+	}
+	
 	public long getMinTimestamp() {
 		return minTimestamp;
 	}

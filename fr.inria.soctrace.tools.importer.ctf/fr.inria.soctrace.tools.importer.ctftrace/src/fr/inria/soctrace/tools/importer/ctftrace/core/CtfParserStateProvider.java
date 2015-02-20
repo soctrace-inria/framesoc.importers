@@ -69,6 +69,7 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 		aRecord.setTimestamp(adjustedTimeStamp);	
 		aRecord.getParameters(content, event.getType());
 		
+		
 		try {
 			/* Shortcut for the "current CPU" attribute node */
 			final Integer currentCPUNode = ss.getQuarkRelativeAndAdd(
@@ -319,6 +320,9 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 				Integer newCurrentThreadNode = ss.getQuarkRelativeAndAdd(
 						getNodeThreads(), nextTid.toString());
 				
+				if(ctfParser.getSchedSwitchTS().get(aRecord.cpu) == null)
+					ctfParser.getSchedSwitchTS().put(aRecord.cpu, aRecord.getTimestamp());
+				
 				ctfParser.updateName(nextProcessName, nextTid);
 
 				/* Set the status of the process that got scheduled out. */
@@ -395,7 +399,6 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 				String childProcessName = (String) content.getField(
 						CtfParserAnalysisModule.CHILD_COMM).getValue();
 				// assert ( parentProcessName.equals(childProcessName) );
-
 
 				Integer parentTid = ((Long) content.getField(
 						CtfParserAnalysisModule.PARENT_TID).getValue()).intValue();
