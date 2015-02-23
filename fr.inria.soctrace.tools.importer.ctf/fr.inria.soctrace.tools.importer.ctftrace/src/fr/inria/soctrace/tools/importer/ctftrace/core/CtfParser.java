@@ -1089,8 +1089,6 @@ public class CtfParser {
 				if (aState.getTimestamp() <= schedSwitchTS.get(aCpu)) {
 					aState.setEventProducer(producersMapSW.get(schedSwitchPID
 							.get(aCpu)));
-					System.err.println(producersMapSW.get(
-							schedSwitchPID.get(aCpu)).getName());
 				} else {
 					aState.setEventProducer(producersMapSW.get(producersMapSW
 							.get(CtfParserConstants.UNKNOWN_PID_PRODUCER)));
