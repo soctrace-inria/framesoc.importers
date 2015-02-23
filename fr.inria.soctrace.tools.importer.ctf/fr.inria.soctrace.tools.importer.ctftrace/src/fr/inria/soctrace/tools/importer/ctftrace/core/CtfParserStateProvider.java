@@ -31,6 +31,7 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 	private final HashMap<String, Integer> knownEventNames;
 	private CtfParser ctfParser;
 	private boolean exceptionThrown = false;
+	private boolean nullValueEvent = false;
 
 	public CtfParserStateProvider(CtfTmfTrace trace, CtfParser aCtfParser) {
 		super(trace, CtfTmfEvent.class, "LTTng Kernel"); //$NON-NLS-1$
@@ -69,7 +70,6 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 		aRecord.setTimestamp(adjustedTimeStamp);	
 		aRecord.getParameters(content, event.getType());
 		
-		
 		try {
 			/* Shortcut for the "current CPU" attribute node */
 			final Integer currentCPUNode = ss.getQuarkRelativeAndAdd(
@@ -90,6 +90,11 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 					getNodeThreads(), String.valueOf(thread));
 	    		
 			aRecord.pid = thread;
+			nullValueEvent = false;
+			
+			
+			if(thread == -1)
+				nullValueEvent = true;
 
 			// If the producer does not exist yet
 			if (!ctfParser.producerExist(thread, true)) {
@@ -320,8 +325,11 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 				Integer newCurrentThreadNode = ss.getQuarkRelativeAndAdd(
 						getNodeThreads(), nextTid.toString());
 				
-				if(ctfParser.getSchedSwitchTS().get(aRecord.cpu) == null)
-					ctfParser.getSchedSwitchTS().put(aRecord.cpu, aRecord.getTimestamp());
+				if (ctfParser.getSchedSwitchTS().get(aRecord.cpu) == null) {
+					ctfParser.getSchedSwitchTS().put(aRecord.cpu,
+							aRecord.getTimestamp());
+					ctfParser.getSchedSwitchPID().put(aRecord.cpu, prevTid);
+				}
 				
 				ctfParser.updateName(nextProcessName, nextTid);
 
@@ -621,7 +629,7 @@ public class CtfParserStateProvider extends AbstractTmfStateProvider {
 			
 			//If the event type was modified during the exploration
 			aRecord.type = eventName;
-			ctfParser.newEvent(aRecord, true);
+			ctfParser.newEvent(aRecord, true, nullValueEvent);
 
 		} catch (AttributeNotFoundException ae) {
 			/*

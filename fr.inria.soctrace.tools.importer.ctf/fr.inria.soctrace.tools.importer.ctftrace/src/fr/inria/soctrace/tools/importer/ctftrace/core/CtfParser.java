@@ -45,16 +45,10 @@ import fr.inria.soctrace.lib.storage.TraceDBObject;
 import fr.inria.soctrace.lib.storage.utils.SQLConstants.FramesocTable;
 import fr.inria.soctrace.lib.utils.IdManager;
 
-/**
- * @author youenn
- * 
- */
-
 public class CtfParser {
 
 	private static final Logger logger = LoggerFactory.getLogger(CtfParser.class);
 
-	private final int MAX_EVENT_PER_PAGE = 25000;
 	private SystemDBObject sysDB;
 	private TraceDBObject traceDBSoft;
 	private TraceDBObject traceDBHard;
@@ -81,7 +75,10 @@ public class CtfParser {
 	private HashMap<Integer, EventProducer> irqList = new HashMap<Integer, EventProducer>();
 	private HashMap<Integer, EventProducer> softIrqList = new HashMap<Integer, EventProducer>();
 	private HashMap<Integer, Long> schedSwitchTS = new HashMap<Integer, Long>();
-
+	private HashMap<Integer, Integer> schedSwitchPID = new HashMap<Integer, Integer>();
+	private HashMap<Integer, List<Event>> nullValueEvents = new HashMap<Integer, List<Event>>();
+	private HashMap<Integer, List<State>> nullValueStates = new HashMap<Integer, List<State>>();
+	
 	private List<String> stateEvent = new ArrayList<String>();
 
 	/*
@@ -167,6 +164,7 @@ public class CtfParser {
 				sysDB.rollback();
 				return;
 			}
+			updateNullEvent();
 			checkUnfinishedStates();
 			
 			monitor.subTask("Building links");
@@ -202,6 +200,9 @@ public class CtfParser {
 			logger.info("Saved " + numberOfEventsSW + "/" + numberOfEventsHW
 					+ " events in " + pageSW + "/" + pageHW + " pages.");
 
+			if(producersMapSW.get(CtfParserConstants.UNKNOWN_PID_PRODUCER) != null)
+				producersMapSW.get(CtfParserConstants.UNKNOWN_PID_PRODUCER).setLocalId(String.valueOf(-2));
+				
 			saveProducers();
 			saveTypes();
 
@@ -290,7 +291,7 @@ public class CtfParser {
 	 * @return the created event
 	 * @throws SoCTraceException
 	 */
-	private Event setEvent(int id, boolean soft, CtfRecord record)
+	private Event setEvent(int id, boolean soft, CtfRecord record, boolean nullValue)
 			throws SoCTraceException {
 
 		Event e = new Event(id);
@@ -313,12 +314,10 @@ public class CtfParser {
 			
 		// Check if we have already encountered the producer
 		if (aProducer == null) {
-			 //System.out.println("Could not find producer with pid: " +
-			 //record.pid);
-
 			// If not then create a stub
 			createProducerStub(record.pid, soft);
 		}
+		
 		if (soft)
 			e.setEventProducer(producersMapSW.get(record.pid));
 		else
@@ -438,18 +437,27 @@ public class CtfParser {
 	 * @param aRecord
 	 *            A CtfRecord holding the event info
 	 */
-	public void newEvent(CtfRecord aRecord, boolean soft)
+	public void newEvent(CtfRecord aRecord, boolean soft, boolean nullValueEvent)
 			throws SoCTraceException {
 		Event e;
 
-		e = setEvent(eventIdManager.getNextId(), soft, aRecord);
+		e = setEvent(eventIdManager.getNextId(), soft, aRecord, nullValueEvent);
 
 		EventType et = getType(aRecord, soft);
 		et.setName(aRecord.type);
 		e.setType(et);
 
 		setParameters(e, aRecord);
-		saveEvent(e, soft);
+		
+		if(!nullValueEvent)
+			saveEvent(e, soft);
+		else {
+			if(nullValueEvents.get(e.getCpu()) == null)
+				nullValueEvents.put(e.getCpu(), new LinkedList<Event>());
+				
+			nullValueEvents.get(e.getCpu()).add(e);
+		}
+			
 	}
 
 	/**
@@ -514,7 +522,7 @@ public class CtfParser {
 		p.setParentId(ppid);
 
 		if (producersMapSW.get(ppid) != null) {
-			if(producersMapSW.get(ppid).getId() != p.getId())
+			if(producersMapSW.get(ppid).getId() != p.getId() &&  ppid != -1)
 				p.setParentId(producersMapSW.get(ppid).getId());
 			else
 				p.setParentId(EventProducer.NO_PARENT_ID);
@@ -608,31 +616,51 @@ public class CtfParser {
 	 *            Event producer for which we changed the state
 	 */
 	public void setProcessState(CtfRecord aRecord, int aProducer) throws SoCTraceException {
+		boolean nullValueProd = false;
+		
+		if (aProducer == -1)
+			nullValueProd = true;
+		
+		if (nullValueProd)
+			// Give negative pid (<= -2) since those are (normally) not used as
+			// real PID
+			aProducer = -2 - aRecord.cpu;
+
 		State previousState = processState.get(aProducer);
 
 		// Check if this is the first state for this producer
 		if (previousState != null) {
 			// Set the timestamp for state ending
 			previousState.setLongPar(aRecord.getTimestamp());
-			saveEvent(previousState, true);
+
+			if (previousState.getEventProducer() != null)
+				saveEvent(previousState, true);
+			else {
+				if (nullValueStates.get(previousState.getCpu()) == null)
+					nullValueStates.put(previousState.getCpu(),
+							new LinkedList<State>());
+				
+				nullValueStates.get(previousState.getCpu()).add(previousState);
+			}
 		}
 
 		State aState = new State(eventIdManager.getNextId());
 		aState.setCpu(aRecord.cpu);
 		aState.setPage(pageSW);
 		aState.setTimestamp(aRecord.getTimestamp());
+		aState.setType(getType(aRecord, true));
 		
 		if(aState.getTimestamp() > maxTimestamp)
 			maxTimestamp = aState.getTimestamp();
 
 		// Check if we have already encountered the producer
-		if (!producersMapSW.containsKey(aProducer)) {
-			// If not then create a stub
-			createProducerStub(aProducer, true);
+		if (!nullValueProd) {
+			if (!producersMapSW.containsKey(aProducer)) {
+				// If not then create a stub
+				createProducerStub(aProducer, true);
+			}
+			aState.setEventProducer(producersMapSW.get(aProducer));
 		}
-		aState.setEventProducer(producersMapSW.get(aProducer));
-
-		aState.setType(getType(aRecord, true));
 
 		// Set the created State as the current state for the process
 		processState.put(aProducer, aState);
@@ -640,14 +668,16 @@ public class CtfParser {
 
 	public void endProcess(CtfRecord aRecord, int aProducerID)
 			throws SoCTraceException {
-		State previousState = processState.get(aProducerID);
-		// Check if this is the first state for this producer
-		if (previousState != null) {
-			// Set the timestamp for state ending
-			previousState.setLongPar(aRecord.getTimestamp());
-			saveEvent(previousState, true);
+		if (aProducerID != -1) {
+			State previousState = processState.get(aProducerID);
+			// Check if this is the first state for this producer
+			if (previousState != null) {
+				// Set the timestamp for state ending
+				previousState.setLongPar(aRecord.getTimestamp());
+				saveEvent(previousState, true);
+			}
+			processState.put(aProducerID, null);
 		}
-		processState.put(aProducerID, null);
 	}
 
 	/**
@@ -675,7 +705,7 @@ public class CtfParser {
 			eventsPerPageSW++;
 			numberOfEventsSW++;
 
-			if (eventsPerPageSW > MAX_EVENT_PER_PAGE) {
+			if (eventsPerPageSW > CtfParserConstants.MAX_EVENT_PER_PAGE) {
 				// save events
 				saveEvents(eventsSW, traceDBSoft);
 				eventsSW.clear();
@@ -688,7 +718,7 @@ public class CtfParser {
 			eventsPerPageHW++;
 			numberOfEventsHW++;
 
-			if (eventsPerPageHW > MAX_EVENT_PER_PAGE) {
+			if (eventsPerPageHW > CtfParserConstants.MAX_EVENT_PER_PAGE) {
 				// save events
 				saveEvents(eventsHW, traceDBHard);
 
@@ -972,14 +1002,25 @@ public class CtfParser {
 
 			// Check if this is the first state for this producer
 			if (previousState != null) {
+				// Is the state a nullvalue EP state 
+				if(anEpID < -1){
+					// update it
+					previousState.setEventProducer(producersMapSW
+							.get(schedSwitchPID.get(previousState.getCpu())));
+				}
+				
 				if (anEpID != CtfParserConstants.UNKNOWN_PID_PRODUCER) {
 					// Set the timestamp for state ending
 					previousState.setLongPar(maxTimestamp);
-				} else {
-					
-					 previousState.setLongPar(schedSwitchTS.get(previousState.getCpu()));
+				} else {	
+					previousState.setLongPar(schedSwitchTS.get(previousState.getCpu()));
 				}
-				saveEvent(previousState, true);
+				
+				if (previousState.getEventProducer() != null)
+					saveEvent(previousState, true);
+				else
+					logger.debug("Found a state with a null EP "
+							+ previousState.getId());
 			}
 		}
 
@@ -997,6 +1038,15 @@ public class CtfParser {
 		}
 	}
 	
+	/**
+	 * Update the name of a processus since it was probably not known or
+	 * incorrect when it was created
+	 * 
+	 * @param aProcessName
+	 *            the new name of the producer
+	 * @param aPid
+	 *            the pid of the updated producer
+	 */
 	public void updateName(String aProcessName, int aPid) {
 		// If swapper, skip
 		if (aPid == 0)
@@ -1005,6 +1055,47 @@ public class CtfParser {
 		if (producersMapSW.containsKey(aPid)) {
 			if (!producersMapSW.get(aPid).getName().equals(aProcessName)) {
 				producersMapSW.get(aPid).setName(aProcessName);
+			}
+		}
+	}
+	
+	/**
+	 * Update the producer of the events created with a producer that had a pid
+	 * -1. This happen at the beginning of the trace when LTTNG has not gotten
+	 * the pid of the events yet, thus assigning them the pid -1
+	 * 
+	 * @param aRecord
+	 *            the info for updating the events
+	 * @throws SoCTraceException
+	 */
+	public void updateNullEvent() throws SoCTraceException {
+		// Events
+		for (Integer aCpu : nullValueEvents.keySet()) {
+			for (Event anEvent : nullValueEvents.get(aCpu)) {
+				if (anEvent.getTimestamp() <= schedSwitchTS.get(aCpu)) {
+					anEvent.setEventProducer(producersMapSW.get(schedSwitchPID
+							.get(aCpu)));
+				} else {
+					anEvent.setEventProducer(producersMapSW.get(producersMapSW
+							.get(CtfParserConstants.UNKNOWN_PID_PRODUCER)));
+				}
+				saveEvent(anEvent, true);
+			}
+		}
+
+		// States
+		for (Integer aCpu : nullValueStates.keySet()) {
+			for (State aState : nullValueStates.get(aCpu)) {
+				if (aState.getTimestamp() <= schedSwitchTS.get(aCpu)) {
+					aState.setEventProducer(producersMapSW.get(schedSwitchPID
+							.get(aCpu)));
+					System.err.println(producersMapSW.get(
+							schedSwitchPID.get(aCpu)).getName());
+				} else {
+					aState.setEventProducer(producersMapSW.get(producersMapSW
+							.get(CtfParserConstants.UNKNOWN_PID_PRODUCER)));
+				}
+				saveEvent(aState, true);
 			}
 		}
 	}
@@ -1043,6 +1134,14 @@ public class CtfParser {
 
 	public void setMaxTimestamp(long maxTimestamp) {
 		this.maxTimestamp = maxTimestamp;
+	}
+
+	public HashMap<Integer, Integer> getSchedSwitchPID() {
+		return schedSwitchPID;
+	}
+
+	public void setSchedSwitchPID(HashMap<Integer, Integer> schedSwitchPID) {
+		this.schedSwitchPID = schedSwitchPID;
 	}
 
 	public SoCTraceException getSocTraceException() {

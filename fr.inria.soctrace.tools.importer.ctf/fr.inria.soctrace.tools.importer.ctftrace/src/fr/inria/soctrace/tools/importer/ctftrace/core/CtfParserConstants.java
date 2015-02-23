@@ -14,6 +14,8 @@ public class CtfParserConstants {
 	
 	public static final String TRACE_TYPE = "CTFTrace.0.0";
 	
+	public static final int MAX_EVENT_PER_PAGE = 25000;
+	
 	/** Attributes of the trace*/
 	/* First-level attributes */
     static final String CPUS = "CPUs";
