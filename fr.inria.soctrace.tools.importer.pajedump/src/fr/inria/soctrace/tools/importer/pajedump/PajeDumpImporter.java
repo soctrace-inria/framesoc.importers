@@ -61,12 +61,8 @@ public class PajeDumpImporter extends FramesocTool {
 		public void run(IProgressMonitor monitor) throws SoCTraceException {
 			DeltaManager delta = new DeltaManager();
 			delta.start();
-
-			// long precision arg
-			boolean doublePrecision = input.isDoublePrecision();
+			
 			List<String> traces = input.getFiles();
-			int timeUnit = input.getTimeUnit();
-
 			int numberOfTraces = traces.size();
 			int currentTrace = 1;
 			Set<String> usedNames = new HashSet<>();
@@ -92,8 +88,7 @@ public class PajeDumpImporter extends FramesocTool {
 					traceDB = new TraceDBObject(traceDbName, DBMode.DB_CREATE);
 
 					// parsing
-					PJDumpParser parser = new PJDumpParser(sysDB, traceDB, traceFile,
-							doublePrecision, timeUnit);
+					PJDumpParser parser = new PJDumpParser(sysDB, traceDB, traceFile, input);
 					parser.parseTrace(monitor, currentTrace, numberOfTraces);
 
 				} catch (SoCTraceException e) {

@@ -91,6 +91,6 @@ public class PJDumpConstants {
 	/**
 	 * Time shift exponent (nanoseconds)
 	 */
-	public static final int TIME_SHIFT = 9;
+	public static final int DEFAULT_TIME_SHIFT = 9;
 	
 }

@@ -16,6 +16,7 @@ public class PajeDumpInput implements IFramesocToolInput {
 	protected List<String> files;
 	protected boolean doublePrecision;
 	protected int timeUnit = TimeUnit.UNKNOWN.getInt();
+	protected int precision = 0;
 	
 	@Override
 	public String getCommand() {
@@ -44,6 +45,14 @@ public class PajeDumpInput implements IFramesocToolInput {
 
 	public void setTimeUnit(int timeUnit) {
 		this.timeUnit = timeUnit;
+	}
+
+	public int getPrecision() {
+		return precision;
+	}
+
+	public void setPrecision(int precision) {
+		this.precision = precision;
 	}
 
 	@Override

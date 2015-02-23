@@ -39,6 +39,7 @@ import fr.inria.soctrace.tools.importer.paje.input.PajeInput;
 import fr.inria.soctrace.tools.importer.paje.reader.PajeDumpWrapper;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpConstants;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpParser;
+import fr.inria.soctrace.tools.importer.pajedump.input.PajeDumpInput;
 
 /**
  * Paje importer tool
@@ -62,8 +63,8 @@ public class PajeImporter extends FramesocTool {
 			private String alias;
 
 			public PajeParser(SystemDBObject sysDB, TraceDBObject traceDB, String traceFile,
-					String alias, boolean doublePrecision, int timeUnit) {
-				super(sysDB, traceDB, traceFile, doublePrecision, timeUnit);
+					String alias, PajeDumpInput input) {
+				super(sysDB, traceDB, traceFile, input);
 				this.alias = alias;
 			}
 
@@ -142,7 +143,7 @@ public class PajeImporter extends FramesocTool {
 					// create new trace DB
 					traceDB = new TraceDBObject(traceDbName, DBMode.DB_CREATE);
 					PajeParser parser = new PajeParser(sysDB, traceDB, trueOutput,
-							FilenameUtils.getBaseName(traceFile), input.isDoublePrecision(), input.getTimeUnit());
+							FilenameUtils.getBaseName(traceFile), input);
 					parser.parseTrace(monitor, currentTrace, numberOfTraces);
 					// remove tmp file
 					outputFile.delete();

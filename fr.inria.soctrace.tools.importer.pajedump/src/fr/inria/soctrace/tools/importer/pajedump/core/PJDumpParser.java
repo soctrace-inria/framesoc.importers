@@ -43,6 +43,7 @@ import fr.inria.soctrace.lib.model.utils.SoCTraceException;
 import fr.inria.soctrace.lib.storage.SystemDBObject;
 import fr.inria.soctrace.lib.storage.TraceDBObject;
 import fr.inria.soctrace.lib.utils.IdManager;
+import fr.inria.soctrace.tools.importer.pajedump.input.PajeDumpInput;
 
 /**
  * PJDump Parser core class.
@@ -63,6 +64,7 @@ public class PJDumpParser {
 	protected long minTimestamp;
 	protected long maxTimestamp;
 	protected int timeUnit;
+	protected int precision;
 
 	private Map<String, PJDumpLineParser> parserMap = new HashMap<String, PJDumpLineParser>();
 
@@ -79,19 +81,35 @@ public class PJDumpParser {
 	private boolean doublePrecision = true;
 
 	public PJDumpParser(SystemDBObject sysDB, TraceDBObject traceDB, String traceFile,
-			boolean doublePrecision, int aTimeUnit) {
+			PajeDumpInput input) {
 
 		this.traceFile = traceFile;
 		this.sysDB = sysDB;
 		this.traceDB = traceDB;
-		this.timeUnit = aTimeUnit;
-		
+		this.timeUnit = input.getTimeUnit();
+		this.doublePrecision = input.isDoublePrecision();
+		this.precision = input.getPrecision();
+
 		parserMap.put(PJDumpConstants.CONTAINER, new ContainerParser());
 		parserMap.put(PJDumpConstants.EVENT, new EventParser());
 		parserMap.put(PJDumpConstants.LINK, new LinkParser());
 		parserMap.put(PJDumpConstants.STATE, new StateParser());
 		parserMap.put(PJDumpConstants.VARIABLE, new VariableParser());
+	}
+
+	public PJDumpParser(SystemDBObject sysDB, TraceDBObject traceDB, String traceFile,
+			boolean doublePrecision, int timeUnit) {
+		this.traceFile = traceFile;
+		this.sysDB = sysDB;
+		this.traceDB = traceDB;
+		this.timeUnit = timeUnit;
 		this.doublePrecision = doublePrecision;
+
+		parserMap.put(PJDumpConstants.CONTAINER, new ContainerParser());
+		parserMap.put(PJDumpConstants.EVENT, new EventParser());
+		parserMap.put(PJDumpConstants.LINK, new LinkParser());
+		parserMap.put(PJDumpConstants.STATE, new StateParser());
+		parserMap.put(PJDumpConstants.VARIABLE, new VariableParser());
 	}
 
 	/**
@@ -158,7 +176,7 @@ public class PJDumpParser {
 				if (parser == null) {
 					malformedLineException(line);
 				}
-				
+
 				parser.parseLine(line);
 
 				if (elist.size() == PJDumpConstants.PAGE_SIZE)
@@ -203,7 +221,7 @@ public class PJDumpParser {
 	private void malformedLineException(String[] line) throws SoCTraceException {
 		throw new SoCTraceException("Malformed line: " + Arrays.toString(line));
 	}
-	
+
 	private int getWorked(double scale) {
 		return (int) (scale * byteRead);
 	}
@@ -311,7 +329,7 @@ public class PJDumpParser {
 	private long getTimestamp(String ts) {
 		if (doublePrecision) {
 			Double timestamp = Double.parseDouble(ts);
-			timestamp = Math.pow(10, PJDumpConstants.TIME_SHIFT) * timestamp;
+			timestamp = Math.pow(10, precision) * timestamp;
 			return timestamp.longValue();
 		} else {
 			return Long.parseLong(ts);
