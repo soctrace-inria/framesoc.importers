@@ -106,7 +106,7 @@ public class PajeDumpInputComposite extends DefaultImporterInputComposite {
 		for (final TimeUnit aTimeUnit : TimeUnit.values()) {
 			comboTimeUnit.add(aTimeUnit.getLabel());
 		}
-		comboTimeUnit.setText(TimeUnit.UNKNOWN.getLabel());
+		comboTimeUnit.setText(TimeUnit.NANOSECONDS.getLabel());
 	}
 
 	@Override

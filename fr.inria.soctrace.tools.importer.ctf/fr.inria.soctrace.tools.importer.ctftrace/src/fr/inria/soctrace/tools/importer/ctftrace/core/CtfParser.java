@@ -457,7 +457,6 @@ public class CtfParser {
 				
 			nullValueEvents.get(e.getCpu()).add(e);
 		}
-			
 	}
 
 	/**
@@ -1009,7 +1008,7 @@ public class CtfParser {
 							.get(schedSwitchPID.get(previousState.getCpu())));
 				}
 				
-				if (anEpID != CtfParserConstants.UNKNOWN_PID_PRODUCER) {
+				if (anEpID != CtfParserConstants.UNKNOWN_PID_PRODUCER && anEpID > 0) {
 					// Set the timestamp for state ending
 					previousState.setLongPar(maxTimestamp);
 				} else {	
@@ -1089,6 +1088,8 @@ public class CtfParser {
 				if (aState.getTimestamp() <= schedSwitchTS.get(aCpu)) {
 					aState.setEventProducer(producersMapSW.get(schedSwitchPID
 							.get(aCpu)));
+					if(aState.getEndTimestamp()<0)
+						aState.setEndTimestamp(schedSwitchTS.get(aCpu));
 				} else {
 					aState.setEventProducer(producersMapSW.get(producersMapSW
 							.get(CtfParserConstants.UNKNOWN_PID_PRODUCER)));
