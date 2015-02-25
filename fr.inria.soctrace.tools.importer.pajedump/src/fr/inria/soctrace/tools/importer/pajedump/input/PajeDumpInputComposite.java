@@ -29,6 +29,7 @@ import fr.inria.soctrace.framesoc.core.tools.model.IFramesocToolInput;
 import fr.inria.soctrace.framesoc.ui.input.DefaultImporterInputComposite;
 import fr.inria.soctrace.framesoc.ui.listeners.LaunchTextListener;
 import fr.inria.soctrace.lib.model.utils.ModelConstants.TimeUnit;
+import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpConstants;
 
 /**
  * 
@@ -37,8 +38,8 @@ import fr.inria.soctrace.lib.model.utils.ModelConstants.TimeUnit;
 public class PajeDumpInputComposite extends DefaultImporterInputComposite {
 
 	protected boolean doublePrecision = true;
-	protected int timeUnit = TimeUnit.UNKNOWN.getInt();
-	protected int precision = 0;
+	protected int timeUnit = TimeUnit.NANOSECONDS.getInt();
+	protected int precision = PJDumpConstants.DEFAULT_TIME_SHIFT;
 	private Text txtPrecision;
 	private Label lblPrecision;
 
