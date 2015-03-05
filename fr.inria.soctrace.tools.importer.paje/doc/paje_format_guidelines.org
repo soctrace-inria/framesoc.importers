@@ -33,8 +33,8 @@ http://paje.sourceforge.net/download/publication/lang-paje.pdf
 
 - It must be possible to run pj_validate and pj_dump tools on the
   trace without any error.
-  - Both pj_validate and pj_dump tools are available within pajeng
-    (https://github.com/schnorr/pajeng).
+  - Both pj_validate and pj_dump tools are available within the Pajeng
+    project (https://github.com/schnorr/pajeng).
 
 * Importing Paje traces into Framesoc
 
