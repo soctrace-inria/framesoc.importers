@@ -1,0 +1,52 @@
+#+TITLE:  Paje Format Guidelines
+#+AUTHOR: Generoso Pagano
+#+EMAIL:  generoso.pagano@inria.fr
+#+OPTIONS: ^:nil
+#+OPTIONS: email:t
+
+#+LATEX_HEADER: \usepackage{hyperref}
+#+LATEX_HEADER: \hypersetup{
+#+LATEX_HEADER:     colorlinks,%
+#+LATEX_HEADER:     citecolor=black,%
+#+LATEX_HEADER:     filecolor=black,%
+#+LATEX_HEADER:     linkcolor=blue,%
+#+LATEX_HEADER:     urlcolor=black
+#+LATEX_HEADER: }
+
+* Introduction
+This document provides some format guidelines for sharing execution
+traces, as proposed after the visit of Damien Dosimont, Generoso
+Pagano and Youenn Corre at Inria Bordeaux.
+
+* Format guidelines
+
+- Traces must respect the Paje trace format, as defined here:
+http://paje.sourceforge.net/download/publication/lang-paje.pdf
+
+- Trace events must be sorted in time.
+  - If for some trace it is necessary to do some post-processing to
+    get this sorting (e.g., StarPU traces), such post-processing must
+    be done *before* sharing the trace.
+
+- The event fields (e.g., the string corresponding to a container
+  name or a state type) must not contain commas.
+
+- It must be possible to run pj_validate and pj_dump tools on the
+  trace without any error.
+  - Both pj_validate and pj_dump tools are available within pajeng
+    (https://github.com/schnorr/pajeng).
+
+* Importing Paje traces into Framesoc
+
+Framesoc (http://soctrace-inria.github.io/framesoc/) provides a Paje
+Importer to import Paje traces into the analysis framework.  This
+importer internally uses the pj_dump tool.
+
+Note: Framesoc provides also a Paje Dump Importer. This importer does
+*not* take as input as Paje trace. It takes as input a trace produced
+dumping a Paje trace with the pj_dump tool.
+
+If the Framesoc import fails, please verify that *all* the conditions
+listed in the [[Format guidelines][format guidelines]] section are met. If this is the case,
+this probably means that there is a problem with pj_dump or with the
+Framesoc importer.
