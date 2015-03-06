@@ -5,9 +5,8 @@
          point="fr.inria.soctrace.framesoc.core.tool">
       <tool
             class="fr.inria.soctrace.tools.importer.starpu.StarPuImporter"
-            doc="StarPu Importer"
             id="fr.inria.soctrace.tools.importer.starpu"
-            name="StarPu Importer"
+            name="StarPU Importer (experimental)"
             type="IMPORT">
       </tool>
    </extension>

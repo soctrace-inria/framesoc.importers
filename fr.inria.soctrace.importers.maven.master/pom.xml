@@ -114,8 +114,7 @@
 		<module>
 			../fr.inria.soctrace.tools.importer.ctf/fr.inria.linuxtools.tmf.ctf.core
 		</module>
-
-		<module>../fr.inria.soctrace.tools.importer.starpu</module>
+		
 	</modules>
 
 	<organization>
