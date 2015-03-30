@@ -24,6 +24,9 @@ public class PajeInput extends PajeDumpInput {
 	}
 
 	public String[] getArguments() {
+		if(this.arguments == null || this.arguments.isEmpty())
+			return new String[0];
+		
 		return this.arguments.split("\\s+");
 	}
 

@@ -12,6 +12,9 @@
 package fr.inria.soctrace.tools.importer.paje;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -130,8 +133,16 @@ public class PajeImporter extends FramesocTool {
 						return;
 					}
 					if (status != 0) {
+						// Dump the temp file in order to get the error
+						byte[] encoded = Files.readAllBytes(Paths
+								.get(outputFile.getAbsolutePath()));
+						String outputContent = new String(encoded);
+
 						outputFile.delete();
-						throw new SoCTraceException("pj_dump return code was " + status + ".");
+						throw new SoCTraceException("pj_dump return code was "
+								+ status
+								+ ". The following error was generated: "
+								+ outputContent);
 					}
 
 					/*
@@ -149,6 +160,8 @@ public class PajeImporter extends FramesocTool {
 					outputFile.delete();
 
 				} catch (SoCTraceException e) {
+					PluginImporterJob.catchImporterException(e, sysDB, traceDB);
+				} catch (IOException e) {
 					PluginImporterJob.catchImporterException(e, sysDB, traceDB);
 				} finally {
 					// close the trace DB and the system DB (commit)

@@ -233,6 +233,9 @@ public class PajeInputComposite extends PajeDumpInputComposite {
 		if(stopAtInput)
 			args = args + "-a " + stopAtTime + " ";
 
+		if (args.isEmpty())
+			args = null;
+		
 		return args;
 	}
 

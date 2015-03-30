@@ -28,14 +28,15 @@ import fr.inria.soctrace.framesoc.core.tools.management.ExternalProgramWrapper;
  * It looks for the pj_dump executable path in the configuration file
  * ./<eclipse.dir>/configuration/<plugin.name>/pj_dump.path.
  * 
- * If this file is not found, one is created with a default value, pointing to the precompiled
- * executable (./<plugin.name>/exe/pj_dump).
+ * If this file is not found, one is created with a default value, pointing to
+ * the precompiled executable (./<plugin.name>/exe/pj_dump).
  * 
  * @author "Generoso Pagano <generoso.pagano@inria.fr>"
  */
 public class PajeDumpWrapper extends ExternalProgramWrapper {
 
-	private final static Logger logger = LoggerFactory.getLogger(PajeDumpWrapper.class);
+	private final static Logger logger = LoggerFactory
+			.getLogger(PajeDumpWrapper.class);
 
 	/**
 	 * Constructor
@@ -58,13 +59,16 @@ public class PajeDumpWrapper extends ExternalProgramWrapper {
 	 */
 	public int executeSync(final IProgressMonitor monitor, File output) {
 		logger.debug("Executing: {}", fCommand);
+
 		ProcessBuilder pb = new ProcessBuilder(fCommand);
+		pb.redirectErrorStream(true);
 		pb.redirectOutput(output);
+
 		int exitValue = 1;
 		try {
+			boolean exited = false;
 			final Process p = pb.start();
 
-			boolean exited = false;
 			while (!exited) {
 				try {
 					if (monitor.isCanceled()) {
