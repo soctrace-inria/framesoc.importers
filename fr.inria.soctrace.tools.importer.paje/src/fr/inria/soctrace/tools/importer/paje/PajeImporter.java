@@ -205,18 +205,7 @@ public class PajeImporter extends FramesocTool {
 				return new ParameterCheckStatus(false, f.getName() + " does not exist.");
 			}
 		}
-
-		// check options
-		for (String arg : pjinput.getArguments()) {
-			if (arg.trim().equals("")) {
-				continue;
-			}
-			ParameterCheckStatus returnStatus = PajeInput.correctOption(arg);
-			if (!returnStatus.valid) {
-				return returnStatus;
-			}
-		}
-
+		
 		return new ParameterCheckStatus(true, "");
 	}
 
