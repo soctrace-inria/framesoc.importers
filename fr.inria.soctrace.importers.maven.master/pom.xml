@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>fr.inria.soctrace.importers.maven</groupId>
 	<artifactId>fr.inria.soctrace.importers.maven.master</artifactId>
-	<version>1.0.5-SNAPSHOT</version>
+	<version>1.0.6-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Framesoc Importers Maven Master</name>
 	<description>Maven master project for Framesoc Importers. It contains the parent pom.xml.	</description>
