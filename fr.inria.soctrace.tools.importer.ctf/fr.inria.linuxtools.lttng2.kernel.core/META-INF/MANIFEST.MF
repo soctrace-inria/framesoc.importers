@@ -12,7 +12,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  fr.inria.linuxtools.ctf.core;bundle-version="3.0.0",
  fr.inria.linuxtools.tmf.core;bundle-version="3.0.0",
- fr.inria.linuxtools.tmf.ctf.core
+ fr.inria.linuxtools.tmf.ctf.core,
+ org.eclipse.jdt.annotation;bundle-version="[1.1.0,2.0.0)";resolution:=optional
 Export-Package: fr.inria.linuxtools.internal.lttng2.kernel.core;x-friends:="fr.inria.linuxtools.lttng2.kernel.ui,fr.inria.linuxtools.lttng2.kernel.core.tests",
  fr.inria.linuxtools.internal.lttng2.kernel.core.stateprovider;x-friends:="fr.inria.linuxtools.lttng2.kernel.ui,fr.inria.linuxtools.lttng2.kernel.core.tests",
  fr.inria.linuxtools.lttng2.kernel.core.analysis,
