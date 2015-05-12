@@ -15,7 +15,12 @@ import fr.inria.soctrace.lib.model.utils.ModelConstants.EventCategory;
 import fr.inria.soctrace.lib.model.utils.SoCTraceException;
 import fr.inria.soctrace.lib.storage.TraceDBObject;
 import fr.inria.soctrace.lib.utils.IdManager;
-
+/**
+ * KPTraceCSV Parser Tool
+ *
+ * @author "Alexis Martin <alexis.martin@inria.fr>"
+ *
+ */
 public class KptracecsvcatParserManager {
 
 	private File tracefile;

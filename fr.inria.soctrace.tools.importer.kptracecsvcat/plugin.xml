@@ -6,7 +6,8 @@
       <tool
             class="fr.inria.soctrace.tools.importer.kptracecsvcat.KptracecsvcatImporterTool"
             doc="no parameters"
-            name="Kptrace CSV cat"
+            name="Kptrace CSV"
+            id="fr.inria.soctrace.tools.importer.kptracecsvcat"
             type="IMPORT">
       </tool>
    </extension>

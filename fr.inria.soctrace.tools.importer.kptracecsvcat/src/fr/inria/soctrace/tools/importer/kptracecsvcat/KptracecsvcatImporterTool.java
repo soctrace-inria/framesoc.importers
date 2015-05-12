@@ -1,9 +1,14 @@
-
 package fr.inria.soctrace.tools.importer.kptracecsvcat;
+
+import java.io.File;
+
+import org.eclipse.core.runtime.IProgressMonitor;
 
 import fr.inria.soctrace.framesoc.core.FramesocManager;
 import fr.inria.soctrace.framesoc.core.tools.management.PluginImporterJob;
+import fr.inria.soctrace.framesoc.core.tools.model.FileInput;
 import fr.inria.soctrace.framesoc.core.tools.model.FramesocTool;
+import fr.inria.soctrace.framesoc.core.tools.model.IFramesocToolInput;
 import fr.inria.soctrace.framesoc.core.tools.model.IPluginToolJobBody;
 import fr.inria.soctrace.lib.model.utils.SoCTraceException;
 import fr.inria.soctrace.lib.storage.SystemDBObject;
@@ -13,9 +18,10 @@ import fr.inria.soctrace.lib.utils.Configuration;
 import fr.inria.soctrace.lib.utils.DeltaManager;
 import fr.inria.soctrace.lib.utils.Configuration.SoCTraceProperty;
 import fr.inria.soctrace.tools.importer.kptracecsvcat.core.KptracecsvcatManager;
+import fr.inria.soctrace.tools.importer.kptracecsvcat.core.KptracecsvcatTraceSizeMetadata;
 
 /**
- * ParserTest Parser Tool
+ * KPTraceCSV Parser Tool
  *
  * @author "Alexis Martin <alexis.martin@inria.fr>"
  *
@@ -30,12 +36,12 @@ public class KptracecsvcatImporterTool extends FramesocTool {
 		
 		private String filename;
 		
-		public KptracecsvcatImporterPluginJobBody(String[] args) {
-			this.filename = args[0];
+		public KptracecsvcatImporterPluginJobBody(FileInput file) {
+			this.filename = file.getFiles().get(0);
 		}
 
 		@Override
-		public void run() {
+		public void run(IProgressMonitor monitor) throws SoCTraceException  {
 			
 			System.out.println(filename);
 			
@@ -65,6 +71,7 @@ public class KptracecsvcatImporterTool extends FramesocTool {
 				// close the trace DB and the system DB (commit)
 				traceDB.close();
 				sysDB.close();
+				new KptracecsvcatTraceSizeMetadata(new File(filename), traceDbName);
 				
 			} catch ( SoCTraceException ex ) {
 				System.err.println(ex.getMessage());
@@ -86,14 +93,17 @@ public class KptracecsvcatImporterTool extends FramesocTool {
 			
 			
 		}
+
+	
 		
 	}
 	
 	@Override
-	public void launch(String[] args) {
-		PluginImporterJob job = new PluginImporterJob("Kptracecsvcat Importer", new KptracecsvcatImporterPluginJobBody(args));
+	public void launch(IFramesocToolInput input) {
+		PluginImporterJob job = new PluginImporterJob("Kptracecsvcat Importer", new KptracecsvcatImporterPluginJobBody((FileInput)input));
 		job.setUser(true);
 		job.schedule();
 	}
+
 
 }

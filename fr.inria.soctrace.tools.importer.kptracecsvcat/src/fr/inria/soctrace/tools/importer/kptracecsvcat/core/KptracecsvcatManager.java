@@ -4,7 +4,12 @@ import java.io.FileNotFoundException;
 import fr.inria.soctrace.lib.model.utils.SoCTraceException;
 import fr.inria.soctrace.lib.storage.SystemDBObject;
 import fr.inria.soctrace.lib.storage.TraceDBObject;
-
+/**
+ * KPTraceCSV Parser Tool
+ *
+ * @author "Alexis Martin <alexis.martin@inria.fr>"
+ *
+ */
 public class KptracecsvcatManager{
 	
 	private SystemDBObject sysDB;
