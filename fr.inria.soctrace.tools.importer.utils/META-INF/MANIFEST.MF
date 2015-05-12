@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Utils
+Bundle-SymbolicName: fr.inria.soctrace.tools.importer.utils;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: fr.inria.soctrace.tools.importer.utils.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ fr.inria.soctrace.framesoc.ui
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-ActivationPolicy: lazy
+Export-Package: fr.inria.soctrace.tools.importer.utils
