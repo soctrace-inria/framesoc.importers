@@ -56,6 +56,10 @@ public class ColorManager implements IStartup {
 	private Map<String, FramesocColor> getColors(File files[]) {
 		Map<String, FramesocColor> colors = new HashMap<>();
 		for (File file : files) {
+			if (file.getName().startsWith(".")) {
+				// skip hidden files
+				continue;
+			}
 			colors.putAll(loadColorFile(file));
 		}
 		return colors;
