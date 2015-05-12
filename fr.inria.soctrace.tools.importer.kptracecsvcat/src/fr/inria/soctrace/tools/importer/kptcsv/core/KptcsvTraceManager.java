@@ -12,24 +12,26 @@ package fr.inria.soctrace.tools.importer.kptcsv.core;
 
 import fr.inria.soctrace.lib.model.Trace;
 import fr.inria.soctrace.lib.model.TraceType;
+import fr.inria.soctrace.lib.model.utils.ModelConstants.TimeUnit;
 import fr.inria.soctrace.lib.model.utils.SoCTraceException;
 import fr.inria.soctrace.lib.storage.SystemDBObject;
 import fr.inria.soctrace.lib.storage.utils.SQLConstants.FramesocTable;
+
 /**
  * KPTraceCSV Parser Tool
  *
  * @author "Alexis Martin <alexis.martin@inria.fr>"
  *
  */
-public class KptcsvTraceManager{
+public class KptcsvTraceManager {
 
 	private SystemDBObject sysDB;
 	private TraceType tt;
 	private boolean traceTypeExisting;
-	
+
 	private final String typename = "KPtrace CSV cat";
-	
-	public KptcsvTraceManager(SystemDBObject sysDB){
+
+	public KptcsvTraceManager(SystemDBObject sysDB) {
 		this.sysDB = sysDB;
 		try {
 			this.traceTypeExisting = (sysDB.isTraceTypePresent(this.typename));
@@ -37,24 +39,26 @@ public class KptcsvTraceManager{
 			e.printStackTrace();
 		}
 	}
-	
-	public void writeTrace(Integer numberOfEvents, String traceName) throws SoCTraceException{
-		
-		if(!traceTypeExisting){
-			this.tt = new TraceType(sysDB.getNewId(FramesocTable.TRACE_TYPE.toString(), "ID"));
+
+	public void writeTrace(Integer numberOfEvents, String traceName)
+			throws SoCTraceException {
+
+		if (!traceTypeExisting) {
+			this.tt = new TraceType(sysDB.getNewId(
+					FramesocTable.TRACE_TYPE.toString(), "ID"));
 			this.tt.setName(this.typename);
 			sysDB.save(tt);
-		}else{
+		} else {
 			this.tt = sysDB.getTraceType(typename);
 		}
-		
-		Trace t = new Trace(sysDB.getNewId(FramesocTable.TRACE.toString(), "ID"));
+
+		Trace t = new Trace(
+				sysDB.getNewId(FramesocTable.TRACE.toString(), "ID"));
 		t.setType(tt);
 		t.setNumberOfEvents(numberOfEvents);
 		t.setDbName(traceName);
-		//TODO set exposant
-		t.setTimeUnit(-6);// exposant correspondant a la puissance de mico secondes
+		t.setTimeUnit(TimeUnit.MICROSECONDS.getInt());
 		sysDB.save(t);
 	}
-	
+
 }
