@@ -1,4 +1,4 @@
-package fr.inria.soctrace.tools.importer.kptracecsvcat.core;
+package fr.inria.soctrace.tools.importer.kptcsv.core;
 
 import fr.inria.soctrace.lib.model.Trace;
 import fr.inria.soctrace.lib.model.TraceType;
@@ -11,7 +11,7 @@ import fr.inria.soctrace.lib.storage.utils.SQLConstants.FramesocTable;
  * @author "Alexis Martin <alexis.martin@inria.fr>"
  *
  */
-public class KptracecsvcatTraceManager{
+public class KptcsvTraceManager{
 
 	private SystemDBObject sysDB;
 	private TraceType tt;
@@ -19,7 +19,7 @@ public class KptracecsvcatTraceManager{
 	
 	private final String typename = "KPtrace CSV cat";
 	
-	public KptracecsvcatTraceManager(SystemDBObject sysDB){
+	public KptcsvTraceManager(SystemDBObject sysDB){
 		this.sysDB = sysDB;
 		try {
 			this.traceTypeExisting = (sysDB.isTraceTypePresent(this.typename));

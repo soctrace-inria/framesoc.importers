@@ -1,4 +1,4 @@
-package fr.inria.soctrace.tools.importer.kptracecsvcat.core;
+package fr.inria.soctrace.tools.importer.kptcsv.core;
 
 import java.io.FileNotFoundException;
 import fr.inria.soctrace.lib.model.utils.SoCTraceException;
@@ -10,14 +10,14 @@ import fr.inria.soctrace.lib.storage.TraceDBObject;
  * @author "Alexis Martin <alexis.martin@inria.fr>"
  *
  */
-public class KptracecsvcatManager{
+public class KptcsvManager{
 	
 	private SystemDBObject sysDB;
 	private TraceDBObject traceDB;
 	private String filename;	
 	private Integer numberOfEvents;
 	
-	public KptracecsvcatManager(SystemDBObject sysDB, TraceDBObject traceDB, String filename){
+	public KptcsvManager(SystemDBObject sysDB, TraceDBObject traceDB, String filename){
 		this.sysDB = sysDB;
 		this.traceDB = traceDB;
 		this.filename = filename;
@@ -27,12 +27,12 @@ public class KptracecsvcatManager{
 	public void importTrace() throws SoCTraceException{
 		
 		// write file in traceDB
-		KptracecsvcatFileManager fm = new KptracecsvcatFileManager(traceDB,filename,"description");
+		KptcsvFileManager fm = new KptcsvFileManager(traceDB,filename,"description");
 		fm.saveFile();
 		
 		
 		// parse trace and save events in trace DB
-		KptracecsvcatParserManager pm = new KptracecsvcatParserManager(traceDB,filename);
+		KptcsvParserManager pm = new KptcsvParserManager(traceDB,filename);
 		try {
 			numberOfEvents = pm.parseTrace();
 		} catch (FileNotFoundException e) {
@@ -41,7 +41,7 @@ public class KptracecsvcatManager{
 		
 		
 		// Write trace params in systemDB
-		KptracecsvcatTraceManager tm = new KptracecsvcatTraceManager(sysDB);
+		KptcsvTraceManager tm = new KptcsvTraceManager(sysDB);
 		tm.writeTrace(numberOfEvents,traceDB.getDBName());
 		
 	}

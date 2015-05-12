@@ -1,4 +1,4 @@
-package fr.inria.soctrace.tools.importer.kptracecsvcat.core;
+package fr.inria.soctrace.tools.importer.kptcsv.core;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -21,7 +21,7 @@ import fr.inria.soctrace.lib.utils.IdManager;
  * @author "Alexis Martin <alexis.martin@inria.fr>"
  *
  */
-public class KptracecsvcatParserManager {
+public class KptcsvParserManager {
 
 	private File tracefile;
 	private TraceDBObject traceDB;
@@ -41,7 +41,7 @@ public class KptracecsvcatParserManager {
 	private List<EventProducer> listEventProducer;
 	
 	
-	public KptracecsvcatParserManager(TraceDBObject traceDB, String path){
+	public KptcsvParserManager(TraceDBObject traceDB, String path){
 		
 		this.traceDB = traceDB;
 		tracefile = new File(path);

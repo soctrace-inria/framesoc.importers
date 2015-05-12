@@ -1,4 +1,4 @@
-package fr.inria.soctrace.tools.importer.kptracecsvcat.core;
+package fr.inria.soctrace.tools.importer.kptcsv.core;
 
 import fr.inria.soctrace.lib.model.File;
 import fr.inria.soctrace.lib.model.utils.SoCTraceException;
@@ -10,13 +10,13 @@ import fr.inria.soctrace.lib.utils.IdManager;
  * @author "Alexis Martin <alexis.martin@inria.fr>"
  *
  */
-public class KptracecsvcatFileManager {
+public class KptcsvFileManager {
 	
 	private String path;
 	private String description;
 	private TraceDBObject traceDB;
 	
-	public KptracecsvcatFileManager(TraceDBObject traceDB, String path, String description){
+	public KptcsvFileManager(TraceDBObject traceDB, String path, String description){
 		this.path = path;
 		this.description = description;
 		this.traceDB = traceDB;

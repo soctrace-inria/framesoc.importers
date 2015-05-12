@@ -4,7 +4,7 @@
    <extension
          point="fr.inria.soctrace.framesoc.core.tool">
       <tool
-            class="fr.inria.soctrace.tools.importer.kptracecsvcat.KptracecsvcatImporterTool"
+            class="fr.inria.soctrace.tools.importer.kptcsv.KptcsvImporterTool"
             doc="no parameters"
             name="Kptrace CSV"
             id="fr.inria.soctrace.tools.importer.kptracecsvcat"
