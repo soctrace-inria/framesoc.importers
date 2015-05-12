@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Kptracecsvcat
+Bundle-SymbolicName: fr.inria.soctrace.tools.importer.kptracecsvcat;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Export-Package: fr.inria.soctrace.tools.importer.kptracecsvcat
+Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
+ fr.inria.soctrace.framesoc.core,
+ fr.inria.soctrace.lib.utils,
+ fr.inria.soctrace.lib.storage,
+ fr.inria.soctrace.lib.model
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
