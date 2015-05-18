@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="fr.inria.soctrace.framesoc.core.tool">
+      <tool
+            class="fr.inria.soctrace.tools.importer.cachec.CachecImporter"
+            doc="Trace file(s) produced by cachec"
+            name="cachec Importer"
+            type="IMPORT"
+            id="fr.inria.soctrace.tools.importer.cachec">
+      </tool>
+   </extension>
+   <extension
+         point="fr.inria.soctrace.framesoc.ui.input.toolInput">
+      <toolInput
+            compositeFactory="fr.inria.soctrace.tools.importer.cachec.input.CachecInputCompositeFactory"
+            toolId="fr.inria.soctrace.tools.importer.cachec">
+      </toolInput>
+   </extension>
+</plugin>
