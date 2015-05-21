@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Kptracecsvcat
 Bundle-SymbolicName: fr.inria.soctrace.tools.importer.kptracecsvcat;singleton:=true
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 1.0.8.qualifier
 Export-Package: fr.inria.soctrace.tools.importer.kptcsv
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  fr.inria.soctrace.framesoc.core,
