@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Linux_64
+Bundle-SymbolicName: fr.inria.soctrace.tools.importer.otf2.linux_64
+Bundle-Version: 1.0.0.qualifier
+Fragment-Host: fr.inria.soctrace.tools.importer.otf2;bundle-version="1.0.7"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-NativeCode: exe/otf2-print;selection-filter=
+ "(&(osgi.os=linux)(osgi.arch=x86_64))"
+Eclipse-PlatformFilter: (& (osgi.os=linux) (osgi.arch=x86_64))
