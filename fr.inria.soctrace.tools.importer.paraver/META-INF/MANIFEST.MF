@@ -17,4 +17,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Import-Package: org.apache.commons.io,
  org.eclipse.core.resources
-Eclipse-PlatformFilter: (&(osgi.os=linux))
+Eclipse-PlatformFilter: (& (osgi.os=linux))
