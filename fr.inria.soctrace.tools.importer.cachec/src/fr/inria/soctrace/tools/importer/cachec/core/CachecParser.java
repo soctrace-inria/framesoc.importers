@@ -35,7 +35,6 @@ import fr.inria.soctrace.lib.model.EventParam;
 import fr.inria.soctrace.lib.model.EventParamType;
 import fr.inria.soctrace.lib.model.EventProducer;
 import fr.inria.soctrace.lib.model.EventType;
-import fr.inria.soctrace.lib.model.Variable;
 import fr.inria.soctrace.lib.model.utils.ModelConstants.EventCategory;
 import fr.inria.soctrace.lib.model.utils.SoCTraceException;
 import fr.inria.soctrace.lib.storage.SystemDBObject;
