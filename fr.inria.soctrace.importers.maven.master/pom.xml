@@ -115,7 +115,19 @@
 		<module>
 			../fr.inria.soctrace.tools.importer.ctf/fr.inria.linuxtools.tmf.ctf.core
 		</module>
-		
+
+		<module>
+			../fr.inria.soctrace.tools.importer.otf2.linux_32
+		</module>
+		<module>
+			../fr.inria.soctrace.tools.importer.otf2.linux_64
+		</module>
+		<module>
+			../fr.inria.soctrace.tools.importer.paje.linux_32
+		</module>
+		<module>
+			../fr.inria.soctrace.tools.importer.paje.linux_64
+		</module>
 	</modules>
 
 	<organization>
