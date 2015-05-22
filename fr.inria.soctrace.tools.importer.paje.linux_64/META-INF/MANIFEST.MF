@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Linux_64
+Bundle-SymbolicName: fr.inria.soctrace.tools.importer.paje.linux_64
+Bundle-Version: 1.0.0.qualifier
+Fragment-Host: fr.inria.soctrace.tools.importer.paje;bundle-version="1.0.8"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Eclipse-PlatformFilter: (& (osgi.os=linux) (osgi.arch=x86_64))
