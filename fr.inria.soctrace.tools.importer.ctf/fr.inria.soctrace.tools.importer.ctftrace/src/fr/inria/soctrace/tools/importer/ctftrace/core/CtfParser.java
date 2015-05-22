@@ -150,7 +150,7 @@ public class CtfParser {
 			eventIdTypeManager = new IdManager();
 			eventParamTypeIdManager = new IdManager();
 
-			createSpecialProducers();
+			createSpecialEntities();
 
 			CtfParserTrace aT = new CtfParserTrace(this);
 			aT.setDirectory(tracePath[0]);
@@ -361,13 +361,12 @@ public class CtfParser {
 				typesSW.put(aRecord.type, et);
 			else
 				typesHW.put(aRecord.type, et);
-
 		}
+		
 		if (soft)
 			return typesSW.get(aRecord.type);
 		else
 			return typesHW.get(aRecord.type);
-			
 	}
 
 	/**
@@ -776,7 +775,7 @@ public class CtfParser {
 	 * Create event producers that do not appear in the trace
 	 * These producers are a fake root ("machine") for the HW hierarchy
 	 */
-	private void createSpecialProducers() {
+	private void createSpecialEntities() {
 		// Create fake event type for link
 		EventType et = new EventType(eventIdTypeManager.getNextId(),
 				EventCategory.LINK);
@@ -1008,7 +1007,7 @@ public class CtfParser {
 							.get(schedSwitchPID.get(previousState.getCpu())));
 				}
 				
-				if (anEpID != CtfParserConstants.UNKNOWN_PID_PRODUCER && anEpID > 0) {
+				if (anEpID != CtfParserConstants.UNKNOWN_PID_PRODUCER && anEpID >= 0) {
 					// Set the timestamp for state ending
 					previousState.setLongPar(maxTimestamp);
 				} else {	
@@ -1038,8 +1037,8 @@ public class CtfParser {
 	}
 	
 	/**
-	 * Update the name of a processus since it was probably not known or
-	 * incorrect when it was created
+	 * Update the name of a process since it was probably not known or incorrect
+	 * when it was created
 	 * 
 	 * @param aProcessName
 	 *            the new name of the producer
@@ -1059,12 +1058,10 @@ public class CtfParser {
 	}
 	
 	/**
-	 * Update the producer of the events created with a producer that had a pid
-	 * -1. This happen at the beginning of the trace when LTTNG has not gotten
-	 * the pid of the events yet, thus assigning them the pid -1
+	 * Update the producer of the events created with a producer that has a pid
+	 * -1. This happens at the beginning of the trace when LTTNG has not yet got
+	 * the pid of the events, thus assigning them the pid -1
 	 * 
-	 * @param aRecord
-	 *            the info for updating the events
 	 * @throws SoCTraceException
 	 */
 	public void updateNullEvent() throws SoCTraceException {
@@ -1088,7 +1085,7 @@ public class CtfParser {
 				if (aState.getTimestamp() <= schedSwitchTS.get(aCpu)) {
 					aState.setEventProducer(producersMapSW.get(schedSwitchPID
 							.get(aCpu)));
-					if(aState.getEndTimestamp()<0)
+					if (aState.getEndTimestamp() < 0)
 						aState.setEndTimestamp(schedSwitchTS.get(aCpu));
 				} else {
 					aState.setEventProducer(producersMapSW.get(producersMapSW
@@ -1107,7 +1104,7 @@ public class CtfParser {
 	 */
 	public void handleException(SoCTraceException e) {
 		// Keep only the first exception
-		if (socTraceException != null)
+		if (socTraceException == null)
 			socTraceException = e;
 	}
 
