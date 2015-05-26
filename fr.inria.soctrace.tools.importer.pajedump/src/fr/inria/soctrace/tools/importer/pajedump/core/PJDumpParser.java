@@ -400,7 +400,7 @@ public class PJDumpParser {
 			s.setTimestamp(getTimestamp(fields[PJDumpConstants.S_START_TIME]));
 			s.setType(getType(fields[PJDumpConstants.S_VALUE], EventCategory.STATE));
 			s.setEndTimestamp(getTimestamp(fields[PJDumpConstants.S_END_TIME]));
-			s.setImbricationLevel(Integer.valueOf(fields[PJDumpConstants.S_IMBRICATION]));
+			s.setImbricationLevel(Double.valueOf(fields[PJDumpConstants.S_IMBRICATION]).intValue());
 			elist.add(s);
 			updateMinMax(s.getTimestamp());
 			updateMinMax(s.getEndTimestamp());

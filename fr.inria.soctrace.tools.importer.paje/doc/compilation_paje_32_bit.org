@@ -1,0 +1,17 @@
+* This document describes how to compile a 32 bit version of pajeng tools, pj_dump and pj_validate, on a 64 bit Linux.
+** Clone the pajeng git repository (git@github.com:schnorr/pajeng.git)
+** Modify cmake files
+	- In the src/tools/CMakeLists.txt file:
+		- In the pj_validate section add: set_target_properties(pj_validate PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
+		- In the pj_dump section add: set_target_properties(pj_dump PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
+	- (This step may not be necessary) In the src/libpaje/CMakeLists.txt:
+		- For the static version of the library, add: set_target_properties(paje_library_static PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
+		- For the shared version of the library, add: set_target_properties(paje_library PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
+
+** Installing i386 libraries
+	- The build of the binaries might fail due to the necessity of having 32 bit versions of libraries to link. In the Ubuntu distribution, this is provided by the "ia32-libs" package. However the necessary library libfl (for flex) is not provided with this package, it is thus necessary to install it. With the apt-get package manager, this can be done with the command sudo apt-get install libfl:i386 (in a general manner, it is possible to install the 32 bit version of a package with the command line sudo apt-get install <packagename>:i386).
+	
+** Building the binaries
+	- Follow the same procedure for a normal installation as described on the wiki page of pajeng (the "Compile and install" section): https://github.com/schnorr/pajeng/wiki/Install
+	- The procedure might fail after building the tools, but the tools are functional.
+	
