@@ -14,6 +14,10 @@ public class PajeInput extends PajeDumpInput {
 	 * Command line arguments for pj_dump
 	 */
 	protected String arguments;
+	
+	public PajeInput() {
+		super();
+	}
 
 	public String getArgumentLine() {
 		return arguments;

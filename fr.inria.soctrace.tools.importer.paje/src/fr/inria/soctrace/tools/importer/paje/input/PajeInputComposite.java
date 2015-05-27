@@ -194,8 +194,11 @@ public class PajeInputComposite extends PajeDumpInputComposite {
 	public IFramesocToolInput getToolInput() {
 		PajeDumpInput superInput = (PajeDumpInput) super.getToolInput();
 		PajeInput input = new PajeInput();
+		
 		input.setDoublePrecision(superInput.isDoublePrecision());
 		input.setFiles(superInput.getFiles());
+		input.setPrecision(superInput.getPrecision());
+		input.setTimeUnit(superInput.getTimeUnit());
 		input.setArgumentLine(getArgumentsAsString());
 		return input;
 	}

@@ -34,15 +34,10 @@ public class PajeTraceMetadata extends PJDumpTraceMetadata {
 		trace.setDescription("paje trace imported " + getCurrentDate());
 		trace.setNumberOfCpus(1);
 		trace.setNumberOfEvents(events);
-		trace.setOutputDevice("paraver");
 		trace.setProcessed(false);
 		trace.setMinTimestamp(min);
 		trace.setMaxTimestamp(max);
 		trace.setTimeUnit(timeUnit);
-
-		trace.setTracedApplication("unknown");
-		trace.setBoard("unknown");
-		trace.setOperatingSystem("unknown");
 	}
 
 }
