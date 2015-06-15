@@ -39,7 +39,7 @@ public class KptcsvTraceSizeMetadata {
 
 	public KptcsvTraceSizeMetadata(File input, String traceDbName)
 			throws SoCTraceException {
-		SystemDBObject sysDB = SystemDBObject.openNewIstance();
+		SystemDBObject sysDB = SystemDBObject.openNewInstance();
 		TraceDBObject traceDB = new TraceDBObject(traceDbName, DBMode.DB_OPEN);
 		final TraceQuery tQuery = new TraceQuery(sysDB);
 		tQuery.setElementWhere(new SimpleCondition("TRACE_DB_NAME",
@@ -50,7 +50,7 @@ public class KptcsvTraceSizeMetadata {
 					getStringSize(input));
 			traceDB.close();
 			sysDB.close();
-			sysDB = SystemDBObject.openNewIstance();
+			sysDB = SystemDBObject.openNewInstance();
 			traceDB = new TraceDBObject(traceDbName, DBMode.DB_OPEN);
 			String value = "unknown";
 			String dbms = Configuration.getInstance().get(

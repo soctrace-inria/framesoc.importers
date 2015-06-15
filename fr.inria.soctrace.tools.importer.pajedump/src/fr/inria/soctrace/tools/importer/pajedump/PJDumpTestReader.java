@@ -61,7 +61,7 @@ public class PJDumpTestReader {
 	private static void read(String traceDbName) {
 		try {	
 
-			TraceDBObject traceDB = TraceDBObject.openNewIstance(traceDbName);
+			TraceDBObject traceDB = TraceDBObject.openNewInstance(traceDbName);
 			
 			long min = traceDB.getMinTimestamp();
 			long max = traceDB.getMaxTimestamp();

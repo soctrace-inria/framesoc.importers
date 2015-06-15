@@ -103,7 +103,7 @@ public class ParaverImporter extends FramesocTool {
 
 			try {
 				// open system DB
-				sysDB = SystemDBObject.openNewIstance();
+				sysDB = SystemDBObject.openNewInstance();
 				// create new trace DB
 				traceDB = new TraceDBObject(traceDbName, DBMode.DB_CREATE);
 

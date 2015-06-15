@@ -131,7 +131,7 @@ public class GStreamerTestReader {
 	private static Map<String, Integer> buildTypeMap(String traceDbName) throws SoCTraceException {
 		TraceDBObject traceDB = null;
 		try{
-			traceDB = TraceDBObject.openNewIstance(traceDbName);
+			traceDB = TraceDBObject.openNewInstance(traceDbName);
 			
 			// get the types list
 			EventTypeQuery etq = new EventTypeQuery(traceDB);

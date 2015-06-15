@@ -150,7 +150,7 @@ public class PajeImporter extends FramesocTool {
 					 */
 
 					// open system DB
-					sysDB = SystemDBObject.openNewIstance();
+					sysDB = SystemDBObject.openNewInstance();
 					// create new trace DB
 					traceDB = new TraceDBObject(traceDbName, DBMode.DB_CREATE);
 					PajeParser parser = new PajeParser(sysDB, traceDB, trueOutput,

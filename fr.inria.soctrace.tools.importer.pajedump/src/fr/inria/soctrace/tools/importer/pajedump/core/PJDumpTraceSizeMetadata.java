@@ -28,7 +28,7 @@ import fr.inria.soctrace.lib.utils.IdManager;
 public class PJDumpTraceSizeMetadata {
 
 	public PJDumpTraceSizeMetadata(File input, String traceDbName) throws SoCTraceException {
-		SystemDBObject sysDB = SystemDBObject.openNewIstance();
+		SystemDBObject sysDB = SystemDBObject.openNewInstance();
 		TraceDBObject traceDB = new TraceDBObject(traceDbName, DBMode.DB_OPEN);
 		final TraceQuery tQuery = new TraceQuery(sysDB);
 		tQuery.setElementWhere(new SimpleCondition("TRACE_DB_NAME", ComparisonOperation.EQ, traceDB
@@ -38,7 +38,7 @@ public class PJDumpTraceSizeMetadata {
 			saveParam(traces.get(0), sysDB, "Trace size", "String", getStringSize(input));
 			traceDB.close();
 			sysDB.close();
-			sysDB = SystemDBObject.openNewIstance();
+			sysDB = SystemDBObject.openNewInstance();
 			traceDB = new TraceDBObject(traceDbName, DBMode.DB_OPEN);
 			String value = "unknown";
 			String dbms = Configuration.getInstance().get(SoCTraceProperty.soctrace_dbms);
