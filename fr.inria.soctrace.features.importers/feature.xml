@@ -3,7 +3,7 @@
       id="fr.inria.soctrace.features.importers"
       label="Framesoc Importers"
       version="1.0.8.qualifier"
-      os="linux,win32"
+      os="linux,macosx,win32"
       arch="x86,x86_64">
 
    <description url="http://soctrace-inria.github.io/">
