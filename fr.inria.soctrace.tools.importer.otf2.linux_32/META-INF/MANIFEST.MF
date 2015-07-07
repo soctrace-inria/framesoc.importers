@@ -8,3 +8,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-NativeCode: exe/otf2-print;selection-filter=
  "(&(osgi.os=linux)(osgi.arch=x86))"
 Eclipse-PlatformFilter: (&(osgi.os=linux)(osgi.arch=x86))
+Eclipse-BundleShape: dir
