@@ -17,6 +17,7 @@ public class PajeDumpInput implements IFramesocToolInput {
 	protected boolean doublePrecision;
 	protected int timeUnit = TimeUnit.UNKNOWN.getInt();
 	protected int precision = 0;
+	protected boolean flattenImbrication = false;
 	
 	@Override
 	public String getCommand() {
@@ -55,10 +56,20 @@ public class PajeDumpInput implements IFramesocToolInput {
 		this.precision = precision;
 	}
 
+	public boolean isFlattenImbrication() {
+		return flattenImbrication;
+	}
+
+	public void setFlattenImbrication(boolean flattenImbrication) {
+		this.flattenImbrication = flattenImbrication;
+	}
+
 	@Override
 	public String toString() {
 		return "PajeDumpInput [files=" + files + ", doublePrecision="
-				+ doublePrecision + ", Time unit=" + TimeUnit.getLabel(timeUnit) + "]";
-	}	
+				+ doublePrecision + ", Time unit="
+				+ TimeUnit.getLabel(timeUnit) + ", flattenImbrication="
+				+ flattenImbrication + "]";
+	}
 	
 }

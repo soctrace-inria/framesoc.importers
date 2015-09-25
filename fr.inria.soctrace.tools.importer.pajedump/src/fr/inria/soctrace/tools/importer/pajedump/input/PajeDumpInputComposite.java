@@ -42,6 +42,7 @@ public class PajeDumpInputComposite extends DefaultImporterInputComposite {
 	protected int precision = PJDumpConstants.DEFAULT_TIME_SHIFT;
 	private Text txtPrecision;
 	private Label lblPrecision;
+	private boolean flattenImbrication = false;
 
 	public PajeDumpInputComposite(Composite parent, int style) {
 		super(parent, style);
@@ -107,6 +108,19 @@ public class PajeDumpInputComposite extends DefaultImporterInputComposite {
 			comboTimeUnit.add(aTimeUnit.getLabel());
 		}
 		comboTimeUnit.setText(TimeUnit.NANOSECONDS.getLabel());
+		
+		final Button flatImbrication = new Button(this,SWT.CHECK);
+		flatImbrication.setText("Flat imbrication");
+		flatImbrication.setSelection(false);
+		flatImbrication.setToolTipText("Prevent the imbricated states from overlapping, by splitting the states instead.");
+		flatImbrication.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				flattenImbrication = flatImbrication.getSelection();
+			}
+		});
+		
+		new Label(this, SWT.NONE);
 	}
 
 	@Override
@@ -116,6 +130,7 @@ public class PajeDumpInputComposite extends DefaultImporterInputComposite {
 		input.setDoublePrecision(doublePrecision);
 		input.setTimeUnit(timeUnit);
 		input.setPrecision(precision);
+		input.setFlattenImbrication(flattenImbrication);
 		return input;
 	}
 

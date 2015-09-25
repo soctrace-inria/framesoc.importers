@@ -199,6 +199,7 @@ public class PajeInputComposite extends PajeDumpInputComposite {
 		input.setFiles(superInput.getFiles());
 		input.setPrecision(superInput.getPrecision());
 		input.setTimeUnit(superInput.getTimeUnit());
+		input.setFlattenImbrication(superInput.isFlattenImbrication());
 		input.setArgumentLine(getArgumentsAsString());
 		return input;
 	}

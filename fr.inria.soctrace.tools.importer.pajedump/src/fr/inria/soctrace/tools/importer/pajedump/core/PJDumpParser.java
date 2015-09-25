@@ -42,6 +42,7 @@ import fr.inria.soctrace.lib.model.utils.SoCTraceException;
 import fr.inria.soctrace.lib.storage.SystemDBObject;
 import fr.inria.soctrace.lib.storage.TraceDBObject;
 import fr.inria.soctrace.lib.utils.IdManager;
+import fr.inria.soctrace.lib.utils.TagList;
 import fr.inria.soctrace.tools.importer.pajedump.input.PajeDumpInput;
 
 /**
@@ -49,6 +50,10 @@ import fr.inria.soctrace.tools.importer.pajedump.input.PajeDumpInput;
  * 
  * Warning: the current implementation of this parser works under the hypothesis that a producer may
  * be in a single state at a given time.
+ * 
+ * Warning: for the flat hierarchy option, the taken hypotheses are the following:
+ *  - For a given imbrication level, there can only be one current active state (no overlapping)
+ *  - A less imbricated state always ends after the more imbricated states
  * 
  * @author "Generoso Pagano <generoso.pagano@inria.fr>"
  */
@@ -64,7 +69,20 @@ public class PJDumpParser {
 	protected long maxTimestamp;
 	protected int timeUnit;
 	protected int precision;
-
+	
+	/**
+	 * Flat State imbrication 
+	 */
+	protected boolean flattenImbrication = false;
+	// Store the unfinished state for a given producer and a given imbrication level 
+	protected Map<String, Map<Integer, State>> pendingStates = new HashMap<String, Map<Integer, State>>();
+	// Store the normal end date of a given state
+	protected Map<Integer, Long> normalStateEnd = new HashMap<Integer, Long>();
+	// Store the imbrication level of the last state for a given producer
+	protected Map<String, Integer> currentImbricationLevel = new HashMap<String, Integer>();
+	// Store the last state added for a given producer
+	protected Map<String, State> lastAddedState = new HashMap<String, State>();
+	
 	private Map<String, PJDumpLineParser> parserMap = new HashMap<String, PJDumpLineParser>();
 
 	private Map<String, EventProducer> producersMap = new HashMap<String, EventProducer>();
@@ -88,6 +106,7 @@ public class PJDumpParser {
 		this.timeUnit = input.getTimeUnit();
 		this.doublePrecision = input.isDoublePrecision();
 		this.precision = input.getPrecision();
+		this.flattenImbrication = input.isFlattenImbrication();
 
 		parserMap.put(PJDumpConstants.CONTAINER, new ContainerParser());
 		parserMap.put(PJDumpConstants.EVENT, new EventParser());
@@ -194,9 +213,12 @@ public class PJDumpParser {
 						break;
 					}
 				}
-
 			}
 
+			if(flattenImbrication){
+				checkUnfinishedStates();
+			}
+			
 			if (elist.size() > 0) {
 				saveEvents(elist);
 				monitor.worked(getWorked(scale));
@@ -293,9 +315,18 @@ public class PJDumpParser {
 
 	protected void saveTraceMetadata(boolean partialImport) throws SoCTraceException {
 		String alias = FilenameUtils.getBaseName(traceFile);
-		String realAlias = (partialImport) ? (alias + " [part]") : alias;
+		TagList tlist = new TagList();
+		if (partialImport) {
+			tlist.addValue("part");
+		}
+		if (flattenImbrication) {
+			tlist.addValue("flat");
+		}
+		if (tlist.size() > 0) {
+			alias = alias + " " + tlist.getValueString();
+		}
 		PJDumpTraceMetadata metadata = new PJDumpTraceMetadata(sysDB, traceDB.getDBName(),
-				realAlias, numberOfEvents, minTimestamp, maxTimestamp, timeUnit);
+				alias, numberOfEvents, minTimestamp, maxTimestamp, timeUnit);
 		metadata.createMetadata();
 		metadata.saveMetadata();
 	}
@@ -392,6 +423,7 @@ public class PJDumpParser {
 	}
 
 	private class StateParser implements PJDumpLineParser {
+		
 		public void parseLine(String[] fields) throws SoCTraceException {
 			checkLine(fields, PJDumpConstants.S_ARGUMENTS);
 			State s = new State(eIdManager.getNextId());
@@ -399,11 +431,169 @@ public class PJDumpParser {
 			s.setPage(page);
 			s.setTimestamp(getTimestamp(fields[PJDumpConstants.S_START_TIME]));
 			s.setType(getType(fields[PJDumpConstants.S_VALUE], EventCategory.STATE));
+			s.setImbricationLevel(Double.valueOf(
+					fields[PJDumpConstants.S_IMBRICATION]).intValue());
 			s.setEndTimestamp(getTimestamp(fields[PJDumpConstants.S_END_TIME]));
-			s.setImbricationLevel(Double.valueOf(fields[PJDumpConstants.S_IMBRICATION]).intValue());
-			elist.add(s);
+			if (!flattenImbrication) {
+				elist.add(s);
+			} else {
+				handleFlattenState(s, fields);
+			}
 			updateMinMax(s.getTimestamp());
 			updateMinMax(s.getEndTimestamp());
+		}
+
+
+		private void handleFlattenState(State s, String[] fields) throws SoCTraceException {
+			String epName = fields[PJDumpConstants.S_CONTAINER];
+			
+			// Current state imbrication level
+			int stateImbricationLevel = s.getImbricationLevel();
+			
+			if (!pendingStates.containsKey(epName)) {
+				pendingStates.put(epName,
+						new HashMap<Integer, State>());
+			}
+			
+			if(!currentImbricationLevel.containsKey(epName))
+				currentImbricationLevel.put(epName, 0);
+			
+			// Imbrication level of the last state processed
+			int prodImbricationLevel = currentImbricationLevel.get(epName);
+
+			
+			if (prodImbricationLevel < stateImbricationLevel) {
+				// Close the previous state at the old imbrication level
+				State oldState = pendingStates.get(epName).get(
+						prodImbricationLevel);
+				oldState.setEndTimestamp(s.getTimestamp());
+				elist.add(oldState);
+				
+				lastAddedState.put(epName, oldState);
+
+				// Start a new one at the new imbrication level
+				pendingStates.get(epName).put(stateImbricationLevel, s);
+				normalStateEnd.put(s.getId(), s.getEndTimestamp());
+			} else if (prodImbricationLevel > stateImbricationLevel) {
+				// Save the state at the previous imbrication level 
+				State oldState = pendingStates.get(epName).get(
+						prodImbricationLevel);
+				
+				if (oldState.getEndTimestamp() > s.getTimestamp()) {
+					logger.error("Warning: This trace contains a state that ends after a state of higher imbrication launch. The generated trace may not be accurate. "
+							+ oldState.toString() + ", " + s.toString());
+				}
+
+				elist.add(oldState);
+				pendingStates.get(epName).remove(prodImbricationLevel);
+
+				// Fill with the upper imbricated state
+				prodImbricationLevel--;
+				long previousEndDate = oldState.getEndTimestamp();
+				while (previousEndDate < s.getTimestamp()) {
+					previousEndDate = fillIntermediate(previousEndDate,
+							prodImbricationLevel, oldState.getEventProducer(),
+							s.getTimestamp());
+					prodImbricationLevel--;
+				}
+
+				pendingStates.get(epName).put(stateImbricationLevel, s);
+				normalStateEnd.put(s.getId(), s.getEndTimestamp());			
+			} else {
+				State oldState = pendingStates.get(epName).get(
+						stateImbricationLevel);
+				
+				// If first state for the event producer
+				if (oldState == null && stateImbricationLevel == 0) {
+					pendingStates.get(epName).put(stateImbricationLevel, s);
+					normalStateEnd.put(s.getId(), s.getEndTimestamp());
+				} else {
+					if (oldState.getEndTimestamp() < s.getTimestamp()
+							&& stateImbricationLevel > 0) {
+						// Add a state of the upper level to fill the time gap
+						fillWithUpperLevel(oldState, s);
+					} else if (oldState.getEndTimestamp() > s.getTimestamp()) {
+						logger.error("Warning: This trace contains overlaping states within the same imbrication. The generated trace may not be accurate. "
+								+ oldState.toString() + ", " + s.toString());
+					}
+
+					elist.add(oldState);
+					lastAddedState.put(epName, oldState);
+					pendingStates.get(epName).put(stateImbricationLevel, s);
+					normalStateEnd.put(s.getId(), s.getEndTimestamp());
+				}
+			}
+			// Update teh current imbrication level
+			currentImbricationLevel.put(epName, stateImbricationLevel);
+		}
+
+
+		/**
+		 * Add a state from a previously splitted state
+		 * 
+		 * @param previousEndDate
+		 *            the end date of teh previous state
+		 * @param imbricationLevel
+		 *            current imbrication level
+		 * @param eventProducer
+		 *            name of the currently processed event producer
+		 * @param maxEndTimeStamp
+		 *            the maximum end time stamp (== starting date of the next
+		 *            state
+		 * @return the end date of the created state
+		 * @throws SoCTraceException
+		 */
+		private long fillIntermediate(long previousEndDate,
+				int imbricationLevel, EventProducer eventProducer, long maxEndTimeStamp)
+				throws SoCTraceException {
+			// Get current unfinished state
+			State pendingState = pendingStates.get(eventProducer.getName())
+					.get(imbricationLevel);
+
+			// Create a new state
+			State intermediateState = new State(eIdManager.getNextId());
+			intermediateState.setEventProducer(pendingState.getEventProducer());
+			intermediateState.setPage(page);
+			intermediateState.setTimestamp(previousEndDate);
+			intermediateState.setType(pendingState.getType());
+			intermediateState.setImbricationLevel(pendingState
+					.getImbricationLevel());
+			intermediateState.setEndTimestamp(Math.min(normalStateEnd.get(pendingState.getId()), maxEndTimeStamp));
+
+			elist.add(intermediateState);
+			lastAddedState.put(eventProducer.getName(), intermediateState);
+
+			return intermediateState.getEndTimestamp();
+		}
+
+		/**
+		 * Create a state to fill the time gap between two states that are at
+		 * the same imbrication level
+		 * 
+		 * @param oldState
+		 *            previous state
+		 * @param s
+		 *            next state
+		 * @throws SoCTraceException
+		 */
+		private void fillWithUpperLevel(State oldState, State s)
+				throws SoCTraceException {
+			// Get current unfinished state
+			State pendingState = pendingStates.get(
+					oldState.getEventProducer().getName()).get(
+					oldState.getImbricationLevel() - 1);
+
+			// Create a new state
+			State intermediateState = new State(eIdManager.getNextId());
+			intermediateState.setEventProducer(pendingState.getEventProducer());
+			intermediateState.setPage(page);
+			intermediateState.setTimestamp(oldState.getEndTimestamp());
+			intermediateState.setType(pendingState.getType());
+			intermediateState.setImbricationLevel(pendingState
+					.getImbricationLevel());
+			intermediateState.setEndTimestamp(s.getTimestamp());
+
+			elist.add(intermediateState);
 		}
 	}
 
@@ -446,6 +636,39 @@ public class PJDumpParser {
 				startPendingLinks.remove(ep.getName());
 			}
 		}
+	}
+
+	/**
+	 * Close all the unfinished states
+	 * 
+	 * @throws SoCTraceException
+	 */
+	private void checkUnfinishedStates() throws SoCTraceException {
+		for (String epName : pendingStates.keySet()) {
+			int lastImbricationLevel = currentImbricationLevel.get(epName);
+			long previousEndTime = lastAddedState.get(epName).getEndTimestamp();
+
+			for (int i = lastImbricationLevel; i >= 0; i--) {
+				State pendingState = pendingStates.get(epName).get(i);
+
+				// Create a new state
+				State intermediateState = new State(eIdManager.getNextId());
+				intermediateState.setEventProducer(pendingState
+						.getEventProducer());
+				intermediateState.setPage(page);
+				intermediateState.setTimestamp(previousEndTime);
+				intermediateState.setType(pendingState.getType());
+				intermediateState.setImbricationLevel(pendingState
+						.getImbricationLevel());
+				intermediateState.setEndTimestamp(normalStateEnd
+						.get(pendingState.getId()));
+
+				elist.add(intermediateState);
+
+				previousEndTime = intermediateState.getEndTimestamp();
+			}
+		}
+		
 	}
 
 }
