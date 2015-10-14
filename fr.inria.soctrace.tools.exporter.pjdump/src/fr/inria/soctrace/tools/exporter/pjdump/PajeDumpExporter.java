@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2012-2015 INRIA.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors:
+ *     Youenn Corre - initial API and implementation
+ ******************************************************************************/
 package fr.inria.soctrace.tools.exporter.pjdump;
 
 import java.io.File;
@@ -16,16 +26,18 @@ import fr.inria.soctrace.lib.model.utils.SoCTraceException;
 import fr.inria.soctrace.lib.utils.DeltaManager;
 import fr.inria.soctrace.tools.exporter.pjdump.input.PajeDumpExporterInput;
 
+/**
+ * Class for the export of the trace in the framesoc database into the pjdump
+ * format
+ * 
+ * @author "Youenn Corre <youenn.corre@inria.fr>"
+ */
 public class PajeDumpExporter extends FramesocTool {
 
 	private final static Logger logger = LoggerFactory
 			.getLogger(PajeDumpExporter.class);
 
 	private PluginImporterJob job;
-
-	public PajeDumpExporter() {
-		// TODO Auto-generated constructor stub
-	}
 
 	/**
 	 * Plugin Tool Job body: we use a Job since we have to perform a long
@@ -48,33 +60,33 @@ public class PajeDumpExporter extends FramesocTool {
 			DeltaManager traceDelta = new DeltaManager();
 			for (Trace trace : traces) {
 
-				try {
+				logger.debug("Exporting " + trace);
+				traceDelta.start();
 
-					logger.debug("Exporting " + trace);
-					traceDelta.start();
-
-					PajeDumpExportWriter exportWriter = new PajeDumpExportWriter(
-							input.getDirectory());
-					// Trace tr = input.getTraces().get(0);
-					exportWriter.readTrace(trace, trace.getMinTimestamp(),
-							trace.getMaxTimestamp());
-
-					exportWriter.getWriterThread().join();
-
-					if (monitor.isCanceled()) {
-						logger.debug("Export cancelled through monitor ("
-								+ trace + ")");
-						break;
-					}
-
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} finally {
-					if (monitor.isCanceled())
-						break;
-					traceDelta.end("Import trace");
+				long startTimestamp = trace.getMinTimestamp();
+				long endTimestamp = trace.getMaxTimestamp();
+				if (input.getStartingTime() >= 0) {
+					startTimestamp = Math.max(startTimestamp,
+							input.getStartingTime());
 				}
+				if (input.getEndingTime() >= 0) {
+					endTimestamp = Math
+							.min(endTimestamp, input.getEndingTime());
+				}
+				
+				PajeDumpExportWriter exportWriter = new PajeDumpExportWriter(
+						input.getDirectory());
+				exportWriter.readTrace(trace, startTimestamp,
+						endTimestamp, monitor);
+
+				if (monitor.isCanceled()) {
+					logger.debug("Export cancelled through monitor (" + trace
+							+ ")");
+					break;
+				}
+				if (monitor.isCanceled())
+					break;
+				traceDelta.end("Import trace");
 			}
 			delta.end("All traces imported");
 		}
@@ -86,22 +98,22 @@ public class PajeDumpExporter extends FramesocTool {
 				new PajeDumpExporterPluginJobBody(input));
 		job.setUser(true);
 		job.schedule();
-
 	}
 
 	@Override
 	public ParameterCheckStatus canLaunch(IFramesocToolInput input) {
 		PajeDumpExporterInput pjdinput = (PajeDumpExporterInput) input;
 
+		// Check that at least one trace is selected
 		if (pjdinput.getTraces().isEmpty())
 			return new ParameterCheckStatus(false,
 					"You must select at least one trace.");
 
-		// Check directory exist and is writable
+		// Check that the directory exists and is writable
 		File f = new File(pjdinput.getDirectory());
 		if (!f.isDirectory() || !f.canWrite()) {
 			return new ParameterCheckStatus(false,
-					"You must provide an existing and writtable directory.");
+					"You must provide an existing and writable directory.");
 		}
 
 		return new ParameterCheckStatus(true, "");
