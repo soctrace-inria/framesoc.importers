@@ -61,7 +61,7 @@ public class PajeDumpImporter extends FramesocTool {
 		public void run(IProgressMonitor monitor) throws SoCTraceException {
 			DeltaManager delta = new DeltaManager();
 			delta.start();
-			
+			monitor.setCanceled(false);
 			List<String> traces = input.getFiles();
 			int numberOfTraces = traces.size();
 			int currentTrace = 1;
@@ -71,8 +71,10 @@ public class PajeDumpImporter extends FramesocTool {
 
 				logger.debug("Importing " + traceFile);
 
-				if (monitor.isCanceled())
+				if (monitor.isCanceled()) {
+					logger.debug("Import cancelled through monitor (" + traceFile + ")");
 					break;
+				}
 
 				traceDelta.start();
 
@@ -110,6 +112,16 @@ public class PajeDumpImporter extends FramesocTool {
 
 	}
 
+	private PluginImporterJob job;
+
+	public PluginImporterJob getJob() {
+		return job;
+	}
+
+	public void setJob(PluginImporterJob job) {
+		this.job = job;
+	}
+
 	private String getNewTraceDBName(Set<String> usedNames, String traceFile) {
 		String basename = FilenameUtils.getBaseName(traceFile);
 		String extension = FilenameUtils.getExtension(traceFile);
@@ -129,7 +141,7 @@ public class PajeDumpImporter extends FramesocTool {
 
 	@Override
 	public void launch(IFramesocToolInput input) {
-		PluginImporterJob job = new PluginImporterJob("Paje Dump Importer",
+		job = new PluginImporterJob("Paje Dump Importer",
 				new PJDumpImporterPluginJobBody(input));
 		job.setUser(true);
 		job.schedule();

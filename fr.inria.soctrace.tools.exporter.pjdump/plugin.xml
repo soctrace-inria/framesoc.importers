@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="fr.inria.soctrace.framesoc.core.tool">
+      <tool
+            class="fr.inria.soctrace.tools.exporter.pjdump.PajeDumpExporter"
+            doc="Export the event of a trace in pjdump format"
+            id="fr.inria.soctrace.tools.exporter.pjdump"
+            name="PajeDump Exporter"
+            type="EXPORT">
+      </tool>
+   </extension>
+   <extension
+         point="fr.inria.soctrace.framesoc.ui.input.toolInput">
+      <toolInput
+            compositeFactory="fr.inria.soctrace.tools.exporter.pjdump.input.PajeDumpExporterCompositeFactory"
+            toolId="fr.inria.soctrace.tools.exporter.pjdump"></toolInput>
+   </extension>
+
+</plugin>

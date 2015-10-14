@@ -14,7 +14,7 @@ import fr.inria.soctrace.lib.model.utils.ModelConstants.TimeUnit;
 public class PajeDumpInput implements IFramesocToolInput {
 
 	protected List<String> files;
-	protected boolean doublePrecision;
+	protected boolean doublePrecision = true;
 	protected int timeUnit = TimeUnit.UNKNOWN.getInt();
 	protected int precision = 0;
 	protected boolean flattenImbrication = false;
