@@ -9,7 +9,7 @@
  * 		Damien Dosimont - initial API and implementation
  *      Generoso Pagano - refactoring
  ******************************************************************************/
-package fr.inria.soctrace.tools.importer.paraver;
+package fr.inria.soctrace.tools.importer.paraver.experimental;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -40,9 +40,9 @@ import fr.inria.soctrace.lib.storage.TraceDBObject;
 import fr.inria.soctrace.lib.utils.DeltaManager;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpConstants;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpParser;
-import fr.inria.soctrace.tools.importer.paraver.core.ParaverConstants;
-import fr.inria.soctrace.tools.importer.paraver.core.ParaverTraceMetadata;
-import fr.inria.soctrace.tools.importer.paraver.reader.ParaverPrintWrapper;
+import fr.inria.soctrace.tools.importer.paraver.experimental.core.ParaverConstants;
+import fr.inria.soctrace.tools.importer.paraver.experimental.core.ParaverTraceMetadata;
+import fr.inria.soctrace.tools.importer.paraver.experimental.reader.ParaverPrintWrapper;
 
 /**
  * Paraver importer tool.
@@ -109,21 +109,25 @@ public class ParaverImporter extends FramesocTool {
 
 				// parsing
 				ArrayList<String> arguments = new ArrayList<String>();
-				String input = traceFile;
+				String input = traceFile.replace(ParaverConstants.TRACE_EXT, "");
 				String output = ResourcesPlugin.getWorkspace().getRoot().getLocation().toString()
-						+ File.separator + "tmp" + PJDumpConstants.TRACE_EXT;
+						+ File.separator + "tmp";
+				arguments.add("-i");
 				arguments.add(input);
 				arguments.add("-o");
 				arguments.add(output);
+				arguments.add("-f");
+				arguments.add(PJDumpConstants.TRACE_EXT.replace(".", ""));
 				ParaverPrintWrapper printer = new ParaverPrintWrapper(arguments);
 
 				IStatus status = printer.executeSync(monitor);
 				if (status.equals(Status.CANCEL_STATUS) || monitor.isCanceled()) {
 					throw new SoCTraceException();
 				}
-				File outputFile = new File(output);
+				String trueOutput = output + PJDumpConstants.TRACE_EXT;
+				File outputFile = new File(trueOutput);
 
-				ParaverParser parser = new ParaverParser(sysDB, traceDB, output,
+				ParaverParser parser = new ParaverParser(sysDB, traceDB, trueOutput,
 						FilenameUtils.getBaseName(input));
 				parser.parseTrace(monitor, 1, 1);
 				outputFile.delete();
@@ -136,7 +140,9 @@ public class ParaverImporter extends FramesocTool {
 				DBObject.finalClose(sysDB);
 				delta.end("Import trace");
 			}
+
 		}
+
 	}
 
 	private String getNewTraceDBName(String traceFile) {

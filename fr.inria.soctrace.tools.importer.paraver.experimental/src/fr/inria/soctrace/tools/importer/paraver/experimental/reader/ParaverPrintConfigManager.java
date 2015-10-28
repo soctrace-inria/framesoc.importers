@@ -8,7 +8,7 @@
  * Contributors:
  *     Generoso Pagano - initial API and implementation
  ******************************************************************************/
-package fr.inria.soctrace.tools.importer.paraver.reader;
+package fr.inria.soctrace.tools.importer.paraver.experimental.reader;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +20,7 @@ import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.Bundle;
 
 import fr.inria.soctrace.framesoc.core.tools.management.ExternalProgramConfigManager;
-import fr.inria.soctrace.tools.importer.paraver.Activator;
+import fr.inria.soctrace.tools.importer.paraver.experimental.Activator;
 
 /**
  * Configuration manager for Paraver Print Wrapper.
@@ -43,7 +43,7 @@ import fr.inria.soctrace.tools.importer.paraver.Activator;
 	/**
 	 * Default prv2pjdump executable location
 	 */
-	private static final String DEFAULT_PATH = "exe" + File.separator + "prv2pjdump";
+	private static final String DEFAULT_PATH = "perl" + File.separator + "prv2pjdump.pl";
 
 	@Override
 	protected String getConfDir() {

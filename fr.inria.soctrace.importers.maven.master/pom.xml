@@ -144,6 +144,12 @@
 		<module>
 			../fr.inria.soctrace.tools.importer.paje.linux_64
 		</module>
+		<module>
+			../fr.inria.soctrace.tools.importer.paraver.linux_32
+		</module>
+		<module>
+			../fr.inria.soctrace.tools.importer.paraver.linux_64
+		</module>
 	</modules>
 
 	<organization>

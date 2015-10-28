@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Linux_32
+Bundle-SymbolicName: fr.inria.soctrace.tools.importer.paraver.linux_32
+Bundle-Version: 1.0.8.qualifier
+Fragment-Host: fr.inria.soctrace.tools.importer.paraver;bundle-version="1.0.8"
+Bundle-NativeCode: exe/prv2pjdump;selection-filter=
+ "(&(osgi.os=linux)(osgi.arch=x86))"
+Eclipse-PlatformFilter: (& (osgi.os=linux) (osgi.arch=x86))
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Eclipse-BundleShape: dir

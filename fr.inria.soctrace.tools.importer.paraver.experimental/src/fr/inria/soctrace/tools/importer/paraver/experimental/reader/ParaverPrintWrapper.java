@@ -8,7 +8,7 @@
  * Contributors:
  * 		Damien Dosimont, Generoso Pagano
  ******************************************************************************/
-package fr.inria.soctrace.tools.importer.paraver.reader;
+package fr.inria.soctrace.tools.importer.paraver.experimental.reader;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,17 +33,23 @@ public class ParaverPrintWrapper extends ExternalProgramWrapper {
 	private final static Logger logger = LoggerFactory.getLogger(ParaverPrintWrapper.class);
 
 	/**
+	 * Perl interpreter
+	 */
+	private static final String INTERPRETER = "perl";
+
+	/**
 	 * Constructor
 	 * 
 	 * @param arguments
 	 *            program arguments
 	 */
 	public ParaverPrintWrapper(List<String> arguments) {
-		super(new ParaverPrintConfigManager().readPath(), generateArgs(arguments));
+		super(INTERPRETER, generateArgs(arguments));
 	}
 
 	private static List<String> generateArgs(List<String> arguments) {
 		ArrayList<String> trueArguments = new ArrayList<String>();
+		trueArguments.add(new ParaverPrintConfigManager().readPath());
 		trueArguments.addAll(arguments);
 		return trueArguments;
 	}

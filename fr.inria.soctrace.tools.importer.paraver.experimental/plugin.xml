@@ -4,10 +4,10 @@
    <extension
          point="fr.inria.soctrace.framesoc.core.tool">
       <tool
-            class="fr.inria.soctrace.tools.importer.paraver.ParaverImporter"
+            class="fr.inria.soctrace.tools.importer.paraver.experimental.ParaverImporter"
             doc="Select the Paraver .prv file."
-            id="fr.inria.soctrace.tools.importer.paraver"
-            name="Paraver Importer "
+            id="fr.inria.soctrace.tools.importer.paraver.experimental"
+            name="Paraver Importer (experimental)"
             type="IMPORT">
       </tool>
    </extension>
