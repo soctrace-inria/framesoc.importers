@@ -17,5 +17,12 @@
             compositeFactory="fr.inria.soctrace.tools.exporter.pjdump.input.PajeDumpExporterCompositeFactory"
             toolId="fr.inria.soctrace.tools.exporter.pjdump"></toolInput>
    </extension>
+   <extension
+         point="fr.inria.soctrace.framesoc.headless.command">
+      <headless
+            class="fr.inria.soctrace.tools.exporter.pjdump.PjDumpExporterLauncher"
+            command="pjdump_exporter">
+      </headless>
+   </extension>
 
 </plugin>

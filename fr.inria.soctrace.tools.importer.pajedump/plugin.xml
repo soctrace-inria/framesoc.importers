@@ -18,5 +18,12 @@
             toolId="fr.inria.soctrace.tools.importer.pajedump">
       </toolInput>
    </extension>
+   <extension
+         point="fr.inria.soctrace.framesoc.headless.command">
+      <headless
+            class="fr.inria.soctrace.tools.importer.pajedump.PjDumpImporterLauncher"
+            command="pjdump_importer">
+      </headless>
+   </extension>
 
 </plugin>

@@ -38,6 +38,10 @@ public class PajeDumpExporter extends FramesocTool {
 			.getLogger(PajeDumpExporter.class);
 
 	private PluginImporterJob job;
+	
+	public PluginImporterJob getJob() {
+		return job;
+	}
 
 	/**
 	 * Plugin Tool Job body: we use a Job since we have to perform a long

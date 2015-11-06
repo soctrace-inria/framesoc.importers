@@ -28,6 +28,8 @@ import fr.inria.soctrace.lib.model.Trace;
  */
 public class PajeDumpExporterInput implements IFramesocToolInput {
 
+	public static final int UNSPECIFIED_TIME = -1;
+	
 	/**
 	 * The trace we want to export
 	 */
@@ -46,8 +48,8 @@ public class PajeDumpExporterInput implements IFramesocToolInput {
 	/**
 	 * Timestamp specifying the exported time interval of the trace
 	 */
-	private long startingTime = -1;
-	private long endingTime = -1;
+	private long startingTime = UNSPECIFIED_TIME;
+	private long endingTime = UNSPECIFIED_TIME;
 	
 	/**
 	 * List of exported event producers and event type

@@ -118,10 +118,6 @@ public class PajeDumpImporter extends FramesocTool {
 		return job;
 	}
 
-	public void setJob(PluginImporterJob job) {
-		this.job = job;
-	}
-
 	private String getNewTraceDBName(Set<String> usedNames, String traceFile) {
 		String basename = FilenameUtils.getBaseName(traceFile);
 		String extension = FilenameUtils.getExtension(traceFile);

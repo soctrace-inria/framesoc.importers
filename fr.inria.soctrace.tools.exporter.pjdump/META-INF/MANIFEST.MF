@@ -13,7 +13,12 @@ Require-Bundle: org.eclipse.ui,
  fr.inria.soctrace.lib.slf4j;bundle-version="1.0.10",
  fr.inria.soctrace.lib.storage;bundle-version="1.0.10",
  fr.inria.soctrace.lib.utils;bundle-version="1.0.10",
- fr.inria.soctrace.framesoc.ui;bundle-version="1.0.10"
+ fr.inria.soctrace.framesoc.ui;bundle-version="1.0.10",
+ fr.inria.soctrace.framesoc.headless,
+ fr.inria.soctrace.lib.cli
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
-Import-Package: fr.inria.soctrace.tools.framesoc.exporter.dbexporter
+Import-Package: fr.inria.soctrace.framesoc.headless.launcher,
+ fr.inria.soctrace.tools.framesoc.exporter.dbexporter
+Export-Package: fr.inria.soctrace.tools.exporter.pjdump,
+ fr.inria.soctrace.tools.exporter.pjdump.input

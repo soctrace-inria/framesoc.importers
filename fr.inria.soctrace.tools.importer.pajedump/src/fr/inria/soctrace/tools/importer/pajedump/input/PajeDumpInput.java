@@ -13,10 +13,12 @@ import fr.inria.soctrace.lib.model.utils.ModelConstants.TimeUnit;
  */
 public class PajeDumpInput implements IFramesocToolInput {
 
+	public final static int DEFAULT_PRECISION_VALUE = 0;
+	
 	protected List<String> files;
 	protected boolean doublePrecision = true;
 	protected int timeUnit = TimeUnit.UNKNOWN.getInt();
-	protected int precision = 0;
+	protected int precision = DEFAULT_PRECISION_VALUE;
 	protected boolean flattenImbrication = false;
 	
 	@Override
