@@ -150,6 +150,10 @@
 		<module>
 			../fr.inria.soctrace.tools.importer.paraver.linux_64
 		</module>
+		<module>../fr.inria.soctrace.tools.exporter.pjdump</module>
+		<module>
+			../fr.inria.soctrace.tools.importer.paraver.experimental
+		</module>
 	</modules>
 
 	<organization>

@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Linux_64
+Bundle-Name: Linux_32
 Bundle-SymbolicName: fr.inria.soctrace.tools.importer.otf2.linux_32
 Bundle-Version: 1.0.8.qualifier
 Fragment-Host: fr.inria.soctrace.tools.importer.otf2;bundle-version="1.0.7"
