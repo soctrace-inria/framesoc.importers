@@ -40,6 +40,7 @@ import fr.inria.soctrace.lib.storage.TraceDBObject;
 import fr.inria.soctrace.lib.utils.DeltaManager;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpConstants;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpParser;
+import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpTraceSizeMetadata;
 import fr.inria.soctrace.tools.importer.paraver.core.ParaverConstants;
 import fr.inria.soctrace.tools.importer.paraver.core.ParaverTraceMetadata;
 import fr.inria.soctrace.tools.importer.paraver.reader.ParaverPrintWrapper;
@@ -134,6 +135,10 @@ public class ParaverImporter extends FramesocTool {
 				// close the trace DB and the system DB (commit)
 				DBObject.finalClose(traceDB);
 				DBObject.finalClose(sysDB);
+				if (monitor.isCanceled())
+					return;
+				
+				new PJDumpTraceSizeMetadata(new File(traceFile), traceDbName);
 				delta.end("Import trace");
 			}
 		}
