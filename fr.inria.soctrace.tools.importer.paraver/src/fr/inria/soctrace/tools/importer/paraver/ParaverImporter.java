@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import fr.inria.soctrace.framesoc.core.FramesocManager;
 import fr.inria.soctrace.framesoc.core.tools.management.ArgumentsManager;
 import fr.inria.soctrace.framesoc.core.tools.management.PluginImporterJob;
-import fr.inria.soctrace.framesoc.core.tools.model.FileInput;
 import fr.inria.soctrace.framesoc.core.tools.model.FramesocTool;
 import fr.inria.soctrace.framesoc.core.tools.model.IFramesocToolInput;
 import fr.inria.soctrace.framesoc.core.tools.model.IPluginToolJobBody;
@@ -43,6 +42,7 @@ import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpParser;
 import fr.inria.soctrace.tools.importer.pajedump.core.PJDumpTraceSizeMetadata;
 import fr.inria.soctrace.tools.importer.paraver.core.ParaverConstants;
 import fr.inria.soctrace.tools.importer.paraver.core.ParaverTraceMetadata;
+import fr.inria.soctrace.tools.importer.paraver.input.ParaverInput;
 import fr.inria.soctrace.tools.importer.paraver.reader.ParaverPrintWrapper;
 
 /**
@@ -61,8 +61,8 @@ public class ParaverImporter extends FramesocTool {
 	 */
 	public class ParaverImporterPluginJobBody implements IPluginToolJobBody {
 
-		private FileInput input;
-
+		private ParaverInput input;
+	
 		class ParaverParser extends PJDumpParser {
 			String alias;
 
@@ -83,7 +83,7 @@ public class ParaverImporter extends FramesocTool {
 		}
 
 		public ParaverImporterPluginJobBody(IFramesocToolInput input) {
-			this.input = (FileInput) input;
+			this.input = (ParaverInput) input;
 		}
 
 		@Override
@@ -110,10 +110,13 @@ public class ParaverImporter extends FramesocTool {
 
 				// parsing
 				ArrayList<String> arguments = new ArrayList<String>();
-				String input = traceFile;
+				String inputComand = traceFile;
 				String output = ResourcesPlugin.getWorkspace().getRoot().getLocation().toString()
 						+ File.separator + "tmp" + PJDumpConstants.TRACE_EXT;
-				arguments.add(input);
+				arguments.add(inputComand);
+				if(input.isUseEventForState())
+					arguments.add("-e");
+				
 				arguments.add("-o");
 				arguments.add(output);
 				ParaverPrintWrapper printer = new ParaverPrintWrapper(arguments);
@@ -125,7 +128,7 @@ public class ParaverImporter extends FramesocTool {
 				File outputFile = new File(output);
 
 				ParaverParser parser = new ParaverParser(sysDB, traceDB, output,
-						FilenameUtils.getBaseName(input));
+						FilenameUtils.getBaseName(inputComand));
 				parser.parseTrace(monitor, 1, 1);
 				outputFile.delete();
 
@@ -171,7 +174,7 @@ public class ParaverImporter extends FramesocTool {
 	@Override
 	public ParameterCheckStatus canLaunch(IFramesocToolInput input) {
 
-		FileInput arg = (FileInput) input;
+		ParaverInput arg = (ParaverInput) input;
 
 		if (arg.getFiles().size() != 1) {
 			return new ParameterCheckStatus(false, "Specify a single " + ParaverConstants.TRACE_EXT
@@ -205,7 +208,6 @@ public class ParaverImporter extends FramesocTool {
 		}
 
 		// check for .row too, if necessary
-
 		return new ParameterCheckStatus(true, "");
 	}
 }

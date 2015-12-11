@@ -11,5 +11,12 @@
             type="IMPORT">
       </tool>
    </extension>
+   <extension
+         point="fr.inria.soctrace.framesoc.ui.input.toolInput">
+      <toolInput
+            compositeFactory="fr.inria.soctrace.tools.importer.paraver.input.ParaverInputCompositeFactory"
+            toolId="fr.inria.soctrace.tools.importer.paraver">
+      </toolInput>
+   </extension>
 
 </plugin>

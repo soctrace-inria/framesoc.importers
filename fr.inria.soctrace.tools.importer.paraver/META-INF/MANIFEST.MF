@@ -15,6 +15,8 @@ Require-Bundle: org.eclipse.ui,
  fr.inria.soctrace.tools.importer.pajedump
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
-Import-Package: org.apache.commons.io,
+Import-Package: fr.inria.soctrace.framesoc.ui.input,
+ fr.inria.soctrace.framesoc.ui.listeners,
+ org.apache.commons.io,
  org.eclipse.core.resources
 Eclipse-PlatformFilter: (& (osgi.os=linux))
