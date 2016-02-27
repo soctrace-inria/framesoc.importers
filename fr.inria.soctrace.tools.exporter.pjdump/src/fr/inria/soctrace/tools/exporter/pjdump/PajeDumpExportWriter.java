@@ -35,6 +35,7 @@ import fr.inria.soctrace.lib.model.Trace;
 import fr.inria.soctrace.lib.model.utils.SoCTraceException;
 import fr.inria.soctrace.lib.model.utils.ModelConstants.EventCategory;
 import fr.inria.soctrace.lib.query.EventProducerQuery;
+import fr.inria.soctrace.lib.storage.DBObject;
 import fr.inria.soctrace.lib.storage.TraceDBObject;
 import fr.inria.soctrace.lib.utils.DeltaManager;
 
@@ -118,7 +119,7 @@ public class PajeDumpExportWriter {
 	 * @param start
 	 *            the starting timestamp
 	 * @param end
-	 *            the neding timestamp
+	 *            the ending timestamp
 	 * @param monitor
 	 *            the progress monitor
 	 */
@@ -130,17 +131,7 @@ public class PajeDumpExportWriter {
 		
 		monitor.beginTask("Export trace: " + trace.getAlias(),
 				trace.getNumberOfEvents() / monitorCheck);
-
-		this.trace = trace;
-
-		// create the queue
-		LoaderQueue<Event> queue = new LoaderQueue<>();
-
-		// create the event loader
-		EventLoader loader = new EventLoader();
-		loader.setTrace(trace);
-		loader.setQueue(queue);
-
+		
 		// compute the actual time interval to load (trim with trace min and
 		// max)
 		TimeInterval interval = new TimeInterval(start, end);
@@ -149,12 +140,10 @@ public class PajeDumpExportWriter {
 		interval.endTimestamp = Math.min(trace.getMaxTimestamp(),
 				interval.endTimestamp);
 
-		// launch the job loading the queue
-		launchLoaderJob(loader, interval);
+		this.trace = trace;
 
-		this.queue = queue;
 		pjdumpExport = new StringBuilder();
-		writeData(monitor);
+		writeData(monitor, interval);
 	}
 
 	private void launchLoaderJob(final EventLoader loader,
@@ -182,7 +171,7 @@ public class PajeDumpExportWriter {
 	 * 
 	 * @param monitor
 	 */
-	private void writeData(IProgressMonitor monitor) {
+	private void writeData(IProgressMonitor monitor, TimeInterval interval) {
 		lineSeparator = System.getProperty("line.separator");
 
 		try {
@@ -190,8 +179,10 @@ public class PajeDumpExportWriter {
 					+ trace.getId() + ".pjdump",
 					System.getProperty("file.encoding"));
 
-			// Write the event producer
+			// Write the event producers
 			writeEventProducers();
+			
+			createQueue(interval);
 
 			while (!queue.done()) {
 				List<Event> events = queue.pop();
@@ -297,7 +288,7 @@ public class PajeDumpExportWriter {
 	}
 
 	private void writeEventProducers() {
-		TraceDBObject traceDB;
+		TraceDBObject traceDB = null;
 		idProducerIndex = new HashMap<Integer, EventProducer>();
 
 		try {
@@ -317,7 +308,8 @@ public class PajeDumpExportWriter {
 
 				// If root producer
 				if (ep.getParentId() == EventProducer.NO_PARENT_ID) {
-					pjdumpExport.append(PRODUCER_NO_PARENT_ID + PJDUMP_SEPARATOR);
+					pjdumpExport.append(PRODUCER_NO_PARENT_ID
+							+ PJDUMP_SEPARATOR);
 				} else {
 					pjdumpExport.append(idProducerIndex.get(ep.getParentId())
 							.getName() + PJDUMP_SEPARATOR);
@@ -335,7 +327,24 @@ public class PajeDumpExportWriter {
 		} catch (SoCTraceException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} finally {
+			DBObject.finalClose(traceDB);
 		}
+	}
+	
+	private void createQueue(TimeInterval interval) {
+		// create the queue
+		LoaderQueue<Event> queue = new LoaderQueue<>();
+
+		// create the event loader
+		EventLoader loader = new EventLoader();
+		loader.setTrace(trace);
+		loader.setQueue(queue);
+
+		// launch the job loading the queue
+		launchLoaderJob(loader, interval);
+
+		this.queue = queue;
 	}
 	
 }
