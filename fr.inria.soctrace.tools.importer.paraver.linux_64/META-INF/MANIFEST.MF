@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Linux_64
 Bundle-SymbolicName: fr.inria.soctrace.tools.importer.paraver.linux_64
 Bundle-Version: 1.0.8.qualifier
-Fragment-Host: fr.inria.soctrace.tools.importer.paraver;bundle-version="1.0.8"
+Fragment-Host: fr.inria.soctrace.tools.importer.paraver.old;bundle-version="1.0.8"
 Bundle-NativeCode: exe/prv2pjdump;selection-filter=
  "(&(osgi.os=linux)(osgi.arch=x86_64))"
 Eclipse-PlatformFilter: (& (osgi.os=linux) (osgi.arch=x86_64))
