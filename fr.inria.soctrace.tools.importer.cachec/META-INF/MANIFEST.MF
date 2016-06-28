@@ -11,7 +11,7 @@ Require-Bundle: org.eclipse.ui,
  fr.inria.soctrace.lib.model,
  fr.inria.soctrace.lib.utils,
  fr.inria.soctrace.lib.slf4j,
- org.eclipse.wb.core.lib
+ org.apache.commons.io
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Import-Package: fr.inria.soctrace.framesoc.ui.input,
